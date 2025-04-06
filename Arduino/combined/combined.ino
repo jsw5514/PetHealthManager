@@ -112,12 +112,5 @@ void loop() {
   while (BTSerial.available()) {
     Serial.write(BTSerial.read());
   }
-  while (Serial.available()) {
-    printData(BTSerial);
-    //BTSerial.write(Serial.read());
-    //BTSerial.write("테스트 출력");
-    //printAcc(BTSerial);
-  }
-  //printAcc(Serial);
-
+  printData(BTSerial);
 }
