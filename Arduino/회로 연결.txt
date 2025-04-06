@@ -1,0 +1,17 @@
+ADXL345 - Arduino UNO
+GND-GND
+VCC-3.3V
+SDA-A4
+SCL-A5
+
+HM-10 - Arduino UNO
+GND-GND
+VCC-3.3V
+TXD-D2
+RXD-D3
+
+VK2828U7G5LF - Arduino UNO
+G(GND)-GND
+V(VCC)-5V
+T(TX)-D4
+R(RX)-D5 ->연결하지 않아도 무방
