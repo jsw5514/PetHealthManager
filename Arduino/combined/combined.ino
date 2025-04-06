@@ -61,15 +61,15 @@ void loop() {
 }
 
 //3축 가속도 출력 함수
-void printAcc(){
-  Serial.println("가속도 모듈 출력");
-  Serial.print("X: ");
-  Serial.print(Read_Axis(X_axis));
-  Serial.print("  Y: ");
-  Serial.print(Read_Axis(Y_axis));
-  Serial.print("  Z: ");
-  Serial.print(Read_Axis(Z_axis));
-  Serial.println();
+void printAcc(Stream &serial){//출력흐름 변경용
+  serial.println("가속도 모듈 출력");
+  serial.print("X: ");
+  serial.print(Read_Axis(X_axis));
+  serial.print("  Y: ");
+  serial.print(Read_Axis(Y_axis));
+  serial.print("  Z: ");
+  serial.print(Read_Axis(Z_axis));
+  serial.println();
 }
 
 //가속도값 읽기 함수
