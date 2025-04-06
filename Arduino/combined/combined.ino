@@ -25,7 +25,7 @@ unsigned long time_before=0;
 //매개변수
 //serial : 출력할 시리얼 객체
 void printData(Stream &serial){
-  unsigned long = millis(); //현재 시간 가져오기
+  unsigned long now = millis(); //현재 시간 가져오기
   if(now >= time_before + OUTPUT_INTERVAL){
     time_before = now;
     printAcc(serial);//가속도 출력
@@ -38,13 +38,13 @@ void printData(Stream &serial){
 //serial : 출력할 시리얼 객체
 void printAcc(Stream &serial){
   serial.write("가속도 모듈 출력\n");
-  serial.print("X: ");
-  serial.print(Read_Axis(X_axis));
-  serial.print("  Y: ");
-  serial.print(Read_Axis(Y_axis));
-  serial.print("  Z: ");
-  serial.print(Read_Axis(Z_axis));
-  serial.println();
+  serial.write("X: ");
+  serial.write(Read_Axis(X_axis));
+  serial.write("  Y: ");
+  serial.write(Read_Axis(Y_axis));
+  serial.write("  Z: ");
+  serial.write(Read_Axis(Z_axis));
+  serial.write("\n");
 }
 
 //gps 출력 함수
@@ -113,6 +113,7 @@ void loop() {
     Serial.write(BTSerial.read());
   }
   while (Serial.available()) {
+    printData(BTSerial);
     //BTSerial.write(Serial.read());
     //BTSerial.write("테스트 출력");
     //printAcc(BTSerial);
