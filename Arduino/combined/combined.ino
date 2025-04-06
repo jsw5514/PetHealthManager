@@ -39,11 +39,11 @@ void printData(Stream &serial){
 void printAcc(Stream &serial){
   serial.write("가속도 모듈 출력\n");
   serial.write("X: ");
-  serial.write(Read_Axis(X_axis));
+  serial.print(Read_Axis(X_axis));
   serial.write("  Y: ");
-  serial.write(Read_Axis(Y_axis));
+  serial.print(Read_Axis(Y_axis));
   serial.write("  Z: ");
-  serial.write(Read_Axis(Z_axis));
+  serial.print(Read_Axis(Z_axis));
   serial.write("\n");
 }
 
