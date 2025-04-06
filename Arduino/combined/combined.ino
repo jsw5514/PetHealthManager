@@ -18,53 +18,26 @@ SoftwareSerial BTSerial(2, 3); // RX, TX 블루투스 모듈 연결용 시리얼
 #define Range_8g 2
 #define Range_16g 3
 
-void setup() {
-  //출력용 시리얼 준비
-  Serial.begin(9600);
-
-  //블루투스 모듈 준비
-  BTSerial.begin(9600);
-  delay(1000);
-  BTSerial.write("AT+RESET");
-
-  //가속도 모듈 준비
-  Wire.begin();
-  Init_ADXL345(Range_2g);
-}
-
-//ADXL345 초기화
-void Init_ADXL345(byte r) {
-
-  Wire.beginTransmission(I2C_Address);
-
-  //감도설정
-  Wire.write(DATA_FORMAT);
-  Wire.write(r);
-  Wire.endTransmission();
-
-  //측정모드로 전환
-  Wire.beginTransmission(I2C_Address);
-  Wire.write(POWER_CTL);
-  Wire.write(0x08);
-  Wire.endTransmission();
-}
-
-void loop() {
-  while (BTSerial.available()) {
-    Serial.write(BTSerial.read());
+//출력 간격 관리
+#define OUTPUT_INTERVAL 1000 
+unsigned long time_before=0;
+//가속도, gps 데이터 출력 함수
+//매개변수
+//serial : 출력할 시리얼 객체
+void printData(Stream &serial){
+  unsigned long = millis(); //현재 시간 가져오기
+  if(now >= time_before + OUTPUT_INTERVAL){
+    time_before = now;
+    printAcc(serial);//가속도 출력
+    printGPS(serial);//gps 출력
   }
-  while (Serial.available()) {
-    //BTSerial.write(Serial.read());
-    BTSerial.write("테스트 출력");
-    //printAcc(BTSerial);
-  }
-  //printAcc(Serial);
-
 }
 
 //3축 가속도 출력 함수
-void printAcc(Stream &serial){//출력흐름 변경용
-  serial.println("가속도 모듈 출력");
+//매개변수
+//serial : 출력할 시리얼 객체
+void printAcc(Stream &serial){
+  serial.write("가속도 모듈 출력\n");
   serial.print("X: ");
   serial.print(Read_Axis(X_axis));
   serial.print("  Y: ");
@@ -72,6 +45,13 @@ void printAcc(Stream &serial){//출력흐름 변경용
   serial.print("  Z: ");
   serial.print(Read_Axis(Z_axis));
   serial.println();
+}
+
+//gps 출력 함수
+//매개변수
+//serial : 출력할 시리얼 객체
+void printGPS(Stream &serial){
+//TODO 내용 작성하기
 }
 
 //가속도값 읽기 함수
@@ -95,4 +75,48 @@ int Read_Axis(byte a) {
 
   Wire.endTransmission();
   return data;
+}
+
+//ADXL345 초기화
+void Init_ADXL345(byte r) {
+
+  Wire.beginTransmission(I2C_Address);
+
+  //감도설정
+  Wire.write(DATA_FORMAT);
+  Wire.write(r);
+  Wire.endTransmission();
+
+  //측정모드로 전환
+  Wire.beginTransmission(I2C_Address);
+  Wire.write(POWER_CTL);
+  Wire.write(0x08);
+  Wire.endTransmission();
+}
+
+void setup() {
+  //디버그 출력용 시리얼 준비
+  Serial.begin(9600);
+
+  //블루투스 모듈 준비
+  BTSerial.begin(9600);
+  delay(1000);
+  BTSerial.write("AT+RESET");
+
+  //가속도 모듈 준비
+  Wire.begin();
+  Init_ADXL345(Range_2g);
+}
+
+void loop() {
+  while (BTSerial.available()) {
+    Serial.write(BTSerial.read());
+  }
+  while (Serial.available()) {
+    //BTSerial.write(Serial.read());
+    //BTSerial.write("테스트 출력");
+    //printAcc(BTSerial);
+  }
+  //printAcc(Serial);
+
 }
