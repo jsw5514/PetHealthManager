@@ -18,7 +18,7 @@ void setup() {
 }
 
 void loop() {
-    while (mySerial.available() > 0) {
+    while (GPSSerial.available() > 0) {
         char c = GPSSerial.read();
         gps.encode(c); //TinyGPSPlus 객체에 GPS 모듈 출력 전달
         totalReceivedCount++; //수신받은 총 데이터 수 카운트
