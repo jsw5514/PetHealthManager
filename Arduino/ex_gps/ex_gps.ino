@@ -2,7 +2,7 @@
 //for VK2828U7G5LF
 
 // 소프트웨어 시리얼 객체 생성 (TX: 10, RX: 11)
-SoftwareSerial mySerial(2, 3);
+SoftwareSerial mySerial(4, 5);
 
 void setup() {
     // 하드웨어 시리얼 포트를 초기화하고 보율을 설정합니다
