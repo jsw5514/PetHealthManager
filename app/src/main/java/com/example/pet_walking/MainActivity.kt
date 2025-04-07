@@ -12,14 +12,11 @@ import kotlin.random.Random
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-
     private val locationList = mutableListOf<Pair<Double, Double>>()
-
-    private var totalDistance = 0.0
-    private var totalCalories = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        PetRepository.loadFromPreferences(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -30,25 +27,23 @@ class MainActivity : AppCompatActivity() {
         startInfiniteSensorSimulation()
     }
 
-    // 랜덤 데이터 시뮬레이션
     private fun startInfiniteSensorSimulation() {
         CoroutineScope(Dispatchers.Main).launch {
             var step = 0
             while (true) {
                 step++
-                val latitude = 37.5665 + step * 0.0001
-                val longitude = 126.9780 + step * 0.0001
+                val lat = 37.5665 + step * 0.0001
+                val lon = 126.9780 + step * 0.0001
                 val accX = Random.nextDouble(0.5, 1.5).toFloat()
                 val accY = Random.nextDouble(0.5, 1.5).toFloat()
                 val accZ = Random.nextDouble(0.5, 1.5).toFloat()
 
-                processReceivedData(latitude, longitude, accX, accY, accZ)
+                processReceivedData(lat, lon, accX, accY, accZ)
 
-                delay(1000) // 1초마다 데이터 추가
+                delay(1000)
             }
         }
     }
-
 
     private fun processReceivedData(lat: Double, lon: Double, accX: Float, accY: Float, accZ: Float) {
         locationList.add(lat to lon)
@@ -58,26 +53,25 @@ class MainActivity : AppCompatActivity() {
             haversine(prevLat, prevLon, lat, lon)
         } else 0.0
 
-        totalDistance += distance
-
         val activityIndex = calculateActivityIndex(accX, accY, accZ)
         val caloriesBurned = calculateCalories(activityIndex, 10.0, distance)
 
-        totalCalories += caloriesBurned
+        SharedStatsRepository.totalDistance += distance
+        SharedStatsRepository.totalCalories += caloriesBurned
 
-        updateHomeAndStatisticsFragments(totalDistance, totalCalories)
+        updateVisibleFragments()
     }
 
-    private fun updateHomeAndStatisticsFragments(totalDistance: Double, totalCalories: Double) {
+    private fun updateVisibleFragments() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
         val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
 
         if (currentFragment is HomeFragment && currentFragment.isVisible) {
-            currentFragment.updateStats(totalDistance, totalCalories)
+            currentFragment.updateStats()
         }
 
         if (currentFragment is StatisticsFragment && currentFragment.isVisible) {
-            currentFragment.updateStats(totalDistance, totalCalories)
+            currentFragment.updateStats()
         }
     }
 

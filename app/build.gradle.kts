@@ -53,4 +53,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.0.1")
     // 네이버 지도는 일단 제외하거나 수동 .aar 설치로
     implementation("com.naver.maps:map-sdk:3.21.0")
+
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 }

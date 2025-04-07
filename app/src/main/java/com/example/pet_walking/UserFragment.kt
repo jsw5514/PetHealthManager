@@ -6,9 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
-import androidx.activity.result.contract.ActivityResultContracts
+import com.example.pet_walking.util.ImageStorageManager
 import java.util.*
 
 class UserFragment : Fragment() {
@@ -83,18 +84,32 @@ class UserFragment : Fragment() {
             val weight = weightInput.text.toString()
             val uuid = UUID.randomUUID()
 
+            // 이미지 저장
+            var savedUri: Uri? = null
+            selectedPetImageUri?.let { uri ->
+                val bitmap = ImageStorageManager.decodeUriToBitmap(requireContext(), uri)
+                bitmap?.let {
+                    savedUri = ImageStorageManager.saveBitmapToInternalStorage(
+                        requireContext(),
+                        it,
+                        "pet_${uuid}"
+                    )
+                }
+            }
+
             val profile = PetProfile(
                 id = uuid,
                 name = name,
                 age = age,
                 gender = gender,
                 weight = weight,
-                imageUri = selectedPetImageUri?.toString(),
+                imageUri = savedUri?.toString(),
                 totalDistance = 0.0,
                 totalCalories = 0.0
             )
 
             PetRepository.addProfile(profile)
+            PetRepository.saveToPreferences(requireContext()) // ✅ 저장
             petContainer.addView(createPetProfileView(profile))
             inputForm.visibility = View.GONE
             clearInputs()
@@ -121,6 +136,12 @@ class UserFragment : Fragment() {
                 }
                 PetRepository.removeProfile(uuid)
             }
+            PetRepository.saveToPreferences(requireContext()) // ✅ 삭제 후 저장
+        }
+
+        // ✅ 저장된 모든 프로필을 UI에 다시 표시
+        PetRepository.getAllProfiles().forEach { profile ->
+            petContainer.addView(createPetProfileView(profile))
         }
 
         return view
@@ -142,24 +163,20 @@ class UserFragment : Fragment() {
         val profileRow = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
         }
-        //여기 나중 삭제
+
         val petImage = ImageView(context).apply {
             layoutParams = ViewGroup.LayoutParams(200, 200)
             if (profile.imageUri != null) {
-                setImageURI(Uri.parse(profile.imageUri))  // String → Uri 변환 후 적용
+                val bitmap = ImageStorageManager.decodeUriToBitmap(context, Uri.parse(profile.imageUri))
+                if (bitmap != null) {
+                    setImageBitmap(bitmap)
+                } else {
+                    setImageResource(R.drawable.ic_profile_placeholder)
+                }
             } else {
                 setImageResource(R.drawable.ic_profile_placeholder)
             }
         }
-//TODO:수정할 예정
-        /*val petImage = ImageView(context).apply {
-            layoutParams = ViewGroup.LayoutParams(200, 200)
-            if (profile.imageUri != null) {
-                setImageURI(profile.imageUri)
-            } else {
-                setImageResource(R.drawable.ic_profile_placeholder)
-            }
-        }*/
 
         val textColumn = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL

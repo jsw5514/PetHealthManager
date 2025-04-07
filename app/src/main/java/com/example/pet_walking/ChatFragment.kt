@@ -11,6 +11,6 @@ class ChatFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.chat_fragment, container, false)  // ✅ 파일명 수정
+        return inflater.inflate(R.layout.chat_fragment, container, false)
     }
 }

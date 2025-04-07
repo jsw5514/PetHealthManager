@@ -44,4 +44,6 @@
         android:name="com.example.pet_walking.GoalFragment"
         android:label="목표"
         tools:layout="@layout/goal_fragment" />
+
+
 </navigation>

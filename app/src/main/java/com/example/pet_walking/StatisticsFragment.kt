@@ -26,7 +26,7 @@ class StatisticsFragment : Fragment() {
     private lateinit var barChart: BarChart
     private var currentPeriod = "daily"
 
-    // 프로필별 통계 저장소 (임시 In-Memory 구조)
+    // 프로필별 통계 저장소
     private val profileStatsMap = mutableMapOf<UUID, ProfileStats>()
 
     override fun onCreateView(
@@ -43,23 +43,24 @@ class StatisticsFragment : Fragment() {
         return binding.root
     }
 
-    // 러닝 완료 후 통계 업데이트
-    fun updateStats(totalDistance: Double, totalCalories: Double) {
+    // ✅ SharedStatsRepository 기반으로 통계 업데이트
+    fun updateStats() {
         val currentPet = PetRepository.getCurrentPet() ?: return
         val petId = currentPet.id
 
         val stats = profileStatsMap.getOrPut(petId) { ProfileStats() }
-        stats.totalDistance = totalDistance
-        stats.totalCalories = totalCalories
+
+        // SharedStatsRepository의 값을 반영
+        stats.totalDistance = SharedStatsRepository.totalDistance
+        stats.totalCalories = SharedStatsRepository.totalCalories
 
         val key = getKeyForPeriod(currentPeriod)
         val periodMap = stats.getMapForPeriod(currentPeriod)
-        periodMap[key] = (periodMap[key] ?: 0.0) + totalCalories
+        periodMap[key] = (periodMap[key] ?: 0.0) + SharedStatsRepository.totalCalories
 
         updateUI()
     }
 
-    // UI 업데이트
     private fun updateUI() {
         val currentPet = PetRepository.getCurrentPet() ?: return
         val stats = profileStatsMap[currentPet.id] ?: return
@@ -70,7 +71,6 @@ class StatisticsFragment : Fragment() {
         updateChartData(stats.getMapForPeriod(currentPeriod))
     }
 
-    // 시간 단위 키 생성
     private fun getKeyForPeriod(period: String): String {
         val now = LocalDateTime.now()
         return when (period) {
@@ -82,7 +82,6 @@ class StatisticsFragment : Fragment() {
         }
     }
 
-    // 차트 데이터 업데이트
     private fun updateChartData(dataMap: Map<String, Double>) {
         val (entries, labels) = convertToBarEntries(dataMap)
 
@@ -98,7 +97,6 @@ class StatisticsFragment : Fragment() {
         barChart.invalidate()
     }
 
-    // 데이터 변환
     private fun convertToBarEntries(dataMap: Map<String, Double>): Pair<List<BarEntry>, List<String>> {
         val entries = mutableListOf<BarEntry>()
         val labels = mutableListOf<String>()
@@ -109,7 +107,6 @@ class StatisticsFragment : Fragment() {
         return Pair(entries, labels)
     }
 
-    // Spinner 초기화
     private fun setupSpinner() {
         val adapter = ArrayAdapter.createFromResource(
             requireContext(),
@@ -135,7 +132,6 @@ class StatisticsFragment : Fragment() {
         }
     }
 
-    // 바 차트 스타일 설정
     private fun setupBarChart() {
         barChart.apply {
             description.isEnabled = false
@@ -157,23 +153,6 @@ class StatisticsFragment : Fragment() {
         }
     }
 
-    // 활동 지수 계산 (가속도)
-    private fun calculateActivityIndex(acc: Triple<Float, Float, Float>): Double {
-        val (x, y, z) = acc
-        return sqrt(x.pow(2) + y.pow(2) + z.pow(2)).toDouble()
-    }
-
-    // 칼로리 계산 (거리 기반)
-    private fun calculateCalories(activityIndex: Double, distance: Double): Double {
-        val MET = if (activityIndex < 1.5) 2.0 else 6.0
-        val speed = activityIndex + 1
-        val time = distance / speed
-        val hours = time / 3600.0
-        val petWeight = PetRepository.getCurrentPet()?.weight?.toDoubleOrNull() ?: 10.0
-        return MET * petWeight * hours
-    }
-
-    // 프로필별 통계 데이터 클래스
     data class ProfileStats(
         var totalDistance: Double = 0.0,
         var totalCalories: Double = 0.0,
