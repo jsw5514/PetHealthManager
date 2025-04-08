@@ -5,6 +5,8 @@
 SoftwareSerial BTSerial(2, 3); //(RX, TX) 블루투스 모듈 연결용 시리얼 객체
 SoftwareSerial GPSSerial(4, 5); //(RX, TX) GPS 모듈 연결용 시리얼 객체
 TinyGPSPlus gps; //gps 데이터 파싱을 위한 TinyGPS++객체(선언시에 객체 자동생성)
+char gps_buf_latitude[16];//위도 데이터 저장용 버퍼
+char gps_buf_longitude[16];//경도 데이터 저장용 버퍼
 
 #define I2C_Address 0x53 //ADXL345의 I2C 주소
 
@@ -129,10 +131,13 @@ void loop() {
 
   // 유효한 위치 데이터가 업데이트되었는지 확인
   if (gps.location.isUpdated()) {
-    Serial.print("Latitude: ");
-    Serial.println(gps.location.lat(), 6); //위도 소수점 6자리로 출력
-    Serial.print("Longitude: ");
-    Serial.println(gps.location.lng(), 6); //경도 소수점 6자리로 출력
+    //그대로 출력하는 대신 버퍼에 저장
+    dtostrf(gps.location.lat(), 0, 6, gps_buf_latitude)//(number, width, precision, buffer)
+    dtostrf(gps.location.lng(), 0, 6, gps_buf_longitude)//(number, width, precision, buffer)
+    // Serial.print("Latitude: ");
+    // Serial.println(gps.location.lat(), 6); //위도 소수점 6자리로 출력
+    // Serial.print("Longitude: ");
+    // Serial.println(gps.location.lng(), 6); //경도 소수점 6자리로 출력
   }
 
   //데이터 출력
