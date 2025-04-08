@@ -1,6 +1,10 @@
-#include <SoftwareSerial.h> //시리얼 통신을 위해 사용(사용 모듈: HM-10 블루투스 모듈)
+#include <SoftwareSerial.h> //시리얼 통신을 위해 사용(사용 모듈: HM-10 블루투스 모듈,VK2828U7G5LF GPS 모듈)
 #include <Wire.h> //I2C 통신을 위해 사용(사용 모듈: ADXL345 가속도 모듈)
-SoftwareSerial BTSerial(2, 3); // RX, TX 블루투스 모듈 연결용 시리얼 객체
+#include <TinyGPS++.h> //GPS 모듈이 전송하는 NMEA 0183 데이터를 파싱하기위해 사용
+
+SoftwareSerial BTSerial(2, 3); //(RX, TX) 블루투스 모듈 연결용 시리얼 객체
+SoftwareSerial GPSSerial(4, 5); //(RX, TX) GPS 모듈 연결용 시리얼 객체
+TinyGPSPlus gps; //gps 데이터 파싱을 위한 TinyGPS++객체(선언시에 객체 자동생성)
 
 #define I2C_Address 0x53 //ADXL345의 I2C 주소
 
@@ -106,11 +110,31 @@ void setup() {
   //가속도 모듈 준비
   Wire.begin();
   Init_ADXL345(Range_2g);
+
+  //gps 모듈 준비
+  GPSSerial.begin(9600);
 }
 
 void loop() {
+  //시리얼 입력을 블루투스 모듈에 그대로 전달(AT 명령어 송신용)
   while (BTSerial.available()) {
     Serial.write(BTSerial.read());
   }
+
+  //모듈에서 받은 GPS데이터를 TinyGPSPlus 객체에 전달
+  while (GPSSerial.available() > 0) {
+    char c = GPSSerial.read();
+    gps.encode(c);
+  }
+
+  // 유효한 위치 데이터가 업데이트되었는지 확인
+  if (gps.location.isUpdated()) {
+    Serial.print("Latitude: ");
+    Serial.println(gps.location.lat(), 6); //위도 소수점 6자리로 출력
+    Serial.print("Longitude: ");
+    Serial.println(gps.location.lng(), 6); //경도 소수점 6자리로 출력
+  }
+
+  //데이터 출력
   printData(BTSerial);
 }
