@@ -81,7 +81,7 @@ class UserFragment : Fragment() {
                 R.id.female -> "암컷"
                 else -> "미정"
             }
-            val weight = weightInput.text.toString()
+            val weight = weightInput.text.toString().toDoubleOrNull() ?: 10.0
             val uuid = UUID.randomUUID()
 
             // 이미지 저장

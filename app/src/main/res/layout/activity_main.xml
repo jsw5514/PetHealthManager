@@ -7,6 +7,8 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
+
     <!-- 🔹 Fragment 컨테이너 -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_container"
@@ -17,6 +19,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
         app:navGraph="@navigation/nav_graph"/>
+
 
     <!-- 🔹 하단 네비게이션 바 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

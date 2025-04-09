@@ -33,7 +33,7 @@ class GoalFragment : Fragment() {
         inputDistanceKm.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val distance = s?.toString()?.toDoubleOrNull() ?: 0.0
-                val weight = PetRepository.getCurrentPet()?.weight?.toDoubleOrNull() ?: 10.0
+                val weight = PetRepository.getCurrentPet()?.weight?.toString()?.toDoubleOrNull() ?: 10.0
                 val calories = calculateCalories(weight, distance)
                 textExpectedCalories.text = "예상 칼로리: %.2f kcal".format(calories)
             }
@@ -46,7 +46,7 @@ class GoalFragment : Fragment() {
         inputCalories.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val calories = s?.toString()?.toDoubleOrNull() ?: 0.0
-                val weight = PetRepository.getCurrentPet()?.weight?.toDoubleOrNull() ?: 10.0
+                val weight = PetRepository.getCurrentPet()?.weight?.toString()?.toDoubleOrNull() ?: 10.0
                 val distance = calculateDistanceFromCalories(weight, calories)
                 textRequiredDistance.text = "필요한 거리: %.2f km".format(distance)
             }

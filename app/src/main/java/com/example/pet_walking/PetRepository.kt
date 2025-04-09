@@ -10,9 +10,16 @@ import java.util.*
 object PetRepository {
     private val profiles = mutableMapOf<UUID, PetProfile>()
     var currentPetId: UUID? = null
+    private var selectedPetId: UUID? = null
+    private val petList = mutableListOf<PetProfile>()
+
 
     fun addProfile(profile: PetProfile) {
         profiles[profile.id] = profile
+    }
+
+    fun getSelectedPet(): PetProfile? {
+        return petList.find { it.id == selectedPetId }
     }
 
     fun removeProfile(id: UUID) {

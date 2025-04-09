@@ -8,7 +8,7 @@ data class PetProfile(
     val name: String,
     val age: String,
     val gender: String,
-    val weight: String,
+    val weight: Double,
     val imageUri: String?,
     var totalDistance: Double =0.0,
     var totalCalories: Double = 0.0
