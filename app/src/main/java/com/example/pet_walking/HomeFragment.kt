@@ -130,4 +130,9 @@ class HomeFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    override fun onResume() {
+        super.onResume()
+        updateStats() // 🔄 목표 요약, 거리/칼로리 최신 정보 반영
+    }
 }
