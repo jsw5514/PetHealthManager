@@ -35,6 +35,7 @@ void printData(Stream &serial){
   if(now >= time_before + OUTPUT_INTERVAL){
     time_before = now;
     //TODO 출력형식 변경
+    serial.print("----------\n"); //데이터 구분선 출력
     printAcc(serial);//가속도 출력
     printGPS(serial);//gps 출력
   }
@@ -63,6 +64,7 @@ void printGPS(Stream &serial){
   serial.write(gps_buf_latitude);
   serial.write("  경도: ");
   serial.write(gps_buf_longitude);
+  serial.write("\n");
 }
 
 //가속도값 읽기 함수
