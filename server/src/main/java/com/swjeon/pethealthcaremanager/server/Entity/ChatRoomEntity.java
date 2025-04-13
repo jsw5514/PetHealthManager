@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ChatRoomEntity {
 
+  @Id
   @Column(name = "ID")
   private long id;
 

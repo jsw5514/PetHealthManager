@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ChatEntity {
 
+  @Id
   @Column(name = "CHAT_ID")
   private long chatId;
   @Column(name = "ROOM_ID")
