@@ -21,8 +21,8 @@ public class AccountController {
 
     //회원가입
     @PostMapping("/signIn")
-    public String signIn(@RequestParam("id") String id, @RequestParam("password") String password) {
-        return "not yet implemented";//TODO not yet implemented
+    public boolean signIn(@RequestParam("id") String id, @RequestParam("password") String password) {
+        return usersService.signIn(id, password);
     }
 
     //로그인
