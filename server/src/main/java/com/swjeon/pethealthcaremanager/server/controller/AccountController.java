@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class AccountController {
-    private UsersService usersService;
+    private final UsersService usersService;
 
     @Autowired
     public AccountController(UsersService usersService) {
