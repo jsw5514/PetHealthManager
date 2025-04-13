@@ -9,16 +9,12 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "user")
+@Table(name = "chat_room")
 @Getter
 @NoArgsConstructor
-public class UserEntity {
+public class ChatRoomEntity {
 
   @Column(name = "ID")
-  private String id;
-  @Column(name = "PW")
-  private String pw;
-  @Column(name = "NICKNAME")
-  private String nickname;
+  private long id;
 
 }

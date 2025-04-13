@@ -9,20 +9,14 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "chat")
+@Table(name = "chat_member")
 @Getter
 @NoArgsConstructor
-public class ChatEntity {
+public class ChatMemberEntity {
 
-  @Column(name = "CHAT_ID")
-  private long chatId;
   @Column(name = "ROOM_ID")
   private long roomId;
-  @Column(name = "WRITER_ID")
-  private String writerId;
-  @Column(name = "WRITE_TIME")
-  private LocalDateTime writeTime;
-  @Column(name = "CONTENT")
-  private String content;
+  @Column(name = "MEMBER_ID")
+  private String memberId;
 
 }
