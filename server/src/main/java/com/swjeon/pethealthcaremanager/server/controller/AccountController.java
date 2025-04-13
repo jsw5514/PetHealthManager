@@ -15,8 +15,8 @@ public class AccountController {
 
     //id 중복확인
     @RequestMapping(value = "/checkDuplicateId", method = {RequestMethod.GET, RequestMethod.POST})
-    public String checkDuplicateId(@RequestParam("id") String id) {
-        return "not yet implemented";//TODO not yet implemented
+    public boolean checkDuplicateId(@RequestParam("id") String id) {
+        return usersService.checkDuplicateId(id);
     }
 
     //회원가입
