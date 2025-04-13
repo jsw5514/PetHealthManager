@@ -16,9 +16,9 @@ public class ChatEntity {
 
   @Id
   @Column(name = "CHAT_ID")
-  private long chatId;
+  private int chatId;
   @Column(name = "ROOM_ID")
-  private long roomId;
+  private int roomId;
   @Column(name = "WRITER_ID")
   private String writerId;
   @Column(name = "WRITE_TIME")

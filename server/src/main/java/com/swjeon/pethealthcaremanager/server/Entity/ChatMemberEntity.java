@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class ChatMemberEntity {
   @Id
   @Column(name = "ROOM_ID")
-  private long roomId;
+  private int roomId;
   @Id
   @Column(name = "MEMBER_ID")
   private String memberId;

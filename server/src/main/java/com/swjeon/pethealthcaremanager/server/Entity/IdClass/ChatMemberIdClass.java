@@ -5,11 +5,11 @@ import java.util.Objects;
 
 //JPA에서의 복합 키 사용을 위한 클래스
 public class ChatMemberIdClass implements Serializable {
-    private long roomId;
+    private int roomId;
     private String memberId;
 
     ChatMemberIdClass(){}
-    ChatMemberIdClass(long roomId, String memberId) {
+    ChatMemberIdClass(int roomId, String memberId) {
         this.roomId = roomId;
         this.memberId = memberId;
     }
@@ -38,7 +38,7 @@ public class ChatMemberIdClass implements Serializable {
         return roomId;
     }
 
-    public void setRoomId(long roomId) {
+    public void setRoomId(int roomId) {
         this.roomId = roomId;
     }
 }

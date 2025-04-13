@@ -16,6 +16,6 @@ public class ChatRoomEntity {
 
   @Id
   @Column(name = "ID")
-  private long id;
+  private int id;
 
 }
