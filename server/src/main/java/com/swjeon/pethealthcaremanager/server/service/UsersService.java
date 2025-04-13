@@ -36,4 +36,16 @@ public class UsersService {
             return true;
         }
     }
+
+    public boolean login(String id, String password) {
+        Optional<UsersEntity> optionalUser = usersRepository.findById(id);
+
+        //id 검사
+        if(optionalUser.isPresent()){
+            UsersEntity user = optionalUser.get();
+            return user.getPw().equals(password); //비밀번호 검사 및 결과 리턴
+        }
+        else
+            return false;
+    }
 }
