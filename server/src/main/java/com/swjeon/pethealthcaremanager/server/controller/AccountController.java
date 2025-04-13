@@ -2,10 +2,8 @@ package com.swjeon.pethealthcaremanager.server.controller;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
-public class ServerController {
+public class AccountController {
 
     @GetMapping("/")
     public String index() {
