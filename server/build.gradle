@@ -25,6 +25,10 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.24'
 	compileOnly 'org.projectlombok:lombok:1.18.24'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	//for DB
+	implementation 'mysql:mysql-connector-java:8.0.41'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 }
 
 tasks.named('test') {
