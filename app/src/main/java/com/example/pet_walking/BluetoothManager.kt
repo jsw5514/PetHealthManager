@@ -58,30 +58,37 @@ class BluetoothManager(
 
     private fun listenForData() {
         val buffer = ByteArray(1024)
+        val stringBuilder = StringBuilder()
 
         try {
             while (true) {
                 val bytes = inputStream?.read(buffer) ?: break
-                val incoming = String(buffer, 0, bytes).trim()
-                Log.d("BluetoothManager", "Received: $incoming")
+                val incoming = String(buffer, 0, bytes)
+                stringBuilder.append(incoming)
 
-                val parts = incoming.split(",")
-                if (parts.size == 5) {
-                    val lat = parts[0].toDoubleOrNull()
-                    val lon = parts[1].toDoubleOrNull()
-                    val accX = parts[2].toFloatOrNull()
-                    val accY = parts[3].toFloatOrNull()
-                    val accZ = parts[4].toFloatOrNull()
+                var index: Int
+                while (stringBuilder.indexOf("\n").also { index = it } != -1) {
+                    val fullLine = stringBuilder.substring(0, index).trim()
+                    stringBuilder.delete(0, index + 1)
 
-                    if (lat != null && lon != null && accX != null && accY != null && accZ != null) {
-                        onDataReceived(lat, lon, accX, accY, accZ)
+                    Log.d("BluetoothManager", "Received line: $fullLine")
+                    val parts = fullLine.split(",")
+                    if (parts.size == 5) {
+                        val lat = parts[0].toDoubleOrNull()
+                        val lon = parts[1].toDoubleOrNull()
+                        val accX = parts[2].toFloatOrNull()
+                        val accY = parts[3].toFloatOrNull()
+                        val accZ = parts[4].toFloatOrNull()
+
+                        if (lat != null && lon != null && accX != null && accY != null && accZ != null) {
+                            onDataReceived(lat, lon, accX, accY, accZ)
+                        }
                     }
                 }
             }
         } catch (e: Exception) {
             Log.e("BluetoothManager", "Error while reading data: ${e.message}")
             onConnectionStatusChanged(false, "데이터 수신 중 오류 발생")
-            e.printStackTrace()
         }
     }
 
