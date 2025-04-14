@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.pet_walking.HomeFragment"
+        android:label="홈"
+        tools:layout="@layout/home_fragment" />
+
+    <fragment
+        android:id="@+id/runningFragment"
+        android:name="com.example.pet_walking.RunningFragment"
+        android:label="런닝"
+        tools:layout="@layout/running_fragment" />
+
+    <fragment
+        android:id="@+id/userFragment"
+        android:name="com.example.pet_walking.UserFragment"
+        android:label="사용자"
+        tools:layout="@layout/user_fragment" />
+
+    <fragment
+        android:id="@+id/statisticsFragment"
+        android:name="com.example.pet_walking.StatisticsFragment"
+        android:label="통계"
+        tools:layout="@layout/statistics_fragment" />
+
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.example.pet_walking.ChatFragment"
+        android:label="채팅"
+        tools:layout="@layout/chat_fragment" />
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.pet_walking.MapFragment"
+        android:label="지도"
+        tools:layout="@layout/map_fragment" />
+    <fragment
+        android:id="@+id/goalFragment"
+        android:name="com.example.pet_walking.GoalFragment"
+        android:label="목표"
+        tools:layout="@layout/goal_fragment" />
+
+
+</navigation>
