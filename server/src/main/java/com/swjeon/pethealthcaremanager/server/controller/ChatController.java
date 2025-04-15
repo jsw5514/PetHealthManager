@@ -1,7 +1,6 @@
 package com.swjeon.pethealthcaremanager.server.controller;
 
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
 
 @RestController
@@ -40,7 +39,7 @@ public class ChatController {
         return "not yet implemented"; //TODO not yet implemented
     }
 
-    /**
+    /** 채팅방 생성 함수
      * @param creatorId 채팅방 생성자 id
      * @return 생성된 채팅방 id(int,생성 실패시 0)
      */
@@ -49,7 +48,7 @@ public class ChatController {
         return "not yet implemented"; //TODO not yet implemented
     }
 
-    /**
+    /** 채팅 맴버를 채팅방에 초대하는 함수
      * @param roomId 초대할 채팅방 id
      * @param memberId 초대할 사람의 id
      * @return 성공여부(boolean)
@@ -59,8 +58,22 @@ public class ChatController {
         return "not yet implemented"; //TODO not yet implemented
     }
 
+    /** 채팅방 나가기 함수
+     * @param roomId 채팅방 id
+     * @param memberId 나갈 맴버 id
+     * @return 성공여부(boolean)
+     */
     @PostMapping("/leaveChatRoom")
     public String leaveChatRoom(@RequestParam("roomId") int roomId, @RequestParam("memberId") String memberId) {
+        return "not yet implemented"; //TODO not yet implemented
+    }
+
+    /** 채팅방 맴버 가져오기 함수
+     * @param roomId 채팅방 id
+     * @return 채팅방 맴버 닉네임 리스트(ArrayList<String>)
+     */
+    @PostMapping("/getChatMember")
+    public String getChatMember(@RequestParam("roomId") int roomId) {
         return "not yet implemented"; //TODO not yet implemented
     }
 }
