@@ -58,4 +58,9 @@ public class ChatController {
     public String inviteChatMember(@RequestParam("roomId") int roomId, @RequestParam("memberId") String memberId) {
         return "not yet implemented"; //TODO not yet implemented
     }
+
+    @PostMapping("/leaveChatRoom")
+    public String leaveChatRoom(@RequestParam("roomId") int roomId, @RequestParam("memberId") String memberId) {
+        return "not yet implemented"; //TODO not yet implemented
+    }
 }
