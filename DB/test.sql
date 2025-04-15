@@ -10,6 +10,12 @@ VALUES
 (2, 'user4', 'text', '/texts/test_message.txt'),
 (3, 'user5', 'audio', '/audios/example3.mp3');
 
+-- 데이터 출력용
+SELECT * FROM USER;
+SELECT * FROM CHAT_ROOM;
+SELECT * FROM CHAT_MEMBER;
+SELECT * FROM CHAT;
+
 -- 모든 데이터 삭제
 DROP TABLE CHAT_MEMBER;
 DROP TABLE CHAT;
