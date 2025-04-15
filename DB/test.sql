@@ -11,7 +11,7 @@ VALUES
 (3, 'user5', 'audio', '/audios/example3.mp3');
 
 -- 데이터 출력용
-SELECT * FROM USER;
+SELECT * FROM USERS;
 SELECT * FROM CHAT_ROOM;
 SELECT * FROM CHAT_MEMBER;
 SELECT * FROM CHAT;
