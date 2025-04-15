@@ -1,10 +1,19 @@
 package com.swjeon.pethealthcaremanager.server.controller;
 
+import com.swjeon.pethealthcaremanager.server.service.ChatService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
 @RestController
 public class ChatController {
+    private final ChatService chatService;
+
+    @Autowired
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
+    }
+
     /** 채팅 업로드 함수
      * @param roomId 채팅방 id
      * @param writerId 채팅 작성자 id
@@ -14,14 +23,14 @@ public class ChatController {
      * @return 채팅 업로드 성공여부(boolean)
      */
     @PostMapping("/uploadChat")
-    public String uploadChat(
+    public boolean uploadChat(
             @RequestParam("roomId") int roomId,
             @RequestParam("writerId") String writerId,
             @RequestParam("writeTime") LocalDateTime writeTime,
             @RequestParam("contentType") String contentType,
             @RequestParam("content") String content)
     {
-        return "not yet implemented"; //TODO not yet implemented
+        return chatService.uploadChat(roomId, writerId, writeTime, contentType, content);
     }
 
     /** 채팅 내용 갱신 함수
