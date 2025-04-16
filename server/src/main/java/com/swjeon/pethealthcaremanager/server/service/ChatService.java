@@ -53,7 +53,6 @@ public class ChatService {
     public ArrayList<ChatDTO> downloadChat(int roomId, LocalDateTime latestTimestamp) {
         //db에서 파일 경로 및 기타 정보 불러오기
         List<ChatEntity> chatList = chatRepository.getChatEntitiesByRoomIdAfter(roomId,latestTimestamp);
-        ArrayList<ChatEntity> chatArrayList = new ArrayList<>(chatList);
         ArrayList<ChatDTO> chatDTOArrayList = new ArrayList<>();
 
         //채팅 파일 불러오기
@@ -66,6 +65,6 @@ public class ChatService {
             chatContent = FileService.loadChat(chatFileName);
             chatDTOArrayList.add(new ChatDTO(chatEntity, chatContent));
         }
-        return chatDTOArrayList;
+        return chatDTOArrayList; //TODO roomId만 나오는 버그
     }
 }
