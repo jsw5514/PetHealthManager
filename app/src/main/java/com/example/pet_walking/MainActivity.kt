@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -29,14 +30,30 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        UserRepository.loadFromPreferences(this)//유저 데이터 로딩
         PetRepository.loadFromPreferences(this)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // 📌 네비게이션 바 연결
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
         val navController = navHostFragment?.navController
+        // 🔐 로그인 여부 확인
+        if (UserRepository.getCurrentUser() == null) {
+            navController?.navigate(R.id.loginFragment)
+            // 로그인 전에는 BottomNavigationView 숨김 처리
+            binding.bottomNavigationView.visibility = View.GONE
+        } else {
+            navController?.let {
+                binding.bottomNavigationView.setupWithNavController(it)
+                binding.bottomNavigationView.visibility = View.VISIBLE
+            }
+        }
         navController?.let { binding.bottomNavigationView.setupWithNavController(it) }
+
+
+
 
         // ✅ 블루투스 매니저 초기화
         bluetoothManager = BluetoothManager(

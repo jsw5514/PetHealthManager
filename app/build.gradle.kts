@@ -1,7 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("androidx.navigation.safeargs.kotlin")
 }
+
+
 
 android {
     namespace = "com.example.pet_walking"
@@ -48,7 +51,7 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
-
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
     // 네이버 지도는 일단 제외하거나 수동 .aar 설치로
     implementation("com.naver.maps:map-sdk:3.21.0")

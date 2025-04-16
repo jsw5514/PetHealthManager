@@ -45,6 +45,14 @@ class UserFragment : Fragment() {
         userName = view.findViewById(R.id.userName)
         userImage = view.findViewById(R.id.userImage)
 
+        // ✅ 로그인한 유저 정보 가져오기
+        val user = UserRepository.getCurrentUser()
+        if (user != null) {
+            userName.text = "👤 ${user.username} (${user.userId})"
+        } else {
+            userName.text = "로그인 정보 없음"
+        }
+
         inputForm = view.findViewById(R.id.inputForm)
         nameInput = view.findViewById(R.id.nameInput)
         ageInput = view.findViewById(R.id.ageInput)
@@ -109,7 +117,9 @@ class UserFragment : Fragment() {
             )
 
             PetRepository.addProfile(profile)
+            UserRepository.addPetToCurrentUser(profile.id)
             PetRepository.saveToPreferences(requireContext()) // ✅ 저장
+            UserRepository.saveToPreferences(requireContext()) // ✅ 유저에 펫 ID 저장
             petContainer.addView(createPetProfileView(profile))
             inputForm.visibility = View.GONE
             clearInputs()
@@ -125,6 +135,8 @@ class UserFragment : Fragment() {
                     toDelete.add(uuid)
                 }
             }
+
+            val currentUser = UserRepository.getCurrentUser()
             toDelete.forEach { uuid ->
                 for (i in 0 until petContainer.childCount) {
                     val view = petContainer.getChildAt(i)
@@ -135,13 +147,19 @@ class UserFragment : Fragment() {
                     }
                 }
                 PetRepository.removeProfile(uuid)
+                currentUser?.petIds?.remove(uuid)
             }
-            PetRepository.saveToPreferences(requireContext()) // ✅ 삭제 후 저장
+
+            PetRepository.saveToPreferences(requireContext())
+            UserRepository.saveToPreferences(requireContext())
         }
 
-        // ✅ 저장된 모든 프로필을 UI에 다시 표시
-        PetRepository.getAllProfiles().forEach { profile ->
-            petContainer.addView(createPetProfileView(profile))
+        // ✅ 현재 유저의 펫 프로필만 UI에 표시
+        val currentUser = UserRepository.getCurrentUser()
+        currentUser?.petIds?.forEach { petId ->
+            PetRepository.getProfile(petId)?.let { pet ->
+                petContainer.addView(createPetProfileView(pet))
+            }
         }
 
         return view

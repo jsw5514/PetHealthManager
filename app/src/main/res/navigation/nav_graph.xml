@@ -2,8 +2,34 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/loginFragment">
 
+    <!-- 로그인 -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.pet_walking.LoginFragment"
+        android:label="로그인"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_userFragment"
+            app:destination="@id/userFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+    </fragment>
+
+    <!-- 회원가입 -->
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.pet_walking.RegisterFragment"
+        android:label="회원가입"
+        tools:layout="@layout/fragment_register" >
+        <action
+            android:id="@+id/action_registerFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
+    <!-- 메인 기능 프래그먼트들 -->
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.pet_walking.HomeFragment"
@@ -29,21 +55,76 @@
         tools:layout="@layout/statistics_fragment" />
 
     <fragment
-        android:id="@+id/chatFragment"
-        android:name="com.example.pet_walking.ChatFragment"
-        android:label="채팅"
-        tools:layout="@layout/chat_fragment" />
-
-    <fragment
         android:id="@+id/mapFragment"
         android:name="com.example.pet_walking.MapFragment"
         android:label="지도"
         tools:layout="@layout/map_fragment" />
+
     <fragment
         android:id="@+id/goalFragment"
         android:name="com.example.pet_walking.GoalFragment"
         android:label="목표"
         tools:layout="@layout/goal_fragment" />
 
+    <!-- ✅ 채팅방 목록 Fragment -->
+    <fragment
+        android:id="@+id/chatRoomListFragment"
+        android:name="com.example.pet_walking.chat.ChatRoomListFragment"
+        android:label="채팅방 목록"
+        tools:layout="@layout/fragment_chat_room_list">
+
+        <!-- 채팅방 입장 -->
+        <action
+            android:id="@+id/action_chatRoomListFragment_to_chatRoomFragment"
+            app:destination="@id/chatRoomFragment" />
+
+        <!-- 채팅방 생성 -->
+        <action
+            android:id="@+id/action_chatRoomListFragment_to_createChatRoomFragment"
+            app:destination="@id/createChatRoomFragment" />
+
+        <!-- 채팅방 참여 -->
+        <action
+            android:id="@+id/action_chatRoomListFragment_to_joinChatRoomFragment"
+            app:destination="@id/joinChatRoomFragment" />
+    </fragment>
+
+    <!-- ✅ 채팅방 Fragment -->
+    <fragment
+        android:id="@+id/chatRoomFragment"
+        android:name="com.example.pet_walking.chat.ChatRoomFragment"
+        android:label="채팅방"
+        tools:layout="@layout/fragment_chat_room">
+
+        <argument
+            android:name="roomId"
+            app:argType="integer" />
+        <argument
+            android:name="userId"
+            app:argType="string" />
+    </fragment>
+
+    <!-- ✅ 채팅방 생성 Fragment -->
+    <fragment
+        android:id="@+id/createChatRoomFragment"
+        android:name="com.example.pet_walking.chat.CreateChatRoomFragment"
+        android:label="채팅방 생성"
+        tools:layout="@layout/fragment_create_chat_room">
+
+    <action
+        android:id="@+id/action_createChatRoomFragment_to_chatRoomFragment"
+        app:destination="@id/chatRoomFragment" />
+    </fragment>
+
+    <!-- ✅ 채팅방 참여 Fragment -->
+    <fragment
+        android:id="@+id/joinChatRoomFragment"
+        android:name="com.example.pet_walking.chat.JoinChatRoomFragment"
+        android:label="채팅방 참여"
+        tools:layout="@layout/fragment_join_chat_room" >
+        <action
+            android:id="@+id/action_joinChatRoomFragment_to_chatRoomFragment"
+            app:destination="@id/chatRoomFragment" />
+    </fragment>
 
 </navigation>

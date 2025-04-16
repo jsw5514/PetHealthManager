@@ -26,8 +26,8 @@ class StatisticsFragment : Fragment() {
     private lateinit var barChart: BarChart
     private var currentPeriod = "daily"
 
-    // 프로필별 통계 저장소
-    private val profileStatsMap = mutableMapOf<UUID, ProfileStats>()
+    // ✅ 유저 → 펫 → 통계 구조
+    private val userStatsMap = mutableMapOf<String, MutableMap<UUID, ProfileStats>>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,14 +43,15 @@ class StatisticsFragment : Fragment() {
         return binding.root
     }
 
-    // ✅ SharedStatsRepository 기반으로 통계 업데이트
+    // ✅ 통계 갱신
     fun updateStats() {
         val currentPet = PetRepository.getCurrentPet() ?: return
+        val userId = UserRepository.getCurrentUser()?.userId ?: return
         val petId = currentPet.id
 
-        val stats = profileStatsMap.getOrPut(petId) { ProfileStats() }
+        val petMap = userStatsMap.getOrPut(userId) { mutableMapOf() }
+        val stats = petMap.getOrPut(petId) { ProfileStats() }
 
-        // SharedStatsRepository의 값을 반영
         stats.totalDistance = SharedStatsRepository.totalDistance
         stats.totalCalories = SharedStatsRepository.totalCalories
 
@@ -61,9 +62,12 @@ class StatisticsFragment : Fragment() {
         updateUI()
     }
 
+    // ✅ UI 업데이트
     private fun updateUI() {
         val currentPet = PetRepository.getCurrentPet() ?: return
-        val stats = profileStatsMap[currentPet.id] ?: return
+        val userId = UserRepository.getCurrentUser()?.userId ?: return
+
+        val stats = userStatsMap[userId]?.get(currentPet.id) ?: return
 
         binding.distanceTextView.text = "총 이동 거리: %.2f m".format(stats.totalDistance)
         binding.calorieTextView.text = "소모 칼로리: %.2f kcal".format(stats.totalCalories)
@@ -71,6 +75,7 @@ class StatisticsFragment : Fragment() {
         updateChartData(stats.getMapForPeriod(currentPeriod))
     }
 
+    // ✅ 현재 기간 기준 키 반환
     private fun getKeyForPeriod(period: String): String {
         val now = LocalDateTime.now()
         return when (period) {
@@ -82,6 +87,7 @@ class StatisticsFragment : Fragment() {
         }
     }
 
+    // ✅ 차트 데이터 갱신
     private fun updateChartData(dataMap: Map<String, Double>) {
         val (entries, labels) = convertToBarEntries(dataMap)
 
@@ -107,6 +113,7 @@ class StatisticsFragment : Fragment() {
         return Pair(entries, labels)
     }
 
+    // ✅ 스피너 구성
     private fun setupSpinner() {
         val adapter = ArrayAdapter.createFromResource(
             requireContext(),
@@ -132,12 +139,12 @@ class StatisticsFragment : Fragment() {
         }
     }
 
+    // ✅ 바차트 설정
     private fun setupBarChart() {
         barChart.apply {
             description.isEnabled = false
             setDrawValueAboveBar(true)
             setFitBars(true)
-
             axisLeft.axisMinimum = 0f
             axisRight.isEnabled = false
 
@@ -153,6 +160,7 @@ class StatisticsFragment : Fragment() {
         }
     }
 
+    // ✅ 통계 저장 데이터 클래스
     data class ProfileStats(
         var totalDistance: Double = 0.0,
         var totalCalories: Double = 0.0,

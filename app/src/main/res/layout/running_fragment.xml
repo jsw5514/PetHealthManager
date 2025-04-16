@@ -53,4 +53,46 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="32dp" />
 
+    <!-- 러닝 요약 캡처용 레이아웃 -->
+    <LinearLayout
+        android:id="@+id/runSummaryLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#FAFAFA"
+        android:padding="16dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/summaryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🏃‍ 러닝 요약"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/summaryDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="총 거리: 0.00 km" />
+
+        <TextView
+            android:id="@+id/summaryCalories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="소모 칼로리: 0 kcal" />
+
+        <TextView
+            android:id="@+id/summaryTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="운동 시간: 0분" />
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
