@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,git,java,maven,eclipse,intellij,gradle,netbeans,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,git,java,maven,eclipse,intellij,gradle,netbeans,visualstudiocode
 
+# data file
+/storage/chat/*
+
 ### Eclipse ###
 .metadata
 bin/
