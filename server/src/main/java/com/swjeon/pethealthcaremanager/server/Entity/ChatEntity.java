@@ -4,12 +4,15 @@ package com.swjeon.pethealthcaremanager.server.Entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 
 @Entity
 @Table(name = "chat")
 @Getter
+@Setter
 @NoArgsConstructor
 public class ChatEntity {
 
