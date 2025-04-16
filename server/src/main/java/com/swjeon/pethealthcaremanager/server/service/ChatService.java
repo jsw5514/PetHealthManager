@@ -2,12 +2,15 @@ package com.swjeon.pethealthcaremanager.server.service;
 
 import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRepository;
+import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ChatService {
@@ -47,4 +50,22 @@ public class ChatService {
         return true;
     }
 
+    public ArrayList<ChatDTO> downloadChat(int roomId, LocalDateTime latestTimestamp) {
+        //db에서 파일 경로 및 기타 정보 불러오기
+        List<ChatEntity> chatList = chatRepository.getChatEntitiesByRoomIdAfter(roomId,latestTimestamp);
+        ArrayList<ChatEntity> chatArrayList = new ArrayList<>(chatList);
+        ArrayList<ChatDTO> chatDTOArrayList = new ArrayList<>();
+
+        //채팅 파일 불러오기
+        String chatFileName = null;
+        String chatTimeString = null;
+        String chatContent;
+        for(ChatEntity chatEntity : chatList){
+            chatTimeString = chatEntity.getWriteTime().toString().replace(":","-");
+            chatFileName = chatEntity.getWriterId() + "_" + chatEntity.getRoomId() + "_" + chatTimeString + ".txt";
+            chatContent = FileService.loadChat(chatFileName);
+            chatDTOArrayList.add(new ChatDTO(chatEntity, chatContent));
+        }
+        return chatDTOArrayList;
+    }
 }

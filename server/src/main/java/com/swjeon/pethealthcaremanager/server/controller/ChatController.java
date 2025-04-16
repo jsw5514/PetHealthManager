@@ -1,10 +1,14 @@
 package com.swjeon.pethealthcaremanager.server.controller;
 
+import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import com.swjeon.pethealthcaremanager.server.service.ChatService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
+@Slf4j
 @RestController
 public class ChatController {
     private final ChatService chatService;
@@ -35,17 +39,17 @@ public class ChatController {
 
     /** 채팅 내용 갱신 함수
      * @param roomId 채팅방 id
-     * @param latestTimestamp 마지막으로 데이터를 갱신한 시점
-     * @return 갱신된 채팅 내용(json 객체로 반환)
-     *          roomId: 채팅방 Id
+     * @param latestTimestamp 마지막으로 데이터를 갱신한 시점, 데이터를 갱신한 적이 없는 경우 생략
+     * @return 갱신된 채팅 내용(json으로 반환, 실패시 null)
      *          contentList: 채팅 내용 배열(json 배열)
      *              writerNickname: 작성자 닉네임
      *              contentType: 채팅 내용 데이터 타입
      *              content: 채팅내용(바이너리 데이터는 Base64 인코딩 후 전송)
      */
     @PostMapping("/downloadChat")
-    public String downloadChat(@RequestParam("roomId") int roomId, @RequestParam("latestTimestamp") LocalDateTime latestTimestamp) {
-        return "not yet implemented"; //TODO not yet implemented
+    public ArrayList<ChatDTO> downloadChat(@RequestParam("roomId") int roomId, @RequestParam(value = "latestTimestamp", required = false) LocalDateTime latestTimestamp) {
+        log.info("downloadChat roomId={}, latestTimestamp={}", roomId, latestTimestamp);
+        return chatService.downloadChat(roomId,latestTimestamp);
     }
 
     /** 채팅방 생성 함수

@@ -1,5 +1,6 @@
 package com.swjeon.pethealthcaremanager.server.service;
 
+import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +13,7 @@ public class FileService {
     private static final String CHAT_STORAGE=System.getProperty("user.dir")+"/storage/chat";
 
 
-    static boolean save(String content, String savePath) {
+    private static boolean save(String content, String savePath) {
         File file = new File(savePath);
 
         try{
@@ -33,5 +34,9 @@ public class FileService {
         String chatPath = CHAT_STORAGE + "/" + fileName;
         boolean isSaved = save(content, chatPath);
         return isSaved ? chatPath : null;
+    }
+
+    public static String loadChat(String chatFileName) {
+        return "not yet implemented"; //TODO not yet implemented
     }
 }
