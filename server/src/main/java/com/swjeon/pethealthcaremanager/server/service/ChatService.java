@@ -19,7 +19,15 @@ public class ChatService {
         this.chatRepository = chatRepository;
     }
 
-    public boolean uploadChat(int roomId, String writerId, LocalDateTime writeTime, String contentType, String content) 
+    /** 채팅 업로드 함수
+     * @param roomId 채팅방 id
+     * @param writerId 작성자 id
+     * @param writeTime 작성시간
+     * @param contentType 채팅 내용의 데이터 타입
+     * @param content 채팅 내용
+     * @return 업로드 성공 여부
+     */
+    public boolean uploadChat(int roomId, String writerId, LocalDateTime writeTime, String contentType, String content)
     {
         //채팅 내용 파일로 저장
         final String timeString = writeTime.toString().replace(":","-");
