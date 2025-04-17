@@ -5,9 +5,8 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -28,43 +27,11 @@ class HomeFragment : Fragment() {
     ): View {
         _binding = HomeFragmentBinding.inflate(inflater, container, false)
 
-        // ✅ BluetoothManager 초기화
-        bluetoothManager = BluetoothManager(
-            onDataReceived = { lat, lon, accX, accY, accZ ->
-                (activity as? MainActivity)?.processReceivedData(lat, lon, accX, accY, accZ)
-            },
-            onConnectionStatusChanged = { isConnected, message ->
-                requireActivity().runOnUiThread {
-                    updateBluetoothStatus(message, isConnected)
-                }
-            }
-        )
-
-        // 🔘 초기 상태 표시
-        updateBluetoothStatus("Disconnected", false)
-
-        // 🔘 상태 텍스트 클릭 → 블루투스 기기 선택 다이얼로그 표시
-        binding.bluetoothStatusTextView.setOnClickListener {
-            showBluetoothDeviceDialog { device ->
-                bluetoothManager.connectToDevice(
-                    device,
-                    onSuccess = {
-                        Toast.makeText(requireContext(), "✅ 블루투스 연결 성공", Toast.LENGTH_SHORT).show()
-                        bluetoothManager.startListening()
-                    },
-                    onFailure = {
-                        Toast.makeText(requireContext(), "❌ 블루투스 연결 실패", Toast.LENGTH_SHORT).show()
-                        updateBluetoothStatus("Connection Failed", false)
-                    }
-                )
-            }
-        }
-
         bluetoothManager = BluetoothManager(
             onDataReceived = { lat, lon, accX, accY, accZ ->
                 (activity as? MainActivity)?.processReceivedData(lat, lon, accX, accY, accZ)
 
-                // ✅ 로우데이터 표시
+                // ✅ 실시간 데이터 표시
                 requireActivity().runOnUiThread {
                     binding.rawDataTextView.text = buildString {
                         append("📡 실시간 수신 데이터\n")
@@ -79,8 +46,6 @@ class HomeFragment : Fragment() {
             onConnectionStatusChanged = { isConnected, message ->
                 requireActivity().runOnUiThread {
                     updateBluetoothStatus(message, isConnected)
-
-                    // 연결 끊겼을 때도 초기화
                     if (!isConnected) {
                         binding.rawDataTextView.text = "📴 블루투스 연결이 해제되었습니다."
                     }
@@ -88,7 +53,31 @@ class HomeFragment : Fragment() {
             }
         )
 
-        // 🎯 주간 목표 설정 버튼
+        updateBluetoothStatus("Disconnected", false)
+
+        // 📡 상태 클릭 → 기기 선택
+        binding.bluetoothStatusTextView.setOnClickListener {
+            showBluetoothDeviceDialog { device ->
+                bluetoothManager.connectToDevice(
+                    device,
+                    onSuccess = {
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(requireContext(), "✅ 블루투스 연결 성공", Toast.LENGTH_SHORT).show()
+                            bluetoothManager.startListening()
+                        }
+                    },
+                    onFailure = {
+                        requireActivity().runOnUiThread {
+                            Log.e("HomeFragment", "블루투스 연결 실패")
+                            Toast.makeText(requireContext(), "❌ 블루투스 연결 실패", Toast.LENGTH_SHORT).show()
+                            updateBluetoothStatus("Connection Failed", false)
+                        }
+                    }
+                )
+            }
+        }
+
+        // 🎯 주간 목표 설정 이동
         binding.buttonSetWeeklyGoal.setOnClickListener {
             findNavController().navigate(R.id.goalFragment)
         }
@@ -145,7 +134,6 @@ class HomeFragment : Fragment() {
             binding.textViewCalories.text = "소모 칼로리: %.2f kcal".format(calories)
 
             binding.textViewGoalSummary.text = GoalRepository.getGoalSummary()
-
             val goalReached = GoalRepository.isGoalReached(km, calories)
             binding.textViewGoalStatus.text = if (goalReached) "달성 여부: ✅" else "달성 여부: ❌"
             binding.textViewGoalStatus.setTextColor(
@@ -154,13 +142,13 @@ class HomeFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateStats()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    override fun onResume() {
-        super.onResume()
-        updateStats() // 🔄 목표 요약, 거리/칼로리 최신 정보 반영
     }
 }
