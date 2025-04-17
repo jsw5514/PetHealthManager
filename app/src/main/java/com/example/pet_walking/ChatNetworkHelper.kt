@@ -8,7 +8,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 
 object ChatNetworkHelper {
     private val client = OkHttpClient()
-    private const val serverUrl = "http://10.0.2.2:8080"
+    private const val serverUrl = "서버 주소"
 
     // 메시지 업로드
     fun postJson(endpoint: String, json: JSONObject, callback: (Boolean) -> Unit) {
