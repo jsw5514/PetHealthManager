@@ -1,13 +1,18 @@
 package com.example.pet_walking
 
+import android.Manifest
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.pet_walking.bluetooth.BluetoothManager
@@ -21,17 +26,26 @@ class HomeFragment : Fragment() {
     private lateinit var bluetoothManager: BluetoothManager
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
+    // 🔒 런타임 권한
+    private val bluetoothPermissions = arrayOf(
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_CONNECT
+    )
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = HomeFragmentBinding.inflate(inflater, container, false)
 
+        // ✅ Android 12 이상 권한 체크
+        checkBluetoothPermissions()
+
+        // ✅ BluetoothManager 초기화
         bluetoothManager = BluetoothManager(
             onDataReceived = { lat, lon, accX, accY, accZ ->
                 (activity as? MainActivity)?.processReceivedData(lat, lon, accX, accY, accZ)
 
-                // ✅ 실시간 데이터 표시
                 requireActivity().runOnUiThread {
                     binding.rawDataTextView.text = buildString {
                         append("📡 실시간 수신 데이터\n")
@@ -55,7 +69,6 @@ class HomeFragment : Fragment() {
 
         updateBluetoothStatus("Disconnected", false)
 
-        // 📡 상태 클릭 → 기기 선택
         binding.bluetoothStatusTextView.setOnClickListener {
             showBluetoothDeviceDialog { device ->
                 bluetoothManager.connectToDevice(
@@ -68,7 +81,6 @@ class HomeFragment : Fragment() {
                     },
                     onFailure = {
                         requireActivity().runOnUiThread {
-                            Log.e("HomeFragment", "블루투스 연결 실패")
                             Toast.makeText(requireContext(), "❌ 블루투스 연결 실패", Toast.LENGTH_SHORT).show()
                             updateBluetoothStatus("Connection Failed", false)
                         }
@@ -77,7 +89,6 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // 🎯 주간 목표 설정 이동
         binding.buttonSetWeeklyGoal.setOnClickListener {
             findNavController().navigate(R.id.goalFragment)
         }
@@ -112,6 +123,17 @@ class HomeFragment : Fragment() {
             }
             .setNegativeButton("취소", null)
             .show()
+    }
+
+    private fun checkBluetoothPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val notGranted = bluetoothPermissions.any {
+                ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED
+            }
+            if (notGranted) {
+                ActivityCompat.requestPermissions(requireActivity(), bluetoothPermissions, 1001)
+            }
+        }
     }
 
     fun updateBluetoothStatus(status: String) {
