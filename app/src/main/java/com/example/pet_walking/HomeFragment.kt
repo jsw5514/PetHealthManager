@@ -60,6 +60,34 @@ class HomeFragment : Fragment() {
             }
         }
 
+        bluetoothManager = BluetoothManager(
+            onDataReceived = { lat, lon, accX, accY, accZ ->
+                (activity as? MainActivity)?.processReceivedData(lat, lon, accX, accY, accZ)
+
+                // ✅ 로우데이터 표시
+                requireActivity().runOnUiThread {
+                    binding.rawDataTextView.text = buildString {
+                        append("📡 실시간 수신 데이터\n")
+                        append("위도: $lat\n")
+                        append("경도: $lon\n")
+                        append("accX: $accX\n")
+                        append("accY: $accY\n")
+                        append("accZ: $accZ")
+                    }
+                }
+            },
+            onConnectionStatusChanged = { isConnected, message ->
+                requireActivity().runOnUiThread {
+                    updateBluetoothStatus(message, isConnected)
+
+                    // 연결 끊겼을 때도 초기화
+                    if (!isConnected) {
+                        binding.rawDataTextView.text = "📴 블루투스 연결이 해제되었습니다."
+                    }
+                }
+            }
+        )
+
         // 🎯 주간 목표 설정 버튼
         binding.buttonSetWeeklyGoal.setOnClickListener {
             findNavController().navigate(R.id.goalFragment)
