@@ -2,9 +2,7 @@ package com.example.pet_walking
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -34,6 +32,7 @@ class RegisterFragment : Fragment() {
         loginText = view.findViewById(R.id.textGoToLogin)
         checkIdButton = view.findViewById(R.id.buttonCheckId)
 
+        // ✅ ID 중복 확인 (GET)
         checkIdButton.setOnClickListener {
             val userId = userIdInput.text.toString()
             if (userId.isBlank()) {
@@ -41,7 +40,6 @@ class RegisterFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // 중복 체크는 GET 요청 (직접 요청 유지)
             val url = "http://10.0.2.2:8080/checkDuplicateId?id=$userId"
             ApiClient.get(
                 fullUrl = url,
@@ -81,31 +79,30 @@ class RegisterFragment : Fragment() {
             val json = JSONObject().apply {
                 put("id", userId)
                 put("password", password)
+                put("nickname", username)
             }
 
             ApiClient.post(
                 endpoint = "/signIn",
                 json = json,
                 onSuccess = { result ->
-                    if (result == "true") {
-                        uploadProfile(userId, username, birth, gender)
+                    requireActivity().runOnUiThread {
+                        if (result == "true") {
+                            uploadProfile(userId, username, birth, gender)
 
-                        val userProfile = UserProfile(
-                            username = username,
-                            birthdate = birth,
-                            gender = gender,
-                            userId = userId,
-                            password = password
-                        )
-                        UserRepository.registerUser(userProfile)
-                        UserRepository.saveToPreferences(requireContext())
+                            val userProfile = UserProfile(
+                                username = username,
+                                birthdate = birth,
+                                gender = gender,
+                                userId = userId,
+                                password = password
+                            )
+                            UserRepository.registerUser(userProfile)
+                            UserRepository.saveToPreferences(requireContext())
 
-                        requireActivity().runOnUiThread {
                             Toast.makeText(requireContext(), "회원가입 성공", Toast.LENGTH_SHORT).show()
                             findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
-                        }
-                    } else {
-                        requireActivity().runOnUiThread {
+                        } else {
                             Toast.makeText(requireContext(), "회원가입 실패", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -130,7 +127,7 @@ class RegisterFragment : Fragment() {
             put("uploaderId", userId)
             put("dataId", "userProfile")
             put("metaData", "name:$name,birth:$birth,gender:$gender")
-            put("data", "")
+            put("data", "") // ✅ 내용 없음 (text 전송 없음)
         }
 
         ApiClient.post(

@@ -40,17 +40,18 @@ class LoginFragment : Fragment() {
             }
 
             val json = JSONObject().apply {
-                put("id", userId) // 서버가 요구하는 key는 "id"
-                put("password", password)
+                put("id", userId)          // ✅ 명세에 따라 "id" 사용
+                put("password", password)  // ✅ 명세에 따라 "password" 사용
             }
 
             ApiClient.post(
                 endpoint = "/login",
                 json = json,
                 onSuccess = { result ->
-                    activity?.runOnUiThread {
+                    requireActivity().runOnUiThread {
                         if (result == "true") {
                             Toast.makeText(requireContext(), "로그인 성공!", Toast.LENGTH_SHORT).show()
+                            LoginSession.userId = userId
                             findNavController().navigate(R.id.action_loginFragment_to_userFragment)
                         } else {
                             Toast.makeText(requireContext(), "로그인 실패", Toast.LENGTH_SHORT).show()
@@ -58,7 +59,7 @@ class LoginFragment : Fragment() {
                     }
                 },
                 onFailure = { error ->
-                    activity?.runOnUiThread {
+                    requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
                     }
                 }
