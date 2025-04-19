@@ -34,10 +34,9 @@ void printData(Stream &serial){
   unsigned long now = millis(); //현재 시간 가져오기
   if(now >= time_before + OUTPUT_INTERVAL){
     time_before = now;
-    //TODO 출력형식 변경
-    //serial.print("----------\n"); //데이터 구분선 출력
     printGPS(serial);//gps 출력
     printAcc(serial);//가속도 출력
+    serial.write("#");
   }
 }
 
@@ -45,33 +44,24 @@ void printData(Stream &serial){
 //매개변수
 //serial : 출력할 시리얼 객체
 void printAcc(Stream &serial){
-  //serial.write("가속도 모듈 출력\n");
-  //serial.write("X: ");
   serial.write("<");
   serial.print(Read_Axis(X_axis));
   serial.write(">,<");
-  //serial.write("  Y: ");
   serial.print(Read_Axis(Y_axis));
   serial.write(">,<");
-  //serial.write("  Z: ");
   serial.print(Read_Axis(Z_axis));
   serial.write(">");
-  serial.write("\n");
 }
 
 //gps 출력 함수
 //매개변수
 //serial : 출력할 시리얼 객체
 void printGPS(Stream &serial){
-  //serial.write("gps 모듈 출력\n");
-  //serial.write("위도: ");
   serial.write("<");
   serial.write(gps_buf_latitude);
   serial.write(">,<");
-  //serial.write("  경도: ");
   serial.write(gps_buf_longitude);
   serial.write((">,"));
-  //serial.write("\n");
 }
 
 //가속도값 읽기 함수
@@ -145,13 +135,9 @@ void loop() {
 
   // 유효한 위치 데이터가 업데이트되었는지 확인
   if (gps.location.isUpdated()) {
-    //그대로 출력하는 대신 버퍼에 저장
+    //업데이트 된 위치 버퍼에 저장
     dtostrf(gps.location.lat(), 0, 6, gps_buf_latitude);//(number, width, precision, buffer)
     dtostrf(gps.location.lng(), 0, 6, gps_buf_longitude);//(number, width, precision, buffer)
-    // Serial.print("Latitude: ");
-    // Serial.println(gps.location.lat(), 6); //위도 소수점 6자리로 출력
-    // Serial.print("Longitude: ");
-    // Serial.println(gps.location.lng(), 6); //경도 소수점 6자리로 출력
   }
 
   //데이터 출력
