@@ -1,17 +1,15 @@
 package com.example.pet_walking
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import okhttp3.*
+import com.example.pet_walking.network.ApiClient
 import org.json.JSONObject
-import java.io.IOException
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 
 class RegisterFragment : Fragment() {
 
@@ -23,9 +21,6 @@ class RegisterFragment : Fragment() {
     private lateinit var registerButton: Button
     private lateinit var loginText: TextView
     private lateinit var checkIdButton: Button
-
-    private val client = OkHttpClient()
-    private val serverUrl = "http://10.0.2.2:8080"
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.fragment_register, container, false)
@@ -46,27 +41,25 @@ class RegisterFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val url = "$serverUrl/checkDuplicateId?id=$userId"
-            val request = Request.Builder().url(url).get().build()
-
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "서버 연결 실패", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    val body = response.body?.string()
-                    activity?.runOnUiThread {
-                        if (response.isSuccessful && body == "false") {
+            // 중복 체크는 GET 요청 (직접 요청 유지)
+            val url = "http://10.0.2.2:8080/checkDuplicateId?id=$userId"
+            ApiClient.get(
+                fullUrl = url,
+                onSuccess = { response ->
+                    requireActivity().runOnUiThread {
+                        if (response == "false") {
                             Toast.makeText(requireContext(), "사용 가능한 ID입니다.", Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(requireContext(), "이미 사용 중인 ID입니다.", Toast.LENGTH_SHORT).show()
                         }
                     }
+                },
+                onFailure = {
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), "서버 연결 실패", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            })
+            )
         }
 
         registerButton.setOnClickListener {
@@ -90,24 +83,11 @@ class RegisterFragment : Fragment() {
                 put("password", password)
             }
 
-            val mediaType = "application/json; charset=utf-8".toMediaType()
-            val requestBody = json.toString().toRequestBody(mediaType)
-
-            val request = Request.Builder()
-                .url("$serverUrl/signIn")
-                .post(requestBody)
-                .build()
-
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "서버 연결 실패", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    val body = response.body?.string()
-                    if (response.isSuccessful && body == "true") {
+            ApiClient.post(
+                endpoint = "/signIn",
+                json = json,
+                onSuccess = { result ->
+                    if (result == "true") {
                         uploadProfile(userId, username, birth, gender)
 
                         val userProfile = UserProfile(
@@ -120,17 +100,22 @@ class RegisterFragment : Fragment() {
                         UserRepository.registerUser(userProfile)
                         UserRepository.saveToPreferences(requireContext())
 
-                        activity?.runOnUiThread {
+                        requireActivity().runOnUiThread {
                             Toast.makeText(requireContext(), "회원가입 성공", Toast.LENGTH_SHORT).show()
                             findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
                         }
                     } else {
-                        activity?.runOnUiThread {
+                        requireActivity().runOnUiThread {
                             Toast.makeText(requireContext(), "회원가입 실패", Toast.LENGTH_SHORT).show()
                         }
                     }
+                },
+                onFailure = { error ->
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+                    }
                 }
-            })
+            )
         }
 
         loginText.setOnClickListener {
@@ -148,22 +133,11 @@ class RegisterFragment : Fragment() {
             put("data", "")
         }
 
-        val mediaType = "application/json; charset=utf-8".toMediaType()
-        val requestBody = json.toString().toRequestBody(mediaType)
-
-        val request = Request.Builder()
-            .url("$serverUrl/uploadData")
-            .post(requestBody)
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                // 실패 시 무시
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                // 성공 여부만 로깅해도 충분
-            }
-        })
+        ApiClient.post(
+            endpoint = "/uploadData",
+            json = json,
+            onSuccess = { Log.d("RegisterFragment", "프로필 업로드 성공") },
+            onFailure = { Log.e("RegisterFragment", "프로필 업로드 실패") }
+        )
     }
 }

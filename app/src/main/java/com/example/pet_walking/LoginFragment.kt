@@ -9,11 +9,8 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import okhttp3.*
+import com.example.pet_walking.network.ApiClient
 import org.json.JSONObject
-import java.io.IOException
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 
 class LoginFragment : Fragment() {
 
@@ -22,10 +19,10 @@ class LoginFragment : Fragment() {
     private lateinit var loginButton: Button
     private lateinit var joinButton: Button
 
-    private val client = OkHttpClient()
-    private val serverUrl = "http://10.0.2.2:8080"  // 💡 PC에서 실행 중인 서버: 에뮬레이터 기준 IP
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val view = inflater.inflate(R.layout.fragment_login, container, false)
 
         userIdInput = view.findViewById(R.id.userIdInput)
@@ -43,38 +40,29 @@ class LoginFragment : Fragment() {
             }
 
             val json = JSONObject().apply {
-                put("userid", userId)
+                put("id", userId) // 서버가 요구하는 key는 "id"
                 put("password", password)
             }
 
-            val mediaType = "application/json; charset=utf-8".toMediaType()
-            val requestBody = json.toString().toRequestBody(mediaType)
-
-            val request = Request.Builder()
-                .url("$serverUrl/login")
-                .post(requestBody)
-                .build()
-
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
+            ApiClient.post(
+                endpoint = "/login",
+                json = json,
+                onSuccess = { result ->
                     activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "서버 연결 실패", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    val body = response.body?.string()
-                    activity?.runOnUiThread {
-                        if (response.isSuccessful && body == "true") {
+                        if (result == "true") {
                             Toast.makeText(requireContext(), "로그인 성공!", Toast.LENGTH_SHORT).show()
-                            // ✅ 로컬 저장이 필요하다면 여기에 추가: UserRepository.login(userId, password)
                             findNavController().navigate(R.id.action_loginFragment_to_userFragment)
                         } else {
                             Toast.makeText(requireContext(), "로그인 실패", Toast.LENGTH_SHORT).show()
                         }
                     }
+                },
+                onFailure = { error ->
+                    activity?.runOnUiThread {
+                        Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+                    }
                 }
-            })
+            )
         }
 
         joinButton.setOnClickListener {
