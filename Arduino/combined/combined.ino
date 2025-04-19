@@ -35,9 +35,9 @@ void printData(Stream &serial){
   if(now >= time_before + OUTPUT_INTERVAL){
     time_before = now;
     //TODO 출력형식 변경
-    serial.print("----------\n"); //데이터 구분선 출력
-    printAcc(serial);//가속도 출력
+    //serial.print("----------\n"); //데이터 구분선 출력
     printGPS(serial);//gps 출력
+    printAcc(serial);//가속도 출력
   }
 }
 
@@ -45,13 +45,17 @@ void printData(Stream &serial){
 //매개변수
 //serial : 출력할 시리얼 객체
 void printAcc(Stream &serial){
-  serial.write("가속도 모듈 출력\n");
-  serial.write("X: ");
+  //serial.write("가속도 모듈 출력\n");
+  //serial.write("X: ");
+  serial.write("<");
   serial.print(Read_Axis(X_axis));
-  serial.write("  Y: ");
+  serial.write(">,<");
+  //serial.write("  Y: ");
   serial.print(Read_Axis(Y_axis));
-  serial.write("  Z: ");
+  serial.write(">,<");
+  //serial.write("  Z: ");
   serial.print(Read_Axis(Z_axis));
+  serial.write(">");
   serial.write("\n");
 }
 
@@ -59,12 +63,15 @@ void printAcc(Stream &serial){
 //매개변수
 //serial : 출력할 시리얼 객체
 void printGPS(Stream &serial){
-  serial.write("gps 모듈 출력\n");
-  serial.write("위도: ");
+  //serial.write("gps 모듈 출력\n");
+  //serial.write("위도: ");
+  serial.write("<");
   serial.write(gps_buf_latitude);
-  serial.write("  경도: ");
+  serial.write(">,<");
+  //serial.write("  경도: ");
   serial.write(gps_buf_longitude);
-  serial.write("\n");
+  serial.write((">,"));
+  //serial.write("\n");
 }
 
 //가속도값 읽기 함수
