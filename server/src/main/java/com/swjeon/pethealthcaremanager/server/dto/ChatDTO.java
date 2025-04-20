@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor
 
+//TODO 요구된 사양과 DTO 구현이 다름
 public class ChatDTO {
     @JsonProperty("chatId")
     private int chatId;

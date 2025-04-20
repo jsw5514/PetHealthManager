@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -27,13 +28,13 @@ public class ChatController {
      * @return 채팅 업로드 성공여부(boolean)
      */
     @PostMapping("/uploadChat")
-    public boolean uploadChat(
-            @RequestParam("roomId") int roomId,
-            @RequestParam("writerId") String writerId,
-            @RequestParam("writeTime") LocalDateTime writeTime,
-            @RequestParam("contentType") String contentType,
-            @RequestParam("content") String content)
+    public boolean uploadChat( @RequestBody Map<String, String> request)
     {
+        int roomId = Integer.parseInt(request.get("roomId"));
+        String writerId = request.get("writerId");
+        LocalDateTime writeTime = LocalDateTime.parse(request.get("writeTime"));
+        String contentType = request.get("contentType");
+        String content = request.get("content");
         return chatService.uploadChat(roomId, writerId, writeTime, contentType, content);
     }
 
