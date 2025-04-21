@@ -2,6 +2,7 @@ package com.swjeon.pethealthcaremanager.server.service;
 
 import com.swjeon.pethealthcaremanager.server.Entity.UsersEntity;
 import com.swjeon.pethealthcaremanager.server.Repository.UsersRepository;
+import com.swjeon.pethealthcaremanager.server.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,9 @@ public class UsersService {
         return usersRepository.existsById(id); //JPA 기본 제공 함수 사용
     }
 
-    public boolean signIn(String id, String password) {
+    public boolean signIn(UserDTO userDTO) {
+        String id = userDTO.getId();
+        String password = userDTO.getPassword();
         UsersEntity user;
 
         //id 중복 검사
@@ -37,7 +40,9 @@ public class UsersService {
         }
     }
 
-    public boolean login(String id, String password) {
+    public boolean login(UserDTO userDTO) {
+        String id = userDTO.getId();
+        String password = userDTO.getPassword();
         Optional<UsersEntity> optionalUser = usersRepository.findById(id);
 
         //id 검사

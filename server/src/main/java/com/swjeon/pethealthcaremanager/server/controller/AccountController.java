@@ -1,5 +1,6 @@
 package com.swjeon.pethealthcaremanager.server.controller;
 
+import com.swjeon.pethealthcaremanager.server.dto.UserDTO;
 import com.swjeon.pethealthcaremanager.server.service.UsersService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,19 +28,15 @@ public class AccountController {
 
     //회원가입
     @PostMapping("/signIn")
-    public boolean signIn(@RequestBody Map<String, String> request) {
-        String id = request.get("id");
-        String password = request.get("password");
-        log.info("signIn id " + id + " password " + password);
-        return usersService.signIn(id, password);
+    public boolean signIn(@RequestBody UserDTO signInUser) {
+        log.info("signIn id " + signInUser.getId() + " password " + signInUser.getPassword());
+        return usersService.signIn(signInUser);
     }
 
     //로그인
     @PostMapping("/login")
-    public boolean login(@RequestBody Map<String, String> request) {
-        String id = request.get("id");
-        String password = request.get("password");
-        log.info("Login attempt with id " + id + " and password " + password);
-        return usersService.login(id, password);
+    public boolean login(@RequestBody UserDTO loginUser) {
+        log.info("Login attempt with id " + loginUser.getId() + " and password " + loginUser.getPassword());
+        return usersService.login(loginUser);
     }
 }
