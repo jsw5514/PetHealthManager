@@ -6,24 +6,31 @@
 
         android:title="홈" />
 
+
+
+    <item
+        android:id="@+id/chatRoomListFragment"
+
+        android:title="채팅" />
+
+
+
     <item
         android:id="@+id/runningFragment"
 
         android:title="런닝" />
 
-    <item
-        android:id="@+id/userFragment"
-
-        android:title="사용자" />
 
     <item
         android:id="@+id/statisticsFragment"
 
         android:title="통계" />
 
-    <item
-        android:id="@+id/chatRoomListFragment"
 
-        android:title="채팅" />
+
+    <item
+        android:id="@+id/userFragment"
+
+        android:title="사용자" />
 
 </menu>

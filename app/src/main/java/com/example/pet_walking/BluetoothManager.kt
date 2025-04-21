@@ -77,7 +77,7 @@ class BluetoothManager(
                 stringBuilder.append(incoming)
 
                 var index: Int
-                while (stringBuilder.indexOf("\n").also { index = it } != -1) {
+                while (stringBuilder.indexOf("#").also { index = it } != -1) {
                     val fullLine = stringBuilder.substring(0, index).trim()
                     stringBuilder.delete(0, index + 1)
 

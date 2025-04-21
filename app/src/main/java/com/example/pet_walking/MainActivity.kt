@@ -40,18 +40,15 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
         val navController = navHostFragment?.navController
         // 🔐 로그인 여부 확인
-        if (UserRepository.getCurrentUser() == null) {
-            navController?.navigate(R.id.loginFragment)
-            // 로그인 전에는 BottomNavigationView 숨김 처리
-            binding.bottomNavigationView.visibility = View.GONE
-        } else {
-            navController?.let {
-                binding.bottomNavigationView.setupWithNavController(it)
+        navController?.let { nav ->
+            if (UserRepository.getCurrentUser() == null) {
+                nav.navigate(R.id.loginFragment)
+                binding.bottomNavigationView.visibility = View.GONE
+            } else {
+                binding.bottomNavigationView.setupWithNavController(nav)
                 binding.bottomNavigationView.visibility = View.VISIBLE
             }
         }
-        navController?.let { binding.bottomNavigationView.setupWithNavController(it) }
-
 
 
 
