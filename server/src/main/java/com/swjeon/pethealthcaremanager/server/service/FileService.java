@@ -8,10 +8,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+//외부에 노출되지 않는 유틸용 서비스
 public class FileService {
     private static final Logger log = LoggerFactory.getLogger(FileService.class.getSimpleName());
     //채팅 저장 경로
     private static final String CHAT_STORAGE=System.getProperty("user.dir")+"/storage/chat";
+    //일반 데이터 저장 경로
+    private static final String DATA_STORAGE=System.getProperty("user.dir")+"/storage/data";
     
     /** 파일 저장 함수
      * @param content 저장할 파일 내용
@@ -72,6 +75,21 @@ public class FileService {
         String chatPath = CHAT_STORAGE + "/" + chatFileName;
         String loadedContent = load(chatPath);
         log.debug(chatPath + " loaded content: " + loadedContent);
+        return loadedContent;
+    }
+
+    //데이터 저장
+    public static String saveData(String content, String fileName) {
+        String dataPath = DATA_STORAGE + "/" + fileName;
+        boolean isSaved = save(content, dataPath);
+        return isSaved ? dataPath : null;
+    }
+    
+    //데이터 불러오기
+    public static String loadData(String loadFileName) {
+        String dataPath = DATA_STORAGE + "/" + loadFileName;
+        String loadedContent = load(dataPath);
+        log.debug(dataPath + " loaded content: " + loadedContent);
         return loadedContent;
     }
 }
