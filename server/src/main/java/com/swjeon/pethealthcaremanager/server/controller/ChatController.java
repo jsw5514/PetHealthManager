@@ -43,6 +43,7 @@ public class ChatController {
      * @param latestTimestamp 마지막으로 데이터를 갱신한 시점, 데이터를 갱신한 적이 없는 경우 생략
      * @return 갱신된 채팅 내용(json으로 반환, 실패시 null)
      *          contentList: 채팅 내용 배열(json 배열)
+     *              writeTime: 작성 시간
      *              writerNickname: 작성자 닉네임
      *              contentType: 채팅 내용 데이터 타입
      *              content: 채팅내용(바이너리 데이터는 Base64 인코딩 후 전송)

@@ -36,8 +36,11 @@ public class ChatService {
         final String timeString = writeTime.toString().replace(":","-");
         final String fileName = writerId + "_" + roomId + "_" + timeString + ".txt";
         final String chatPath = FileService.saveChat(content, fileName);
-        if (chatPath == null)
+        if (chatPath == null){
+            log.error("채팅 내용 저장 실패");
             return false;
+        }
+            
 
         //파일 경로 및 나머지 데이터 db에 저장
         ChatEntity chatEntity = new ChatEntity();
