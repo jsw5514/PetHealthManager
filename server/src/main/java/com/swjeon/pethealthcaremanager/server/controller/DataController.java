@@ -1,6 +1,8 @@
 package com.swjeon.pethealthcaremanager.server.controller;
 
+import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -8,18 +10,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class DataController {
 
     /** 데이터 업로드 함수
-     * @param uploaderId 업로드하는 사람의 id
-     * @param dataId 업로더가 구분할 수 있도록 하는 데이터 식별자
-     * @param metaData 데이터 타입, 데이터 설명 등 데이터에 대한 데이터
-     * @param data 데이터 내용(바이너리 데이터는 Base64 인코딩 후 전송)
+     * @param dataDTO 데이터 객체
+     * ----dataDTO 구조----
+     * String uploaderId = 업로더 id
+     * String dataId = 데이터 식별자
+     *                 (같은 유저가 올린 데이터 사이에서 특정 데이터를 구별하기 위함, 클라이언트 임의로 설정
+     * String metaData = 데이터 종류 등 데이터에 대해 추가로 저장하고 싶은 정보
+     * String data = 데이터 자체(바이너리 데이터는 base64로 인코딩하여 전송)
+     * -------------------
      * @return 요청 성공여부(boolean)
      */
     @PostMapping("/uploadData")
-    public String uploadData(
-            @RequestParam("uploaderId") String uploaderId ,
-            @RequestParam("dataId") String dataId ,
-            @RequestParam("metaData") String metaData ,
-            @RequestParam("data") String data)
+    public String uploadData(@RequestBody DataDTO dataDTO)
     {
         return "not yet implemented"; //TODO not yet implemented
     }
