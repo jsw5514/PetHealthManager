@@ -1,6 +1,5 @@
 package com.swjeon.pethealthcaremanager.server.service;
 
-import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,9 +10,14 @@ import java.util.List;
 
 public class FileService {
     private static final Logger log = LoggerFactory.getLogger(FileService.class.getSimpleName());
+    //채팅 저장 경로
     private static final String CHAT_STORAGE=System.getProperty("user.dir")+"/storage/chat";
-
-
+    
+    /** 파일 저장 함수
+     * @param content 저장할 파일 내용
+     * @param savePath 저장경로
+     * @return 파일 저장 성공 여부
+     */
     private static boolean save(String content, String savePath) {
         File file = new File(savePath);
 
@@ -31,6 +35,10 @@ public class FileService {
         return true;
     }
 
+    /** 파일 불러오기 함수
+     * @param loadPath 불러올 파일 경로
+     * @return 파일 내용
+     */
     private static String load(String loadPath) {
         File file = new File(loadPath);
 
@@ -39,7 +47,7 @@ public class FileService {
             return null;
         }
         else {
-            log.info("file found. loadPath: " + loadPath);
+            log.debug("file found. loadPath: " + loadPath);
             try{
                 Path path = Path.of(loadPath);
                 List<String> lines = Files.readAllLines(path);
@@ -52,17 +60,18 @@ public class FileService {
         }
     }
 
+    //채팅 저장
     public static String saveChat(String content, String fileName) {
         String chatPath = CHAT_STORAGE + "/" + fileName;
         boolean isSaved = save(content, chatPath);
         return isSaved ? chatPath : null;
     }
 
+    //채팅 불러오기
     public static String loadChat(String chatFileName) {
         String chatPath = CHAT_STORAGE + "/" + chatFileName;
         String loadedContent = load(chatPath);
-        log.info(chatPath + " loaded content: " + loadedContent);
+        log.debug(chatPath + " loaded content: " + loadedContent);
         return loadedContent;
     }
-
 }
