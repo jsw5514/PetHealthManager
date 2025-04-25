@@ -9,12 +9,14 @@ VALUES
 (2, 'user3', 'video', '/videos/example2.mp4'),
 (2, 'user4', 'text', '/texts/test_message.txt'),
 (3, 'user5', 'audio', '/audios/example3.mp3');
+INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, DATA_PATH) VALUES ("testid", "testDataId", "just test data", "/path/for/test/data");
 
 -- 데이터 출력용
 SELECT * FROM USERS;
 SELECT * FROM CHAT_ROOM;
 SELECT * FROM CHAT_MEMBER;
 SELECT * FROM CHAT;
+SELECT * FROM DATA;
 
 -- 모든 데이터 삭제
 DROP TABLE CHAT_MEMBER;

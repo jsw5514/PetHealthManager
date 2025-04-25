@@ -27,8 +27,9 @@ public class DataController {
     }
 
     /** 데이터 다운로드 함수
-     * @param downloaderId 다운로드 하려는 사람의 id
-     * @return 원하는 데이터(오류 발생시 null)
+     * @param downloaderId 다운로드 하려는 사람의 id(업로더와 동일해야함)
+     * @param dataId 데이터 식별자
+     * @return 원하는 데이터(dataDTO, 오류 발생시 null)
      */
     @PostMapping("/downloadData")
     public String downloadData(
