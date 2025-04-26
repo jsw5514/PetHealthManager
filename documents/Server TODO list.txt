@@ -1,0 +1,11 @@
+User
+DTO 유틸 메소드 추가하여 사용할것(getFileName, toEntity)
+
+Chat
+DTO사용 구조로 변경(현재 Map이 사용됨)
+DTO 유틸 메소드 추가하여 사용할것(getFileName, toEntity)
+미구현 함수 구현할것
+
+공통
+요청을 DTO로 매핑할 경우 클라이언트가 json으로 요청을 보내야함
+->map으로 파싱하여 직접 DTO에 매핑 or 클라이언트 요청 변경 필요?
