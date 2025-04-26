@@ -1,9 +1,12 @@
 package com.swjeon.pethealthcaremanager.server.Entity.IdClass;
 
+import jakarta.persistence.Embeddable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
 //JPA에서의 복합 키 사용을 위한 클래스
+@Embeddable
 public class ChatMemberIdClass implements Serializable {
     private int roomId;
     private String memberId;
