@@ -1,6 +1,9 @@
 package com.swjeon.pethealthcaremanager.server.controller;
 
 import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
+import com.swjeon.pethealthcaremanager.server.service.DataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -8,6 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class DataController {
+    private Logger log = LoggerFactory.getLogger(DataController.class);
+    private DataService dataService;
+
+    public DataController(DataService dataService) {
+        this.dataService = dataService;
+    }
 
     /** 데이터 업로드 함수
      * @param dataDTO 데이터 객체
@@ -21,9 +30,10 @@ public class DataController {
      * @return 요청 성공여부(boolean)
      */
     @PostMapping("/uploadData")
-    public String uploadData(@RequestBody DataDTO dataDTO)
+    public boolean uploadData(@RequestBody DataDTO dataDTO)
     {
-        return "not yet implemented"; //TODO not yet implemented
+        log.debug("Upload attempt with data: " + dataDTO);
+        return dataService.uploadData(dataDTO);
     }
 
     /** 데이터 다운로드 함수

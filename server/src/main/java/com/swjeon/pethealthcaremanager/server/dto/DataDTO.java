@@ -31,4 +31,9 @@ public class DataDTO {
     private String metaData;
     @NonNull
     private String data;
+
+    @Override
+    public String toString() {
+        return "uploaderId: " + uploaderId + ", dataId: " + dataId + ", metaData: " + metaData;
+    }
 }
