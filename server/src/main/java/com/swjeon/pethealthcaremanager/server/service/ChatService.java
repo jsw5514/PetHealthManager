@@ -49,7 +49,13 @@ public class ChatService {
         chatEntity.setWriteTime(writeTime);
         chatEntity.setContentType(contentType);
         chatEntity.setContentPath(CHAT_PATH);
-        chatRepository.save(chatEntity);
+        try{
+            chatRepository.save(chatEntity);
+        }
+        catch (Exception e){
+            log.error("파일 저장은 성공했으나 db에서 에러가 발생함. "+CHAT_PATH+"의 파일을 지울것."+e.getMessage());//TODO 파일 삭제 API 제작하여 대체
+            return false;
+        }
         return true;
     }
 

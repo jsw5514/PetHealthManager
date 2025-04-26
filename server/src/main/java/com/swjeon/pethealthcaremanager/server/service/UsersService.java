@@ -3,6 +3,8 @@ package com.swjeon.pethealthcaremanager.server.service;
 import com.swjeon.pethealthcaremanager.server.Entity.UsersEntity;
 import com.swjeon.pethealthcaremanager.server.Repository.UsersRepository;
 import com.swjeon.pethealthcaremanager.server.dto.UserDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +12,7 @@ import java.util.Optional;
 
 @Service
 public class UsersService {
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
     UsersRepository usersRepository;
 
     @Autowired
@@ -32,10 +35,16 @@ public class UsersService {
         if(optionalUser.isPresent())
             return false;
         else{
-            user = new UsersEntity();
+            user = new UsersEntity();//TODO 엔티티화 매서드 추가
             user.setId(id);
             user.setPw(password);
-            usersRepository.save(user);
+            try{
+                usersRepository.save(user);
+            }
+            catch (Exception e){
+                log.error(e.getMessage());
+                return false;
+            }
             return true;
         }
     }
