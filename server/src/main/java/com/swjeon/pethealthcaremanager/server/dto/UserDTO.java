@@ -24,4 +24,9 @@ public class UserDTO {
     private String id;
     @NonNull
     private String password;
+
+    @Override
+    public String toString() {
+        return "id: " + id + ", password: " + password;
+    }
 }

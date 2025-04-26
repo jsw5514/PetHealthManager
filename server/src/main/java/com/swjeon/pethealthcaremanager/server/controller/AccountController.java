@@ -29,14 +29,14 @@ public class AccountController {
     //회원가입
     @PostMapping("/signIn")
     public boolean signIn(@RequestBody UserDTO signInUser) {
-        log.info("signIn id " + signInUser.getId() + " password " + signInUser.getPassword());
+        log.info("Sign in attempt with " + signInUser);
         return usersService.signIn(signInUser);
     }
 
     //로그인
     @PostMapping("/login")
     public boolean login(@RequestBody UserDTO loginUser) {
-        log.info("Login attempt with id " + loginUser.getId() + " and password " + loginUser.getPassword());
+        log.info("Login attempt with " + loginUser);
         return usersService.login(loginUser);
     }
 }
