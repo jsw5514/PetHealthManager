@@ -33,10 +33,10 @@ public class ChatService {
     public boolean uploadChat(int roomId, String writerId, LocalDateTime writeTime, String contentType, String content)
     {
         //채팅 내용 파일로 저장
-        final String timeString = writeTime.toString().replace(":","-");
-        final String fileName = writerId + "_" + roomId + "_" + timeString + ".txt";
-        final String chatPath = FileService.saveChat(content, fileName);
-        if (chatPath == null){
+        final String TIME_STRING = writeTime.toString().replace(":","-");
+        final String FILE_NAME = writerId + "_" + roomId + "_" + TIME_STRING + ".txt";
+        final String CHAT_PATH = FileService.saveChat(content, FILE_NAME);
+        if (CHAT_PATH == null){
             log.error("채팅 내용 저장 실패");
             return false;
         }
@@ -48,7 +48,7 @@ public class ChatService {
         chatEntity.setWriterId(writerId);
         chatEntity.setWriteTime(writeTime);
         chatEntity.setContentType(contentType);
-        chatEntity.setContentPath(chatPath);
+        chatEntity.setContentPath(CHAT_PATH);
         chatRepository.save(chatEntity);
         return true;
     }
