@@ -25,11 +25,10 @@ public class FileService {
         File file = new File(savePath);
 
         try{
+            log.info("Attempt to file save savePath: " + savePath + " content: " + content);
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
             writer.write(content);
             writer.flush();
-
-            log.debug("file saved. content: " + content + " save_path: " + savePath);
         }
         catch (Exception e){
             log.error(e.getMessage());
@@ -89,7 +88,7 @@ public class FileService {
     public static String loadData(String loadFileName) {
         String dataPath = DATA_STORAGE + "/" + loadFileName;
         String loadedContent = load(dataPath);
-        log.debug(dataPath + " loaded content: " + loadedContent);
+        log.info(dataPath + " loaded content: " + loadedContent);
         return loadedContent;
     }
 }

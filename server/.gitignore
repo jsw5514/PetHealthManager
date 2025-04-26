@@ -3,6 +3,7 @@
 
 # data file
 /storage/chat/*
+/storage/data/*
 
 ### Eclipse ###
 .metadata
