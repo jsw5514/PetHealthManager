@@ -5,6 +5,8 @@ import com.swjeon.pethealthcaremanager.server.Entity.IdClass.DataIdClass;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "data")
 @IdClass(DataIdClass.class)
 @Getter
+@Setter
 @NoArgsConstructor
 public class DataEntity {
   @Id

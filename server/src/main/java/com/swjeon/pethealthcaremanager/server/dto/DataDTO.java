@@ -1,5 +1,6 @@
 package com.swjeon.pethealthcaremanager.server.dto;
 
+import com.swjeon.pethealthcaremanager.server.Entity.DataEntity;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +36,18 @@ public class DataDTO {
     @Override
     public String toString() {
         return "uploaderId: " + uploaderId + ", dataId: " + dataId + ", metaData: " + metaData;
+    }
+
+    public String getFileName() {
+        return uploaderId + "_" + dataId + ".txt";
+    }
+
+    public DataEntity toEntity(String dataPath) {
+        DataEntity dataEntity = new DataEntity();
+        dataEntity.setUploaderId(uploaderId);
+        dataEntity.setDataId(dataId);
+        dataEntity.setMetaData(metaData);
+        dataEntity.setDataPath(dataPath);
+        return dataEntity;
     }
 }

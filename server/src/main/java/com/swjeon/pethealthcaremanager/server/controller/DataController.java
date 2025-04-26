@@ -32,7 +32,7 @@ public class DataController {
     @PostMapping("/uploadData")
     public boolean uploadData(@RequestBody DataDTO dataDTO)
     {
-        log.debug("Upload attempt with data: " + dataDTO);
+        log.info("Upload attempt with data: " + dataDTO);
         return dataService.uploadData(dataDTO);
     }
 
