@@ -70,10 +70,14 @@ public class FileService {
     }
 
     //채팅 불러오기
-    public static String loadChat(String chatFileName) {
-        String chatPath = CHAT_STORAGE + "/" + chatFileName;
-        String loadedContent = load(chatPath);
-        log.debug(chatPath + " loaded content: " + loadedContent);
+    public static String loadChat(String chatFilePath) {
+        //요구된 파일의 경로가 정상적인 데이터 파일 경로인지 확인
+        if (!chatFilePath.startsWith(DATA_STORAGE)) {
+            log.error("invalid chat file path: " + chatFilePath);
+            return null;
+        }
+        String loadedContent = load(chatFilePath);
+        log.info("chat file loaded in path: " + chatFilePath + " content: " + loadedContent);
         return loadedContent;
     }
 
@@ -85,10 +89,14 @@ public class FileService {
     }
     
     //데이터 불러오기
-    public static String loadData(String loadFileName) {
-        String dataPath = DATA_STORAGE + "/" + loadFileName;
-        String loadedContent = load(dataPath);
-        log.info(dataPath + " loaded content: " + loadedContent);
+    public static String loadData(String dataFilePath) {
+        //요구된 파일의 경로가 정상적인 데이터 파일 경로인지 확인
+        if (!dataFilePath.startsWith(DATA_STORAGE)) {
+            log.error("invalid data file path: " + dataFilePath);
+            return null;
+        }
+        String loadedContent = load(dataFilePath);
+        log.info("data file loaded in path: " + dataFilePath + " content: " + loadedContent);
         return loadedContent;
     }
 }
