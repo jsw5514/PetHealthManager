@@ -32,8 +32,10 @@ public class UsersService {
 
         //id 중복 검사
         Optional<UsersEntity> optionalUser = usersRepository.findById(id);
-        if(optionalUser.isPresent())
+        if(optionalUser.isPresent()) {
+            log.error("User with id " + id + " already exists");
             return false;
+        }
         else{
             user = new UsersEntity();//TODO 엔티티화 매서드 추가
             user.setId(id);
