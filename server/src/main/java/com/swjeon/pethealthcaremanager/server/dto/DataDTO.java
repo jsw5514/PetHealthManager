@@ -35,10 +35,10 @@ public class DataDTO {
 
     @Override
     public String toString() {
-        return "uploaderId: " + uploaderId + ", dataId: " + dataId + ", metaData: " + metaData;
+        return "uploaderId: " + uploaderId + ", dataId: " + dataId + ", metaData: " + metaData + ", data: " + data;
     }
 
-    public String getFileName() {
+    public String generateFileName() {
         return uploaderId + "_" + dataId + ".txt";
     }
 
@@ -49,5 +49,9 @@ public class DataDTO {
         dataEntity.setMetaData(metaData);
         dataEntity.setDataPath(dataPath);
         return dataEntity;
+    }
+
+    public static DataDTO fromEntity(DataEntity dataEntity, String content) {
+        return new DataDTO(dataEntity.getUploaderId(), dataEntity.getDataId(), dataEntity.getMetaData(), content);
     }
 }

@@ -44,7 +44,7 @@ public class DataController {
      * @return 원하는 데이터(dataDTO, 오류 발생시 null)
      */
     @PostMapping("/downloadData")
-    public DataDTO downloadData(Map<String,String> downloadRequest)
+    public DataDTO downloadData(@RequestBody Map<String,String> downloadRequest)
     {
         log.info("Download attempt with data: " + downloadRequest);
         final String DOWNLOADER_ID = downloadRequest.get("downloaderId");
