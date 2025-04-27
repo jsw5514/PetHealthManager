@@ -37,4 +37,8 @@ public class DataService {
 
         return true;
     }
+
+    public DataDTO downloadData(String downloaderId, String dataId) {
+        return null;//TODO not yet implemented
+    }
 }

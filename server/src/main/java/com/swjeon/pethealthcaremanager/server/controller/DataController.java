@@ -6,8 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 public class DataController {
@@ -37,15 +38,17 @@ public class DataController {
     }
 
     /** 데이터 다운로드 함수
-     * @param downloaderId 다운로드 하려는 사람의 id(업로더와 동일해야함)
-     * @param dataId 데이터 식별자
+     * @param downloadRequest 다운로드 요청 객체
+     *                        downloaderId 다운로드 하려는 사람의 id(업로더와 동일해야함)
+     *                        dataId 데이터 식별자
      * @return 원하는 데이터(dataDTO, 오류 발생시 null)
      */
     @PostMapping("/downloadData")
-    public String downloadData(
-            @RequestParam("downloaderId") String downloaderId,
-            @RequestParam("dataId") String dataId)
+    public DataDTO downloadData(Map<String,String> downloadRequest)
     {
-        return "not yet implemented"; //TODO not yet implemented
+        log.info("Download attempt with data: " + downloadRequest);
+        final String DOWNLOADER_ID = downloadRequest.get("downloaderId");
+        final String DATA_ID = downloadRequest.get("dataId");
+        return dataService.downloadData(DOWNLOADER_ID, DATA_ID);
     }
 }
