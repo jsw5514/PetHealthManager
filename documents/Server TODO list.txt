@@ -1,6 +1,7 @@
 User
 DTO 유틸 메소드 추가하여 사용할것(generateFileName, toEntity, fromEntity)
 DTO가 id, password만 가지고 있으면 되는건지 확인(닉네임 등 다른 정보는 필요하지 않은지?)
+보안: 비밀번호 db 저장시 해시함수 적용
 
 Chat
 DTO사용 구조로 변경(현재 Map이 사용됨)
