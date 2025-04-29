@@ -180,4 +180,8 @@ class StatisticsFragment : Fragment() {
             }
         }
     }
+
+    fun updateStats() {
+        loadStatsFromServer()
+    }
 }

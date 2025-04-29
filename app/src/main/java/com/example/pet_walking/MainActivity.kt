@@ -31,7 +31,18 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         UserRepository.loadFromPreferences(this)//유저 데이터 로딩
-        PetRepository.loadFromPreferences(this)
+        val userId = UserRepository.getCurrentUser()?.userId
+        val petIds = UserRepository.getCurrentUser()?.petIds ?: emptyList()
+
+        if (userId != null) {
+            PetRepository.loadProfilesFromServer(userId, petIds) {
+                // 프로필 로딩 후 UI 초기화 또는 기타 작업 가능
+                val firstPetId = petIds.firstOrNull()
+                if (firstPetId != null) {
+                    PetRepository.setCurrentPet(firstPetId)
+                }
+            }
+        }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -40,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
         val navController = navHostFragment?.navController
         // 🔐 로그인 여부 확인
-        navController?.let { nav ->
+        /*navController?.let { nav ->
             if (UserRepository.getCurrentUser() == null) {
                 nav.navigate(R.id.loginFragment)
                 binding.bottomNavigationView.visibility = View.GONE
@@ -48,8 +59,16 @@ class MainActivity : AppCompatActivity() {
                 binding.bottomNavigationView.setupWithNavController(nav)
                 binding.bottomNavigationView.visibility = View.VISIBLE
             }
+        }*/ // 이 부분 원래는 로그인 시 하단바 보이도록 설정
+//삭제 부분
+        navController?.let { nav ->
+            binding.bottomNavigationView.setupWithNavController(nav)
+            binding.bottomNavigationView.visibility = View.VISIBLE
+            if (UserRepository.getCurrentUser() == null) {
+                nav.navigate(R.id.loginFragment)
+            }
         }
-
+//여기까지
 
 
         // ✅ 블루투스 매니저 초기화
