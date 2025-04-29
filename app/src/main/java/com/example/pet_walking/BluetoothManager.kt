@@ -83,7 +83,7 @@ class BluetoothManager(
 
                     Log.d("BluetoothManager", "🔄 받은 데이터: $fullLine")
 
-                    val parts = fullLine.split(",")
+                    /*val parts = fullLine.split(",")
                         .map { it.trim().replace("<", "").replace(">", "") }
 
                     // ✅ 데이터 검증
@@ -104,8 +104,35 @@ class BluetoothManager(
                     ) {
                         Log.w("BluetoothManager", "❌ 숫자 파싱 실패: $fullLine")
                         continue
+                    }*/
+//수정코드 여기서부터 시작
+                    val parts = fullLine.split(",")
+                        .map { it.trim().replace("<", "").replace(">", "") }
+
+                    if (parts.size != 5) {
+                        Log.w("BluetoothManager", "❌ 잘못된 형식: $fullLine")
+                        continue
                     }
 
+// 👉 배열 내용 출력
+                    for ((index, part) in parts.withIndex()) {
+                        Log.d("BluetoothManager", "parts[$index] = '$part'")
+                    }
+
+                    val lat = parts[0].toDoubleOrNull()
+                    val lon = parts[1].toDoubleOrNull()
+                    val accX = parts[2].toFloatOrNull()
+                    val accY = parts[3].toFloatOrNull()
+                    val accZ = parts[4].toFloatOrNull()
+
+                    if (
+                        lat == null || lon == null ||
+                        accX == null || accY == null || accZ == null
+                    ) {
+                        Log.w("BluetoothManager", "❌ 숫자 파싱 실패: $fullLine")
+                        continue
+                    }
+//수정코드
                     if (lat !in -90.0..90.0 || lon !in -180.0..180.0) {
                         Log.w("BluetoothManager", "❌ 위도/경도 범위 오류: $lat, $lon")
                         continue
