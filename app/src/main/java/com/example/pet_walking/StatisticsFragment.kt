@@ -17,8 +17,6 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 class StatisticsFragment : Fragment() {
 
@@ -26,7 +24,6 @@ class StatisticsFragment : Fragment() {
     private lateinit var barChart: BarChart
     private var currentPeriod = "daily"
 
-    // ✅ 유저 → 펫 → 통계 구조
     private val userStatsMap = mutableMapOf<String, MutableMap<UUID, ProfileStats>>()
 
     override fun onCreateView(
@@ -43,7 +40,6 @@ class StatisticsFragment : Fragment() {
         return binding.root
     }
 
-    // ✅ 통계 갱신
     fun updateStats() {
         val currentPet = PetRepository.getCurrentPet() ?: return
         val userId = UserRepository.getCurrentUser()?.userId ?: return
@@ -62,7 +58,6 @@ class StatisticsFragment : Fragment() {
         updateUI()
     }
 
-    // ✅ UI 업데이트
     private fun updateUI() {
         val currentPet = PetRepository.getCurrentPet() ?: return
         val userId = UserRepository.getCurrentUser()?.userId ?: return
@@ -75,7 +70,6 @@ class StatisticsFragment : Fragment() {
         updateChartData(stats.getMapForPeriod(currentPeriod))
     }
 
-    // ✅ 현재 기간 기준 키 반환
     private fun getKeyForPeriod(period: String): String {
         val now = LocalDateTime.now()
         return when (period) {
@@ -87,7 +81,6 @@ class StatisticsFragment : Fragment() {
         }
     }
 
-    // ✅ 차트 데이터 갱신
     private fun updateChartData(dataMap: Map<String, Double>) {
         val (entries, labels) = convertToBarEntries(dataMap)
 
@@ -113,7 +106,6 @@ class StatisticsFragment : Fragment() {
         return Pair(entries, labels)
     }
 
-    // ✅ 스피너 구성
     private fun setupSpinner() {
         val adapter = ArrayAdapter.createFromResource(
             requireContext(),
@@ -139,7 +131,6 @@ class StatisticsFragment : Fragment() {
         }
     }
 
-    // ✅ 바차트 설정
     private fun setupBarChart() {
         barChart.apply {
             description.isEnabled = false
@@ -160,7 +151,6 @@ class StatisticsFragment : Fragment() {
         }
     }
 
-    // ✅ 통계 저장 데이터 클래스
     data class ProfileStats(
         var totalDistance: Double = 0.0,
         var totalCalories: Double = 0.0,

@@ -119,11 +119,15 @@ class BluetoothManager(
                         Log.d("BluetoothManager", "parts[$index] = '$part'")
                     }
 
-                    val lat = parts[0].toDoubleOrNull()
-                    val lon = parts[1].toDoubleOrNull()
-                    val accX = parts[2].toFloatOrNull()
-                    val accY = parts[3].toFloatOrNull()
-                    val accZ = parts[4].toFloatOrNull()
+                    val lat = parts[0].toDoubleOrNull().also {
+                        if (it == null) Log.e("Parser", "lat 파싱 실패: '${parts[0]}'")
+                    }
+                    val lon = parts[1].toDoubleOrNull().also {
+                        if (it == null) Log.e("Parser", "lon 파싱 실패: '${parts[1]}'")
+                    }
+                    val accX = parts[2].toFloatOrNull().also { if (it == null) Log.e("Parser", "accX 파싱 실패: '${parts[2]}'") }
+                    val accY = parts[3].toFloatOrNull().also { if (it == null) Log.e("Parser", "accY 파싱 실패: '${parts[3]}'") }
+                    val accZ = parts[4].toFloatOrNull().also { if (it == null) Log.e("Parser", "accZ 파싱 실패: '${parts[4]}'") }
 
                     if (
                         lat == null || lon == null ||

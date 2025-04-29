@@ -1,8 +1,6 @@
 package com.example.pet_walking
 
-import java.util.*
 import android.content.Context
-import android.net.Uri
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.util.*
@@ -10,16 +8,9 @@ import java.util.*
 object PetRepository {
     private val profiles = mutableMapOf<UUID, PetProfile>()
     var currentPetId: UUID? = null
-    private var selectedPetId: UUID? = null
-    private val petList = mutableListOf<PetProfile>()
-
 
     fun addProfile(profile: PetProfile) {
         profiles[profile.id] = profile
-    }
-
-    fun getSelectedPet(): PetProfile? {
-        return petList.find { it.id == selectedPetId }
     }
 
     fun removeProfile(id: UUID) {
@@ -28,6 +19,7 @@ object PetRepository {
     }
 
     fun getAllProfiles(): List<PetProfile> = profiles.values.toList()
+
     fun getProfile(id: UUID): PetProfile? = profiles[id]
 
     fun updateDistanceAndCalories(id: UUID, distance: Double, calories: Double) {
@@ -41,9 +33,8 @@ object PetRepository {
         currentPetId = id
     }
 
-    fun getCurrentPet(): PetProfile? = profiles[currentPetId]
+    fun getCurrentPet(): PetProfile? = currentPetId?.let { profiles[it] }
 
-    // 저장
     fun saveToPreferences(context: Context) {
         val prefs = context.getSharedPreferences("PetData", Context.MODE_PRIVATE)
         val json = Gson().toJson(profiles)
@@ -51,7 +42,6 @@ object PetRepository {
         prefs.edit().putString("currentPetId", currentPetId?.toString()).apply()
     }
 
-    // 불러오기
     fun loadFromPreferences(context: Context) {
         val prefs = context.getSharedPreferences("PetData", Context.MODE_PRIVATE)
         val json = prefs.getString("profiles", null)

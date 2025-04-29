@@ -15,6 +15,7 @@ import com.example.pet_walking.chat.ChatNetworkHelper
 import com.example.pet_walking.chat.ChatRoomManager
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 import kotlin.math.*
 
 class RunningFragment : Fragment(), BluetoothDataListener {
@@ -90,6 +91,12 @@ class RunningFragment : Fragment(), BluetoothDataListener {
         goalButton.visibility = View.VISIBLE
         stopButton.visibility = View.GONE
         showShareOptionDialog()
+
+        val pet = PetRepository.getCurrentPet()
+        val userId = LoginSession.userId
+        if (pet != null && userId != null) {
+            uploadRunSummaryToServer(userId, pet.id, pet.totalDistance, pet.totalCalories)
+        }
     }
 
     private fun showShareOptionDialog() {
@@ -248,6 +255,24 @@ class RunningFragment : Fragment(), BluetoothDataListener {
             if (success) {
                 Log.d("RunningShare", "러닝 결과 이미지 전송 성공")
             }
+        }
+    }
+
+    fun uploadRunSummaryToServer(userId: String, petId: UUID, distance: Double, calories: Double) {
+        val json = JSONObject().apply {
+            put("uploaderId", userId)
+            put("dataId", petId.toString()) // 각 펫 별로 구분
+            put("metaData", "running_summary")
+            put("data", JSONObject().apply {
+                put("distance", distance)
+                put("calories", calories)
+                put("timestamp", System.currentTimeMillis())
+            }.toString())
+        }
+
+        ChatNetworkHelper.postJson("/uploadData", json) { success ->
+            if (success) Log.d("RunningSave", "러닝 통계 서버 저장 완료")
+            else Log.w("RunningSave", "서버 저장 실패")
         }
     }
 }
