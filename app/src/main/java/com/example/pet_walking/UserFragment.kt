@@ -2,9 +2,7 @@ package com.example.pet_walking
 
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.setPadding
@@ -45,13 +43,8 @@ class UserFragment : Fragment() {
         userName = view.findViewById(R.id.userName)
         userImage = view.findViewById(R.id.userImage)
 
-        // ✅ 로그인한 유저 정보 가져오기
         val user = UserRepository.getCurrentUser()
-        if (user != null) {
-            userName.text = "👤 ${user.username} (${user.userId})"
-        } else {
-            userName.text = "로그인 정보 없음"
-        }
+        userName.text = if (user != null) "👤 ${user.username} (${user.userId})" else "로그인 정보 없음"
 
         inputForm = view.findViewById(R.id.inputForm)
         nameInput = view.findViewById(R.id.nameInput)
@@ -92,15 +85,14 @@ class UserFragment : Fragment() {
             val weight = weightInput.text.toString().toDoubleOrNull() ?: 10.0
             val uuid = UUID.randomUUID()
 
-            // 이미지 저장
+            val userId = UserRepository.getCurrentUser()?.userId ?: return@setOnClickListener
+
             var savedUri: Uri? = null
             selectedPetImageUri?.let { uri ->
                 val bitmap = ImageStorageManager.decodeUriToBitmap(requireContext(), uri)
                 bitmap?.let {
                     savedUri = ImageStorageManager.saveBitmapToInternalStorage(
-                        requireContext(),
-                        it,
-                        "pet_${uuid}"
+                        requireContext(), it, "pet_$uuid"
                     )
                 }
             }
@@ -116,13 +108,20 @@ class UserFragment : Fragment() {
                 totalCalories = 0.0
             )
 
-            PetRepository.addProfile(profile)
-            UserRepository.addPetToCurrentUser(profile.id)
-            PetRepository.saveToPreferences(requireContext()) // ✅ 저장
-            UserRepository.saveToPreferences(requireContext()) // ✅ 유저에 펫 ID 저장
-            petContainer.addView(createPetProfileView(profile))
-            inputForm.visibility = View.GONE
-            clearInputs()
+            PetRepository.addProfile(profile, userId) { success ->
+                requireActivity().runOnUiThread {
+                    if (success) {
+                        UserRepository.addPetToCurrentUser(profile.id)
+                        UserRepository.saveToPreferences(requireContext())
+                        petContainer.addView(createPetProfileView(profile))
+                        inputForm.visibility = View.GONE
+                        clearInputs()
+                        Toast.makeText(requireContext(), "프로필 저장 완료", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "서버 저장 실패", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         }
 
         deleteButton.setOnClickListener {
@@ -150,15 +149,13 @@ class UserFragment : Fragment() {
                 currentUser?.petIds?.remove(uuid)
             }
 
-            PetRepository.saveToPreferences(requireContext())
             UserRepository.saveToPreferences(requireContext())
         }
 
-        // ✅ 현재 유저의 펫 프로필만 UI에 표시
-        val currentUser = UserRepository.getCurrentUser()
-        currentUser?.petIds?.forEach { petId ->
-            PetRepository.getProfile(petId)?.let { pet ->
-                petContainer.addView(createPetProfileView(pet))
+        // ✅ 기존 프로필 UI 표시
+        user?.petIds?.forEach { id ->
+            PetRepository.getProfile(id)?.let {
+                petContainer.addView(createPetProfileView(it))
             }
         }
 
@@ -184,13 +181,9 @@ class UserFragment : Fragment() {
 
         val petImage = ImageView(context).apply {
             layoutParams = ViewGroup.LayoutParams(200, 200)
-            if (profile.imageUri != null) {
+            if (!profile.imageUri.isNullOrEmpty()) {
                 val bitmap = ImageStorageManager.decodeUriToBitmap(context, Uri.parse(profile.imageUri))
-                if (bitmap != null) {
-                    setImageBitmap(bitmap)
-                } else {
-                    setImageResource(R.drawable.ic_profile_placeholder)
-                }
+                bitmap?.let { setImageBitmap(it) } ?: setImageResource(R.drawable.ic_profile_placeholder)
             } else {
                 setImageResource(R.drawable.ic_profile_placeholder)
             }
@@ -229,10 +222,8 @@ class UserFragment : Fragment() {
         textColumn.addView(line1)
         textColumn.addView(line2)
         textColumn.addView(stats)
-
         profileRow.addView(petImage)
         profileRow.addView(textColumn)
-
         container.addView(profileRow)
         container.addView(checkBox)
 

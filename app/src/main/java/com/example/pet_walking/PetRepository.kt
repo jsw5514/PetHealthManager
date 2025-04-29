@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.pet_walking.network.ApiClient
 import org.json.JSONObject
 import java.util.*
+import android.net.Uri
 
 object PetRepository {
     private val profiles = mutableMapOf<UUID, PetProfile>()
@@ -76,10 +77,10 @@ object PetRepository {
                         val profile = PetProfile(
                             id = id,
                             name = data.getString("name"),
-                            age = data.getInt("age"),
+                            age = data.getString("age"),
                             gender = data.getString("gender"),
                             weight = data.getDouble("weight"),
-                            imageUri = data.optString("imageUri", "").takeIf { it.isNotEmpty() }?.let { Uri.parse(it) },
+                            imageUri = data.optString("imageUri", "").takeIf { it.isNotEmpty() },
                             totalDistance = data.optDouble("totalDistance", 0.0),
                             totalCalories = data.optDouble("totalCalories", 0.0)
                         )

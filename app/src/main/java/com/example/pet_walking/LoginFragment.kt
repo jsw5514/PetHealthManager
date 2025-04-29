@@ -52,7 +52,7 @@ class LoginFragment : Fragment() {
                         if (result == "true") {
                             Toast.makeText(requireContext(), "로그인 성공!", Toast.LENGTH_SHORT).show()
                             LoginSession.userId = userId
-                            (activity as? MainActivity)?.binding?.bottomNavigationView?.visibility = View.VISIBLE
+                            //(activity as? MainActivity)?.binding?.bottomNavigationView?.visibility = View.VISIBLE
                             findNavController().navigate(R.id.action_loginFragment_to_userFragment)
                         } else {
                             Toast.makeText(requireContext(), "로그인 실패", Toast.LENGTH_SHORT).show()
