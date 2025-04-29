@@ -61,13 +61,11 @@ class UserFragment : Fragment() {
                 imagePickLauncher.launch("image/*")
             }
         }
-
         (inputForm as LinearLayout).addView(selectImageView, 0)
 
         createButton = view.findViewById(R.id.createButton)
         deleteButton = view.findViewById(R.id.deleteButton)
         petContainer = view.findViewById(R.id.petContainer)
-
         inputForm.visibility = View.GONE
 
         createButton.setOnClickListener {
@@ -84,16 +82,13 @@ class UserFragment : Fragment() {
             }
             val weight = weightInput.text.toString().toDoubleOrNull() ?: 10.0
             val uuid = UUID.randomUUID()
-
             val userId = UserRepository.getCurrentUser()?.userId ?: return@setOnClickListener
 
             var savedUri: Uri? = null
             selectedPetImageUri?.let { uri ->
                 val bitmap = ImageStorageManager.decodeUriToBitmap(requireContext(), uri)
                 bitmap?.let {
-                    savedUri = ImageStorageManager.saveBitmapToInternalStorage(
-                        requireContext(), it, "pet_$uuid"
-                    )
+                    savedUri = ImageStorageManager.saveBitmapToInternalStorage(requireContext(), it, "pet_$uuid")
                 }
             }
 
@@ -118,7 +113,7 @@ class UserFragment : Fragment() {
                         clearInputs()
                         Toast.makeText(requireContext(), "프로필 저장 완료", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(requireContext(), "서버 저장 실패", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "프로필 저장 실패", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -152,7 +147,6 @@ class UserFragment : Fragment() {
             UserRepository.saveToPreferences(requireContext())
         }
 
-        // ✅ 기존 프로필 UI 표시
         user?.petIds?.forEach { id ->
             PetRepository.getProfile(id)?.let {
                 petContainer.addView(createPetProfileView(it))
@@ -164,7 +158,6 @@ class UserFragment : Fragment() {
 
     private fun createPetProfileView(profile: PetProfile): View {
         val context = requireContext()
-
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16)
@@ -209,14 +202,14 @@ class UserFragment : Fragment() {
             textSize = 14f
         }
 
-        profileRow.setOnClickListener {
-            PetRepository.setCurrentPet(profile.id)
-            Toast.makeText(context, "${profile.name} 프로필 선택됨", Toast.LENGTH_SHORT).show()
-        }
-
         val checkBox = CheckBox(context).apply {
             tag = "deleteCheckBox"
             text = "삭제 선택"
+        }
+
+        profileRow.setOnClickListener {
+            PetRepository.setCurrentPet(profile.id)
+            Toast.makeText(context, "${profile.name} 프로필 선택됨", Toast.LENGTH_SHORT).show()
         }
 
         textColumn.addView(line1)

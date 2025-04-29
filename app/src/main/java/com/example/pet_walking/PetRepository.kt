@@ -4,7 +4,6 @@ import android.util.Log
 import com.example.pet_walking.network.ApiClient
 import org.json.JSONObject
 import java.util.*
-import android.net.Uri
 
 object PetRepository {
     private val profiles = mutableMapOf<UUID, PetProfile>()
@@ -40,7 +39,7 @@ object PetRepository {
                 put("age", profile.age)
                 put("weight", profile.weight)
                 put("gender", profile.gender)
-                put("imageUri", profile.imageUri?.toString() ?: "")
+                put("imageUri", profile.imageUri ?: "")
                 put("totalDistance", profile.totalDistance)
                 put("totalCalories", profile.totalCalories)
             }.toString())
@@ -48,11 +47,11 @@ object PetRepository {
 
         ApiClient.post("/uploadData", json,
             onSuccess = {
-                Log.d("PetRepo", "펫 프로필 업로드 성공")
+                Log.d("PetRepo", "✅ 펫 프로필 업로드 성공")
                 onComplete(true)
             },
             onFailure = {
-                Log.w("PetRepo", "펫 프로필 업로드 실패: $it")
+                Log.e("PetRepo", "❌ 펫 프로필 업로드 실패: $it")
                 onComplete(false)
             }
         )
@@ -86,15 +85,16 @@ object PetRepository {
                         )
 
                         profiles[id] = profile
+                        Log.d("PetRepo", "✅ ${profile.name} 프로필 로드됨")
                     } catch (e: Exception) {
-                        Log.e("PetRepo", "프로필 파싱 실패: ${e.message}")
+                        Log.e("PetRepo", "❌ 프로필 파싱 실패: ${e.message}")
                     } finally {
                         loaded++
                         if (loaded == petIds.size) onComplete()
                     }
                 },
                 onFailure = {
-                    Log.w("PetRepo", "프로필 불러오기 실패: $it")
+                    Log.e("PetRepo", "❌ 서버 요청 실패: $it")
                     loaded++
                     if (loaded == petIds.size) onComplete()
                 }

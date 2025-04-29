@@ -55,7 +55,7 @@ object UserRepository {
                     if (!users.containsKey(userId)) {
                         users[userId] = UserProfile(
                             userId = userId,
-                            username = "알 수 없음", // 서버에서 사용자 정보 받아오지 않음 (확장 필요)
+                            username = "", // 서버에서 사용자 정보 받아오지 않음 (확장 필요)
                             birthdate = "",
                             gender = "",
                             password = password
@@ -74,10 +74,13 @@ object UserRepository {
         return result
     }
 
-    fun logout() {
+    fun logout(context: Context? = null) {
         loggedInUserId = null
+        context?.let {
+            val prefs = it.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+            prefs.edit().remove("loggedInUserId").apply()
+        }
     }
-
     // ✅ 현재 로그인한 유저 정보 반환
     fun getCurrentUser(): UserProfile? = loggedInUserId?.let { users[it] }
 
