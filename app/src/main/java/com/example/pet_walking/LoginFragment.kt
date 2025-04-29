@@ -40,8 +40,8 @@ class LoginFragment : Fragment() {
             }
 
             val json = JSONObject().apply {
-                put("id", userId)          // ✅ 명세에 따라 "id" 사용
-                put("password", password)  // ✅ 명세에 따라 "password" 사용
+                put("id", userId)
+                put("password", password)
             }
 
             ApiClient.post(
@@ -51,17 +51,27 @@ class LoginFragment : Fragment() {
                     requireActivity().runOnUiThread {
                         if (result == "true") {
                             Toast.makeText(requireContext(), "로그인 성공!", Toast.LENGTH_SHORT).show()
-                            LoginSession.userId = userId
-                            //(activity as? MainActivity)?.binding?.bottomNavigationView?.visibility = View.VISIBLE
+
+                            // ✅ 로그인 유저 정보 저장
+                            val userProfile = UserProfile(
+                                username = userId,         // 닉네임/이름이 별도로 없다면 userId로 대체
+                                userId = userId,
+                                password = password,
+                                petIds = mutableListOf()
+                            )
+                            UserRepository.setCurrentUser(userProfile)
+                            UserRepository.saveToPreferences(requireContext())
+
+                            // 이동
                             findNavController().navigate(R.id.action_loginFragment_to_userFragment)
                         } else {
-                            Toast.makeText(requireContext(), "로그인 실패", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "로그인 실패: 아이디 또는 비밀번호 오류", Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
                 onFailure = { error ->
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "서버 오류: $error", Toast.LENGTH_SHORT).show()
                     }
                 }
             )

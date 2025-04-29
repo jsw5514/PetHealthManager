@@ -179,18 +179,19 @@ class UserFragment : Fragment() {
 
             PetRepository.addProfile(profile, userId) { success ->
                 requireActivity().runOnUiThread {
-                    if (success) {
-                        Log.d("UserFragment", "프로필 서버 업로드 성공")
-                        UserRepository.addPetToCurrentUser(profile.id)
-                        UserRepository.saveToPreferences(requireContext())
-                        petContainer.addView(createPetProfileView(profile))
-                        inputForm.visibility = View.GONE
-                        clearInputs()
-                        Toast.makeText(requireContext(), "프로필 저장 완료", Toast.LENGTH_SHORT).show()
+                    if (!success) {
+                        Log.e("UserFragment", "⚠️ 프로필 서버 업로드 실패 - 로컬 저장만 진행")
+                        Toast.makeText(requireContext(), "서버 업로드 실패 (로컬에 저장됨)", Toast.LENGTH_SHORT).show()
                     } else {
-                        Log.e("UserFragment", "프로필 서버 업로드 실패")
-                        Toast.makeText(requireContext(), "프로필 저장 실패", Toast.LENGTH_SHORT).show()
+                        Log.d("UserFragment", "✅ 프로필 서버 업로드 성공")
                     }
+
+                    // 어쨌든 UI 업데이트는 항상 실행
+                    UserRepository.addPetToCurrentUser(profile.id)
+                    UserRepository.saveToPreferences(requireContext())
+                    petContainer.addView(createPetProfileView(profile))
+                    inputForm.visibility = View.GONE
+                    clearInputs()
                 }
             }
         }

@@ -10,6 +10,22 @@ object UserRepository {
     private val users = mutableMapOf<String, UserProfile>() // 서버 연동 시 로컬 저장은 캐시로 사용 가능
     private var loggedInUserId: String? = null
 
+    // ✅ 외부에서 현재 유저 직접 등록 가능하게 추가된 함수
+    fun setCurrentUser(user: UserProfile) {
+        users[user.userId] = user
+        loggedInUserId = user.userId
+    }
+
+    // ✅ 현재 로그인한 유저 정보 반환
+    fun getCurrentUser(): UserProfile? = loggedInUserId?.let { users[it] }
+
+    // ✅ 현재 로그인한 유저의 ID 반환 (단순 추출용)
+    fun getCurrentUserId(): String? = loggedInUserId
+
+    fun addPetToCurrentUser(petId: UUID) {
+        getCurrentUser()?.petIds?.add(petId)
+    }
+
     // ✅ 서버와 연동된 회원가입
     fun registerUser(profile: UserProfile): Boolean {
         var result = false
@@ -56,8 +72,6 @@ object UserRepository {
                         users[userId] = UserProfile(
                             userId = userId,
                             username = "", // 서버에서 사용자 정보 받아오지 않음 (확장 필요)
-                            birthdate = "",
-                            gender = "",
                             password = password
                         )
                     }
@@ -81,17 +95,8 @@ object UserRepository {
             prefs.edit().remove("loggedInUserId").apply()
         }
     }
-    // ✅ 현재 로그인한 유저 정보 반환
-    fun getCurrentUser(): UserProfile? = loggedInUserId?.let { users[it] }
 
-    // ✅ 현재 로그인한 유저의 ID 반환 (단순 추출용)
-    fun getCurrentUserId(): String? = loggedInUserId
-
-    fun addPetToCurrentUser(petId: UUID) {
-        getCurrentUser()?.petIds?.add(petId)
-    }
-
-    // ✅ 로컬 SharedPreferences 저장은 캐시용으로 남겨둠 (선택적으로 사용)
+    // ✅ 로컬 SharedPreferences 저장은 캐시용으로 남겨둠
     fun saveToPreferences(context: Context) {
         val prefs = context.getSharedPreferences("UserData", Context.MODE_PRIVATE)
         val json = com.google.gson.Gson().toJson(users)
