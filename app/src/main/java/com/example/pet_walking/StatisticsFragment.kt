@@ -2,19 +2,18 @@ package com.example.pet_walking
 
 import android.graphics.Color
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import com.example.pet_walking.databinding.StatisticsFragmentBinding
+import com.example.pet_walking.network.ApiClient
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import org.json.JSONObject
 import java.time.LocalDateTime
 import java.util.*
 
@@ -23,8 +22,7 @@ class StatisticsFragment : Fragment() {
     private lateinit var binding: StatisticsFragmentBinding
     private lateinit var barChart: BarChart
     private var currentPeriod = "daily"
-
-    private val userStatsMap = mutableMapOf<String, MutableMap<UUID, ProfileStats>>()
+    private var stats: ProfileStats = ProfileStats()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,38 +33,51 @@ class StatisticsFragment : Fragment() {
 
         setupBarChart()
         setupSpinner()
-        updateUI()
+        loadStatsFromServer()
 
         return binding.root
     }
 
-    fun updateStats() {
-        val currentPet = PetRepository.getCurrentPet() ?: return
+    private fun loadStatsFromServer() {
         val userId = UserRepository.getCurrentUser()?.userId ?: return
-        val petId = currentPet.id
+        val petId = PetRepository.getCurrentPet()?.id?.toString() ?: return
 
-        val petMap = userStatsMap.getOrPut(userId) { mutableMapOf() }
-        val stats = petMap.getOrPut(petId) { ProfileStats() }
+        val json = JSONObject().apply {
+            put("downloaderId", userId)
+            put("dataId", petId)
+        }
 
-        stats.totalDistance = SharedStatsRepository.totalDistance
-        stats.totalCalories = SharedStatsRepository.totalCalories
+        ApiClient.post("/downloadData", json,
+            onSuccess = { response ->
+                try {
+                    val parsed = JSONObject(response)
+                    val data = JSONObject(parsed.getString("data"))
+                    val distance = data.optDouble("distance", 0.0)
+                    val calories = data.optDouble("calories", 0.0)
 
-        val key = getKeyForPeriod(currentPeriod)
-        val periodMap = stats.getMapForPeriod(currentPeriod)
-        periodMap[key] = (periodMap[key] ?: 0.0) + SharedStatsRepository.totalCalories
+                    stats.totalDistance = distance
+                    stats.totalCalories = calories
 
-        updateUI()
+                    val key = getKeyForPeriod(currentPeriod)
+                    val periodMap = stats.getMapForPeriod(currentPeriod)
+                    periodMap[key] = calories
+
+                    requireActivity().runOnUiThread {
+                        updateUI()
+                    }
+                } catch (e: Exception) {
+                    Log.e("StatsParse", "통계 파싱 오류: ${e.message}")
+                }
+            },
+            onFailure = {
+                Log.e("StatsLoad", "서버로부터 통계 불러오기 실패: $it")
+            }
+        )
     }
 
     private fun updateUI() {
-        val currentPet = PetRepository.getCurrentPet() ?: return
-        val userId = UserRepository.getCurrentUser()?.userId ?: return
-
-        val stats = userStatsMap[userId]?.get(currentPet.id) ?: return
-
         binding.distanceTextView.text = "총 이동 거리: %.2f m".format(stats.totalDistance)
         binding.calorieTextView.text = "소모 칼로리: %.2f kcal".format(stats.totalCalories)
-
         updateChartData(stats.getMapForPeriod(currentPeriod))
     }
 
@@ -124,7 +135,7 @@ class StatisticsFragment : Fragment() {
                     3 -> "yearly"
                     else -> "daily"
                 }
-                updateUI()
+                loadStatsFromServer()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
