@@ -84,6 +84,7 @@ class BluetoothManager(
                     Log.d("BluetoothManager", "🔄 받은 데이터: $fullLine")
 
                     val parts = fullLine.split(",")
+                        .map { it.trim().replace("<", "").replace(">", "") }
 
                     // ✅ 데이터 검증
                     if (parts.size != 5) {
@@ -105,13 +106,11 @@ class BluetoothManager(
                         continue
                     }
 
-                    // ✅ 위도 경도 범위 체크
                     if (lat !in -90.0..90.0 || lon !in -180.0..180.0) {
                         Log.w("BluetoothManager", "❌ 위도/경도 범위 오류: $lat, $lon")
                         continue
                     }
 
-                    // 🔽 여기까지 통과한 데이터만 처리
                     onDataReceived(lat, lon, accX, accY, accZ)
                 }
             }
