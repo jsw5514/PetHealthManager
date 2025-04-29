@@ -30,28 +30,34 @@ object PetRepository {
     fun getCurrentPet(): PetProfile? = profiles[currentPetId]
 
     private fun uploadProfileToServer(userId: String, profile: PetProfile, onComplete: (Boolean) -> Unit) {
-        val json = JSONObject().apply {
+        // 내부 데이터 JSON 생성
+        val dataJson = JSONObject().apply {
+            put("name", profile.name)
+            put("age", profile.age)
+            put("weight", profile.weight)
+            put("gender", profile.gender)
+            put("imageUri", profile.imageUri ?: "")
+            put("totalDistance", profile.totalDistance)
+            put("totalCalories", profile.totalCalories)
+        }
+
+        // 최종 업로드 JSON 생성 (data를 문자열로 넣음)
+        val uploadJson = JSONObject().apply {
             put("uploaderId", userId)
             put("dataId", profile.id.toString())
             put("metaData", "pet_profile")
-            put("data", JSONObject().apply {
-                put("name", profile.name)
-                put("age", profile.age)
-                put("weight", profile.weight)
-                put("gender", profile.gender)
-                put("imageUri", profile.imageUri ?: "")
-                put("totalDistance", profile.totalDistance)
-                put("totalCalories", profile.totalCalories)
-            }.toString())
+            put("data", dataJson.toString())  // 반드시 문자열로 변환
         }
 
-        ApiClient.post("/uploadData", json,
-            onSuccess = {
-                Log.d("PetRepo", "✅ 펫 프로필 업로드 성공")
+        Log.d("PetRepo", "📤 업로드 요청 JSON: $uploadJson")
+
+        ApiClient.post("/uploadData", uploadJson,
+            onSuccess = { response ->
+                Log.d("PetRepo", "✅ 펫 프로필 업로드 성공: $response")
                 onComplete(true)
             },
-            onFailure = {
-                Log.e("PetRepo", "❌ 펫 프로필 업로드 실패: $it")
+            onFailure = { error ->
+                Log.e("PetRepo", "❌ 펫 프로필 업로드 실패: $error")
                 onComplete(false)
             }
         )
@@ -59,44 +65,51 @@ object PetRepository {
 
     fun loadProfilesFromServer(userId: String, petIds: List<UUID>, onComplete: () -> Unit) {
         profiles.clear()
-        var loaded = 0
+        var loadedCount = 0
 
         for (id in petIds) {
-            val json = JSONObject().apply {
+            val requestJson = JSONObject().apply {
                 put("downloaderId", userId)
                 put("dataId", id.toString())
             }
 
-            ApiClient.post("/downloadData", json,
+            Log.d("PetRepo", "📥 다운로드 요청 JSON: $requestJson")
+
+            ApiClient.post("/downloadData", requestJson,
                 onSuccess = { response ->
                     try {
                         val parsed = JSONObject(response)
-                        val data = JSONObject(parsed.getString("data"))
+                        val dataString = parsed.getString("data")
+                        val dataJson = JSONObject(dataString)
 
                         val profile = PetProfile(
                             id = id,
-                            name = data.getString("name"),
-                            age = data.getString("age"),
-                            gender = data.getString("gender"),
-                            weight = data.getDouble("weight"),
-                            imageUri = data.optString("imageUri", "").takeIf { it.isNotEmpty() },
-                            totalDistance = data.optDouble("totalDistance", 0.0),
-                            totalCalories = data.optDouble("totalCalories", 0.0)
+                            name = dataJson.getString("name"),
+                            age = dataJson.getString("age"),
+                            gender = dataJson.getString("gender"),
+                            weight = dataJson.getDouble("weight"),
+                            imageUri = dataJson.optString("imageUri", "").takeIf { it.isNotEmpty() },
+                            totalDistance = dataJson.optDouble("totalDistance", 0.0),
+                            totalCalories = dataJson.optDouble("totalCalories", 0.0)
                         )
 
                         profiles[id] = profile
-                        Log.d("PetRepo", "✅ ${profile.name} 프로필 로드됨")
+                        Log.d("PetRepo", "✅ 프로필 로드 성공: ${profile.name}")
                     } catch (e: Exception) {
                         Log.e("PetRepo", "❌ 프로필 파싱 실패: ${e.message}")
                     } finally {
-                        loaded++
-                        if (loaded == petIds.size) onComplete()
+                        loadedCount++
+                        if (loadedCount == petIds.size) {
+                            onComplete()
+                        }
                     }
                 },
-                onFailure = {
-                    Log.e("PetRepo", "❌ 서버 요청 실패: $it")
-                    loaded++
-                    if (loaded == petIds.size) onComplete()
+                onFailure = { error ->
+                    Log.e("PetRepo", "❌ 서버 요청 실패: $error")
+                    loadedCount++
+                    if (loadedCount == petIds.size) {
+                        onComplete()
+                    }
                 }
             )
         }
