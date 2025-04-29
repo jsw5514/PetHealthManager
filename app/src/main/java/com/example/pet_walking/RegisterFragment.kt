@@ -32,7 +32,7 @@ class RegisterFragment : Fragment() {
         loginText = view.findViewById(R.id.textGoToLogin)
         checkIdButton = view.findViewById(R.id.buttonCheckId)
 
-        // ✅ ID 중복 확인 (GET)
+        // ✅ ID 중복 확인 (GET 요청)
         checkIdButton.setOnClickListener {
             val userId = userIdInput.text.toString()
             if (userId.isBlank()) {
@@ -60,6 +60,7 @@ class RegisterFragment : Fragment() {
             )
         }
 
+        // ✅ 회원가입 요청
         registerButton.setOnClickListener {
             val username = nameInput.text.toString()
             val birth = birthInput.text.toString()
@@ -88,12 +89,12 @@ class RegisterFragment : Fragment() {
                 onSuccess = { result ->
                     requireActivity().runOnUiThread {
                         if (result == "true") {
+                            // 서버에 추가적인 사용자 정보 업로드
                             uploadProfile(userId, username, birth, gender)
 
+                            // 로컬에 저장할 유저 프로필 생성
                             val userProfile = UserProfile(
                                 username = username,
-                                birthdate = birth,
-                                gender = gender,
                                 userId = userId,
                                 password = password
                             )
@@ -122,12 +123,13 @@ class RegisterFragment : Fragment() {
         return view
     }
 
+    // 🔹 추가 사용자 정보 업로드 함수
     private fun uploadProfile(userId: String, name: String, birth: String, gender: String) {
         val json = JSONObject().apply {
             put("uploaderId", userId)
             put("dataId", "userProfile")
             put("metaData", "name:$name,birth:$birth,gender:$gender")
-            put("data", "") // ✅ 내용 없음 (text 전송 없음)
+            put("data", "") // 본문 데이터 없음
         }
 
         ApiClient.post(
