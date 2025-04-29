@@ -2,6 +2,7 @@ package com.example.pet_walking
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,7 +31,8 @@ class UserFragment : Fragment() {
     private val imagePickLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             selectedPetImageUri = it
-            selectImageView.setImageURI(it)
+            selectImageView.
+            setImageURI(it)
         }
     }
 
@@ -102,6 +104,8 @@ class UserFragment : Fragment() {
                 totalDistance = 0.0,
                 totalCalories = 0.0
             )
+
+            Log.d("UserFragment", "✅ 저장할 프로필: $profile")
 
             PetRepository.addProfile(profile, userId) { success ->
                 requireActivity().runOnUiThread {
