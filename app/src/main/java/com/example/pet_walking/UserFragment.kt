@@ -73,7 +73,7 @@ class UserFragment : Fragment() {
         createButton.setOnClickListener {
             inputForm.visibility = View.VISIBLE
         }
-
+/*
         saveButton.setOnClickListener {
             val name = nameInput.text.toString()
             val age = ageInput.text.toString()
@@ -84,7 +84,17 @@ class UserFragment : Fragment() {
             }
             val weight = weightInput.text.toString().toDoubleOrNull() ?: 10.0
             val uuid = UUID.randomUUID()
-            val userId = UserRepository.getCurrentUser()?.userId ?: return@setOnClickListener
+            //코드 수정 삭제 x 로그인 처리 확인
+            //val userId = UserRepository.getCurrentUser()?.userId ?: return@setOnClickListener
+
+            //수정 부분 삭제 예정
+            val user = UserRepository.getCurrentUser()
+            if (user == null) {
+                Toast.makeText(requireContext(), "로그인 후 이용해주세요", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val userId = user.userId
+            //여기까지
 
             var savedUri: Uri? = null
             selectedPetImageUri?.let { uri ->
@@ -117,6 +127,68 @@ class UserFragment : Fragment() {
                         clearInputs()
                         Toast.makeText(requireContext(), "프로필 저장 완료", Toast.LENGTH_SHORT).show()
                     } else {
+                        Toast.makeText(requireContext(), "프로필 저장 실패", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+*/
+        //로그
+        saveButton.setOnClickListener {
+            Log.d("UserFragment", "저장 버튼 눌림")
+
+            val user = UserRepository.getCurrentUser()
+            if (user == null) {
+                Log.w("UserFragment", "로그인 정보 없음 - 저장 중단")
+                Toast.makeText(requireContext(), "로그인 후 이용해주세요", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val userId = user.userId
+            Log.d("UserFragment", "로그인된 유저 ID: $userId")
+
+            val name = nameInput.text.toString()
+            val age = ageInput.text.toString()
+            val gender = when (genderGroup.checkedRadioButtonId) {
+                R.id.male -> "수컷"
+                R.id.female -> "암컷"
+                else -> "미정"
+            }
+            val weight = weightInput.text.toString().toDoubleOrNull() ?: 10.0
+            val uuid = UUID.randomUUID()
+
+            var savedUri: Uri? = null
+            selectedPetImageUri?.let { uri ->
+                val bitmap = ImageStorageManager.decodeUriToBitmap(requireContext(), uri)
+                bitmap?.let {
+                    savedUri = ImageStorageManager.saveBitmapToInternalStorage(requireContext(), it, "pet_$uuid")
+                }
+            }
+
+            val profile = PetProfile(
+                id = uuid,
+                name = name,
+                age = age,
+                gender = gender,
+                weight = weight,
+                imageUri = savedUri?.toString(),
+                totalDistance = 0.0,
+                totalCalories = 0.0
+            )
+
+            Log.d("UserFragment", "저장할 프로필 생성됨: $profile")
+
+            PetRepository.addProfile(profile, userId) { success ->
+                requireActivity().runOnUiThread {
+                    if (success) {
+                        Log.d("UserFragment", "프로필 서버 업로드 성공")
+                        UserRepository.addPetToCurrentUser(profile.id)
+                        UserRepository.saveToPreferences(requireContext())
+                        petContainer.addView(createPetProfileView(profile))
+                        inputForm.visibility = View.GONE
+                        clearInputs()
+                        Toast.makeText(requireContext(), "프로필 저장 완료", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Log.e("UserFragment", "프로필 서버 업로드 실패")
                         Toast.makeText(requireContext(), "프로필 저장 실패", Toast.LENGTH_SHORT).show()
                     }
                 }
