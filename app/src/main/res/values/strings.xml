@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Pet_Walking</string>
+    <!-- res/values/strings.xml -->
+    <string name="google_roads_api_key">AIzaSyAc4UQa-yo2N-tH474YQV1HO_H0m4EkjM8</string>
 
     <string-array name="date_range_options">
         <item>하루 (시간별)</item>

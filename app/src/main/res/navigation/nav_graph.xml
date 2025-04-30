@@ -40,7 +40,11 @@
         android:id="@+id/runningFragment"
         android:name="com.example.pet_walking.RunningFragment"
         android:label="런닝"
-        tools:layout="@layout/running_fragment" />
+        tools:layout="@layout/running_fragment">
+        <action
+            android:id="@+id/action_runningFragment_to_runSummaryFragment"
+            app:destination="@id/runSummaryFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/userFragment"
@@ -125,6 +129,15 @@
         <action
             android:id="@+id/action_joinChatRoomFragment_to_chatRoomFragment"
             app:destination="@id/chatRoomFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/runSummaryFragment"
+        android:name="com.example.pet_walking.RunSummaryFragment"
+        android:label="러닝 요약 화면">
+        <action
+            android:id="@+id/action_runSummaryFragment_to_runningFragment"
+            app:destination="@id/runningFragment" />
     </fragment>
 
 </navigation>

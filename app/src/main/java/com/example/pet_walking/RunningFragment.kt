@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.pet_walking.bluetooth.BluetoothDataListener
 import com.example.pet_walking.bluetooth.BluetoothManager
 import com.example.pet_walking.chat.ChatNetworkHelper
@@ -93,10 +94,20 @@ class RunningFragment : Fragment(), BluetoothDataListener {
         showShareOptionDialog()
 
         val pet = PetRepository.getCurrentPet()
-        val userId = LoginSession.userId
+        val userId =UserRepository.getCurrentUser()?.userId
         if (pet != null && userId != null) {
             uploadRunSummaryToServer(userId, pet.id, pet.totalDistance, pet.totalCalories)
         }
+        //Roads API 보정 적용 정지 버튼 누를시 자동 보정함
+        val apiKey = getString(R.string.google_roads_api_key)
+        mapFragment?.applyCorrectedPolyline(apiKey)
+
+        val bundle = Bundle().apply {
+            putDouble("distance", pet?.totalDistance ?: 0.0)
+            putDouble("calories", pet?.totalCalories ?: 0.0)
+            putLong("durationMin", (System.currentTimeMillis() - startTime) / 1000 / 60)
+        }
+        findNavController().navigate(R.id.action_runningFragment_to_runSummaryFragment, bundle)
     }
 
     private fun showShareOptionDialog() {
@@ -109,7 +120,7 @@ class RunningFragment : Fragment(), BluetoothDataListener {
     }
 
     private fun showChatRoomPickerDialog() {
-        val userId = LoginSession.userId ?: return
+        val userId = UserRepository.getCurrentUser()?.userId?:return
         ChatRoomManager.getJoinedChatRooms(userId) { rooms ->
             activity?.runOnUiThread {
                 if (rooms.isEmpty()) {
@@ -234,9 +245,10 @@ class RunningFragment : Fragment(), BluetoothDataListener {
     }
 
     fun captureRunSummaryAndSendToChat(layout: View, roomId: Int, userId: String) {
-        layout.isDrawingCacheEnabled = true
-        val bitmap = Bitmap.createBitmap(layout.drawingCache)
-        layout.isDrawingCacheEnabled = false
+        // 🔄 새 방식: View를 안전하게 비트맵으로 그리기
+        val bitmap = Bitmap.createBitmap(layout.width, layout.height, Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(bitmap)
+        layout.draw(canvas)
 
         val outputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
