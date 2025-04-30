@@ -36,6 +36,17 @@ class RunningFragment : Fragment(), BluetoothDataListener {
     private var mapFragment: MapFragment? = null
     private var bluetoothManager: BluetoothManager? = null
 
+    override fun onResume() {
+        super.onResume()
+        (activity as? MainActivity)?.setBluetoothDataListener(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        (activity as? MainActivity)?.setBluetoothDataListener(null)
+    }
+
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.running_fragment, container, false)
 
@@ -69,11 +80,34 @@ class RunningFragment : Fragment(), BluetoothDataListener {
             lastLon = null
             startTime = System.currentTimeMillis()
 
-            bluetoothManager = BluetoothManager(
-                onDataReceived = { lat, lon, accX, accY, accZ -> onBluetoothDataReceived(lat, lon, accX, accY, accZ) },
-                onConnectionStatusChanged = { _, _ -> }
+            /*bluetoothManager = BluetoothManager(
+                onDataReceived = { lat, lon, accX, accY, accZ ->
+                    onBluetoothDataReceived(lat, lon, accX, accY, accZ)
+                },
+                onConnectionStatusChanged = { isConnected, _ ->
+                    if (!isConnected) {
+                        Toast.makeText(requireContext(), "❌ 블루투스 연결 실패", Toast.LENGTH_SHORT).show()
+                    }
+                }
             )
-            bluetoothManager?.startListening()
+            Log.e("lllllllll", "kasd")
+*/
+            /*val device = bluetoothManager?.getPairedDevices()?.firstOrNull()
+
+            if (device != null) {
+                Log.e("KKK", "ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ")
+                bluetoothManager?.connectToDevice(
+                    device,
+                    onSuccess = { Log.d("RunningFragment", "✅ 블루투스 연결 성공") },
+                    onFailure = { Log.e("RunningFragment", "❌ 블루투스 연결 실패") }
+                )
+            } else {
+                Log.e("123123", "kdaslkdlsad")
+                Toast.makeText(requireContext(), "페어링된 블루투스 기기를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }*/
+
+
+
         }
 
         stopButton.setOnClickListener {
@@ -86,8 +120,10 @@ class RunningFragment : Fragment(), BluetoothDataListener {
 
     private fun stopRunning() {
         running = false
+        /*
         bluetoothManager?.disconnect()
         bluetoothManager = null
+         */
         startButton.visibility = View.VISIBLE
         goalButton.visibility = View.VISIBLE
         stopButton.visibility = View.GONE
@@ -165,9 +201,13 @@ class RunningFragment : Fragment(), BluetoothDataListener {
     override fun onBluetoothDataReceived(lat: Double, lon: Double, accX: Float, accY: Float, accZ: Float) {
         if (!running) return
         val pet = PetRepository.getCurrentPet() ?: return
-        val map = mapFragment ?: return
+        val map = mapFragment
+        if (map == null || !map.isMapReady()) {
+            Log.w("RunningFragment", "❌ Map이 아직 준비되지 않음 - addLocation 생략")
+            return
+        }
 
-        map.addLocation(lat, lon)
+        map.addLocation(lat, lon)  // ✅ 여기서 선 그리기 시도
 
         val distance = if (lastLat != null && lastLon != null) {
             haversine(lastLat!!, lastLon!!, lat, lon)

@@ -53,8 +53,9 @@ object PetRepository {
 
         ApiClient.post("/uploadData", uploadJson,
             onSuccess = { response ->
-                Log.d("PetRepo", "✅ 펫 프로필 업로드 성공: $response")
-                onComplete(true)
+                val success = response.toBooleanStrictOrNull() == true
+                Log.d("PetRepo", if (success) "✅ 펫 프로필 업로드 성공" else "❌ 펫 프로필 업로드 실패 (서버 응답: $response)")
+                onComplete(success)
             },
             onFailure = { error ->
                 Log.e("PetRepo", "❌ 펫 프로필 업로드 실패: $error")

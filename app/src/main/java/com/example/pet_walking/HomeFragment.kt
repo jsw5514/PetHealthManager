@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -26,7 +25,6 @@ class HomeFragment : Fragment() {
     private lateinit var bluetoothManager: BluetoothManager
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
-    // 🔒 런타임 권한
     private val bluetoothPermissions = arrayOf(
         Manifest.permission.BLUETOOTH_SCAN,
         Manifest.permission.BLUETOOTH_CONNECT
@@ -38,31 +36,17 @@ class HomeFragment : Fragment() {
     ): View {
         _binding = HomeFragmentBinding.inflate(inflater, container, false)
 
-        // ✅ Android 12 이상 권한 체크
         checkBluetoothPermissions()
 
-        // ✅ BluetoothManager 초기화
         bluetoothManager = BluetoothManager(
             onDataReceived = { lat, lon, accX, accY, accZ ->
                 (activity as? MainActivity)?.processReceivedData(lat, lon, accX, accY, accZ)
-
-                requireActivity().runOnUiThread {
-                    binding.rawDataTextView.text = buildString {
-                        append("📡 실시간 수신 데이터\n")
-                        append("위도: $lat\n")
-                        append("경도: $lon\n")
-                        append("accX: $accX\n")
-                        append("accY: $accY\n")
-                        append("accZ: $accZ")
-                    }
-                }
+                // rawDataTextView 제거됨 - 이 블록 안에서 UI 갱신은 더 이상 없음
             },
             onConnectionStatusChanged = { isConnected, message ->
                 requireActivity().runOnUiThread {
                     updateBluetoothStatus(message, isConnected)
-                    if (!isConnected) {
-                        binding.rawDataTextView.text = "📴 블루투스 연결이 해제되었습니다."
-                    }
+                    // rawDataTextView 제거됨 - 연결 해제 메시지 표시 제거
                 }
             }
         )

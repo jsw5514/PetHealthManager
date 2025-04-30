@@ -9,7 +9,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 
 object ApiClient {
     private val client = OkHttpClient()
-    private const val BASE_URL = "http://10.0.2.2:8080" // 로컬 서버 주소 (에뮬레이터 기준)
+    private const val BASE_URL = "http://172.24.251.189:8080" // 로컬 서버 주소 (에뮬레이터 기준)
 
     // 🔹 일반 POST 요청 (문자열 응답 처리)
     fun post(

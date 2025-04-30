@@ -39,6 +39,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onMapReady(naverMap: NaverMap) {
+        Log.d("MapFragment", "✅ onMapReady 호출됨")
         this.naverMap = naverMap
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
         naverMap.locationSource = locationSource
@@ -46,17 +47,33 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         polyline.color = 0xFF00AAFF.toInt() // 파란색
         polyline.width = 10
+
+        if (pathCoordinates.size >= 2) {
+            Log.d("MapFragment", "📌 onMapReady 내에서 경로 그리기")
+            polyline.coords = pathCoordinates
+            polyline.map = naverMap
+        }
     }
 
-    // 외부에서 GPS 좌표 추가 → 선 연결
     fun addLocation(lat: Double, lon: Double) {
-        val map = naverMap ?: return
+        Log.d("MapFragment", "📌 addLocation 호출됨: $lat, $lon")
+
+        val map = naverMap
+        if (map == null) {
+            Log.e("MapFragment", "❌ naverMap is null (아직 onMapReady 안됨)")
+            return
+        }
+
         val newPoint = LatLng(lat, lon)
         pathCoordinates.add(newPoint)
+        Log.d("MapFragment", "🟢 좌표 추가됨, 총 ${pathCoordinates.size}개")
 
         if (pathCoordinates.size >= 2) {
             polyline.coords = pathCoordinates
             polyline.map = map
+            Log.d("MapFragment", "✅ 선 연결 완료")
+        } else {
+            Log.w("MapFragment", "❌ 좌표 수 부족 (1개), 선 연결 생략")
         }
     }
 
@@ -103,14 +120,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             onResult = { corrected ->
                 polyline.coords = corrected
                 polyline.map = naverMap
+                Log.d("MapFragment", "✅ 보정된 선 그리기 완료")
             },
             onError = { error ->
-                Log.e("SnapToRoads", "보정 실패: $error")
+                Log.e("SnapToRoads", "❌ 보정 실패: $error")
             }
         )
     }
 
-    // 생명주기 동기화 (MapView는 반드시 필요)
+    // 생명주기 동기화
     override fun onStart() { super.onStart(); mapView.onStart() }
     override fun onResume() { super.onResume(); mapView.onResume() }
     override fun onPause() { mapView.onPause(); super.onPause() }

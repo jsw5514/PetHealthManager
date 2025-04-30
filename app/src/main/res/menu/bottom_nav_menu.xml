@@ -3,34 +3,34 @@
 
     <item
         android:id="@+id/homeFragment"
-
+        android:icon="@drawable/ic_home"
         android:title="홈" />
 
 
 
     <item
         android:id="@+id/chatRoomListFragment"
-
+        android:icon="@drawable/ic_chat"
         android:title="채팅" />
 
 
 
     <item
         android:id="@+id/runningFragment"
-
+        android:icon="@drawable/ic_runnig"
         android:title="런닝" />
 
 
     <item
         android:id="@+id/statisticsFragment"
-
+        android:icon="@drawable/ic_chart"
         android:title="통계" />
 
 
 
     <item
         android:id="@+id/userFragment"
-
+        android:icon="@drawable/ic_user"
         android:title="사용자" />
 
 </menu>

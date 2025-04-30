@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.example.pet_walking.bluetooth.BluetoothDataListener
 import com.example.pet_walking.bluetooth.BluetoothManager
 import com.example.pet_walking.databinding.ActivityMainBinding
 import kotlin.math.*
@@ -75,6 +76,7 @@ class MainActivity : AppCompatActivity() {
         bluetoothManager = BluetoothManager(
             onDataReceived = { lat, lon, accX, accY, accZ ->
                 processReceivedData(lat, lon, accX, accY, accZ)
+                dataListener?.onBluetoothDataReceived(lat, lon, accX, accY, accZ) // 🔥 프래그먼트로 전달
             },
             onConnectionStatusChanged = { isConnected, message ->
                 runOnUiThread {
@@ -122,6 +124,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+
     // 📡 블루투스 기기 선택 다이얼로그
     private fun showBluetoothDeviceDialog() {
         val pairedDevices = bluetoothManager.getPairedDevices()?.toList() ?: emptyList()
@@ -144,6 +148,8 @@ class MainActivity : AppCompatActivity() {
             .setNegativeButton("취소", null)
             .show()
     }
+
+
 
     // 📍 GPS + 가속도 데이터 수신 시 처리
     fun processReceivedData(lat: Double, lon: Double, accX: Float, accY: Float, accZ: Float) {
@@ -188,6 +194,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var dataListener: BluetoothDataListener? = null
+    fun setBluetoothDataListener(listener: BluetoothDataListener?) {
+        this.dataListener = listener
+    }
+
     // 거리 계산 (Haversine)
     private fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val R = 6371e3
@@ -213,4 +224,6 @@ class MainActivity : AppCompatActivity() {
         val hours = time / 3600.0
         return MET * weight * hours
     }
+
+
 }
