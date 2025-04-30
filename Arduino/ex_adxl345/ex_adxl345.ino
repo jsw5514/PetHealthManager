@@ -34,7 +34,7 @@ void loop() {
 }
 
 //I2C인터페이스를 통해 축을 읽음
-int Read_Axis(byte a) {
+float Read_Axis(byte a) {
   int data;
 
   Wire.beginTransmission(I2C_Address);
@@ -53,7 +53,7 @@ int Read_Axis(byte a) {
   }
 
   Wire.endTransmission();
-  return data;
+  return (float)data/256;
 }
 
 //ADXL345 초기화
