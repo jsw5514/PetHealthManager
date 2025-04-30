@@ -23,6 +23,7 @@ char gps_buf_longitude[16];//경도 데이터 저장용 버퍼
 #define Range_4g 1
 #define Range_8g 2
 #define Range_16g 3
+#define ACC_RANGE_NOW Range_2g  //현재 가속도 측정 범위
 
 //출력 간격 관리
 #define OUTPUT_INTERVAL 1000 
@@ -45,11 +46,11 @@ void printData(Stream &serial){
 //serial : 출력할 시리얼 객체
 void printAcc(Stream &serial){
   serial.write("<");
-  serial.print(Read_Axis(X_axis));
+  serial.print(getMeterPerSec2(Read_Axis(X_axis)));
   serial.write(">,<");
-  serial.print(Read_Axis(Y_axis));
+  serial.print(getMeterPerSec2(Read_Axis(Y_axis)));
   serial.write(">,<");
-  serial.print(Read_Axis(Z_axis));
+  serial.print(getMeterPerSec2(Read_Axis(Z_axis)));
   serial.write(">");
 }
 
@@ -65,7 +66,7 @@ void printGPS(Stream &serial){
 }
 
 //가속도값 읽기 함수
-int Read_Axis(byte a) {
+float Read_Axis(byte a) {
   int data;
 
   Wire.beginTransmission(I2C_Address);
@@ -84,7 +85,27 @@ int Read_Axis(byte a) {
   }
 
   Wire.endTransmission();
-  return data;
+  return (float)data;
+}
+
+//ADXL345에서 읽은 가속도값을 m/s^2 단위로 변경
+float getMeterPerSec2(float rawValue){
+  int lsbPerG=256;
+  switch(ACC_RANGE_NOW){
+    case Range_2g:
+      lsbPerG=256;
+      break;
+    case Range_4g:
+      lsbPerG=128;
+      break;
+    case Range_8g:
+      lsbPerG=64;
+      break;
+    case Range_16g:
+      lsbPerG=32;
+      break;
+  }
+  return rawValue/lsbPerG*9.8f;
 }
 
 //ADXL345 초기화
@@ -115,7 +136,7 @@ void setup() {
 
   //가속도 모듈 준비
   Wire.begin();
-  Init_ADXL345(Range_2g);
+  Init_ADXL345(ACC_RANGE_NOW);
 
   //gps 모듈 준비
   GPSSerial.begin(9600);
