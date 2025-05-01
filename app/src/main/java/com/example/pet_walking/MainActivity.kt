@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     private val BLUETOOTH_PERMISSION_REQUEST = 1001
 
-
+    fun getBluetoothManager(): BluetoothManager = bluetoothManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,10 +48,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 📌 네비게이션 바 연결
+        // 네비게이션 바 연결
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
         val navController = navHostFragment?.navController
-        // 🔐 로그인 여부 확인
+        //로그인 여부 확인
         /*navController?.let { nav ->
             if (UserRepository.getCurrentUser() == null) {
                 nav.navigate(R.id.loginFragment)
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        // ✅ 블루투스 권한 확인 후 기기 선택
+        //블루투스 권한 확인 후 기기 선택
         checkAndRequestBluetoothPermission()
     }
 
@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    // 📡 블루투스 기기 선택 다이얼로그
+    // 블루투스 기기 선택 다이얼로그
     private fun showBluetoothDeviceDialog() {
         val pairedDevices = bluetoothManager.getPairedDevices()?.toList() ?: emptyList()
         if (pairedDevices.isEmpty()) {
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    // 📍 GPS + 가속도 데이터 수신 시 처리
+    // GPS + 가속도 데이터 수신 시 처리
     fun processReceivedData(lat: Double, lon: Double, accX: Float, accY: Float, accZ: Float) {
         locationList.add(lat to lon)
 
@@ -185,7 +185,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // 🟢 Bluetooth 연결 상태 텍스트 업데이트
+    // Bluetooth 연결 상태 텍스트 업데이트
     private fun updateBluetoothStatus(message: String) {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
         val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
@@ -228,6 +228,7 @@ class MainActivity : AppCompatActivity() {
         val hours = time / 3600.0
         return MET * weight * hours
     }
+
 
 
 }

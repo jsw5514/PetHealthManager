@@ -22,7 +22,9 @@ class HomeFragment : Fragment() {
     private var _binding: HomeFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var bluetoothManager: BluetoothManager
+    //MainActivity 의 매니저를 그대로 사용
+    // private lateinit var bluetoothManager: BluetoothManager
+
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
     private val bluetoothPermissions = arrayOf(
@@ -30,29 +32,25 @@ class HomeFragment : Fragment() {
         Manifest.permission.BLUETOOTH_CONNECT
     )
 
+    /* ─────────────────────────────────────────── */
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = HomeFragmentBinding.inflate(inflater, container, false)
 
         checkBluetoothPermissions()
 
-        bluetoothManager = BluetoothManager(
-            onDataReceived = { lat, lon, accX, accY, accZ ->
-                (activity as? MainActivity)?.processReceivedData(lat, lon, accX, accY, accZ)
-                // rawDataTextView 제거됨 - 이 블록 안에서 UI 갱신은 더 이상 없음
-            },
-            onConnectionStatusChanged = { isConnected, message ->
-                requireActivity().runOnUiThread {
-                    updateBluetoothStatus(message, isConnected)
-                    // rawDataTextView 제거됨 - 연결 해제 메시지 표시 제거
-                }
-            }
-        )
+        /* ✅ MainActivity 로부터 기존 매니저 참조 */
+        val main = activity as? MainActivity ?: return binding.root
+        val bluetoothManager: BluetoothManager = main.getBluetoothManager()
 
+        /* 초기 상태 */
         updateBluetoothStatus("Disconnected", false)
 
+        /* 연결 버튼(텍스트) 탭 → 기기 선택 */
         binding.bluetoothStatusTextView.setOnClickListener {
             showBluetoothDeviceDialog { device ->
                 bluetoothManager.connectToDevice(
@@ -60,7 +58,7 @@ class HomeFragment : Fragment() {
                     onSuccess = {
                         requireActivity().runOnUiThread {
                             Toast.makeText(requireContext(), "✅ 블루투스 연결 성공", Toast.LENGTH_SHORT).show()
-                            bluetoothManager.startListening()
+                            bluetoothManager.startListening()     // 한 곳에서만 listen
                         }
                     },
                     onFailure = {
@@ -73,12 +71,15 @@ class HomeFragment : Fragment() {
             }
         }
 
+        /* 주간 목표 설정 화면 이동 */
         binding.buttonSetWeeklyGoal.setOnClickListener {
             findNavController().navigate(R.id.goalFragment)
         }
 
         return binding.root
     }
+
+    /* ────── 기기 선택 다이얼로그 ────── */
 
     private fun showBluetoothDeviceDialog(onDeviceSelected: (BluetoothDevice) -> Unit) {
         if (bluetoothAdapter == null) {
@@ -102,27 +103,28 @@ class HomeFragment : Fragment() {
         AlertDialog.Builder(requireContext())
             .setTitle("블루투스 기기 선택")
             .setItems(deviceNames) { _, which ->
-                val device = pairedDevices[which]
-                onDeviceSelected(device)
+                onDeviceSelected(pairedDevices[which])
             }
             .setNegativeButton("취소", null)
             .show()
     }
 
+    /* ────── 권한 체크 ────── */
+
     private fun checkBluetoothPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val notGranted = bluetoothPermissions.any {
+            val need = bluetoothPermissions.any {
                 ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED
             }
-            if (notGranted) {
+            if (need) {
                 ActivityCompat.requestPermissions(requireActivity(), bluetoothPermissions, 1001)
             }
         }
     }
 
-    fun updateBluetoothStatus(status: String) {
-        updateBluetoothStatus(status, false)
-    }
+    /* ────── UI 헬퍼 ────── */
+
+    fun updateBluetoothStatus(status: String) = updateBluetoothStatus(status, false)
 
     fun updateBluetoothStatus(status: String, isConnected: Boolean) {
         binding.bluetoothStatusTextView.text = "Bluetooth Status: $status"
@@ -131,22 +133,24 @@ class HomeFragment : Fragment() {
     }
 
     fun updateStats() {
-        if (isAdded) {
-            val distance = SharedStatsRepository.totalDistance
-            val calories = SharedStatsRepository.totalCalories
-            val km = distance / 1000.0
+        if (!isAdded) return
 
-            binding.textViewDistance.text = "총 이동 거리: %.2f km".format(km)
-            binding.textViewCalories.text = "소모 칼로리: %.2f kcal".format(calories)
+        val distanceM = SharedStatsRepository.totalDistance
+        val calories  = SharedStatsRepository.totalCalories
+        val km = distanceM / 1000.0
 
-            binding.textViewGoalSummary.text = GoalRepository.getGoalSummary()
-            val goalReached = GoalRepository.isGoalReached(km, calories)
-            binding.textViewGoalStatus.text = if (goalReached) "달성 여부: ✅" else "달성 여부: ❌"
-            binding.textViewGoalStatus.setTextColor(
-                requireContext().getColor(if (goalReached) R.color.green else R.color.red)
-            )
-        }
+        binding.textViewDistance.text  = "총 이동 거리: %.2f km".format(km)
+        binding.textViewCalories.text  = "소모 칼로리: %.2f kcal".format(calories)
+
+        binding.textViewGoalSummary.text = GoalRepository.getGoalSummary()
+        val reached = GoalRepository.isGoalReached(km, calories)
+        binding.textViewGoalStatus.text = if (reached) "달성 여부: ✅" else "달성 여부: ❌"
+        binding.textViewGoalStatus.setTextColor(
+            requireContext().getColor(if (reached) R.color.green else R.color.red)
+        )
     }
+
+    /* ────── 라이프사이클 ────── */
 
     override fun onResume() {
         super.onResume()
