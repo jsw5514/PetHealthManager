@@ -198,6 +198,10 @@ class MainActivity : AppCompatActivity() {
     fun setBluetoothDataListener(listener: BluetoothDataListener?) {
         this.dataListener = listener
     }
+//블루투스 데이터를 수신대기 시킴 스타트 버튼 누르면 시작되게 함
+    fun startListeningBluetooth() {
+        bluetoothManager.startListening()
+    }
 
     // 거리 계산 (Haversine)
     private fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {

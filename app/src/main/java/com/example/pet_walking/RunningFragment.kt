@@ -39,11 +39,7 @@ class RunningFragment : Fragment(), BluetoothDataListener {
     override fun onResume() {
         super.onResume()
         (activity as? MainActivity)?.setBluetoothDataListener(this)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        (activity as? MainActivity)?.setBluetoothDataListener(null)
+        (activity as? MainActivity)?.startListeningBluetooth()
     }
 
 
@@ -116,6 +112,10 @@ class RunningFragment : Fragment(), BluetoothDataListener {
         }
 
         return view
+    }
+    override fun onPause() {
+        super.onPause()
+        (activity as? MainActivity)?.setBluetoothDataListener(null)
     }
 
     private fun stopRunning() {
@@ -207,7 +207,7 @@ class RunningFragment : Fragment(), BluetoothDataListener {
             return
         }
 
-        map.addLocation(lat, lon)  // ✅ 여기서 선 그리기 시도
+        map.addLocation(lat, lon)
 
         val distance = if (lastLat != null && lastLon != null) {
             haversine(lastLat!!, lastLon!!, lat, lon)
@@ -226,7 +226,7 @@ class RunningFragment : Fragment(), BluetoothDataListener {
 
         if (distanceReached || calorieReached) {
             requireActivity().runOnUiThread {
-                Toast.makeText(requireContext(), "🎉 목표 달성! 러닝 종료", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "목표 달성! 러닝 종료", Toast.LENGTH_LONG).show()
                 stopRunning()
             }
         }
