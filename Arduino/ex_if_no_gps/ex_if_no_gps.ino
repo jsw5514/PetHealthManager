@@ -1,0 +1,180 @@
+#include <SoftwareSerial.h> //시리얼 통신을 위해 사용(사용 모듈: HM-10 블루투스 모듈,VK2828U7G5LF GPS 모듈)
+#include <Wire.h> //I2C 통신을 위해 사용(사용 모듈: ADXL345 가속도 모듈)
+#include <TinyGPS++.h> //GPS 모듈이 전송하는 NMEA 0183 데이터를 파싱하기위해 사용
+
+SoftwareSerial BTSerial(2, 3); //(RX, TX) 블루투스 모듈 연결용 시리얼 객체
+SoftwareSerial GPSSerial(4, 5); //(RX, TX) GPS 모듈 연결용 시리얼 객체
+TinyGPSPlus gps; //gps 데이터 파싱을 위한 TinyGPS++객체(선언시에 객체 자동생성)
+char gps_buf_latitude[16];//위도 데이터 저장용 버퍼
+char gps_buf_longitude[16];//경도 데이터 저장용 버퍼
+
+#define I2C_Address 0x53 //ADXL345의 I2C 주소
+
+//ADXL345의 레지스터 주소
+#define POWER_CTL 0x2D
+#define DATA_FORMAT 0x31
+#define X_axis 0x32
+#define Y_axis 0x34
+#define Z_axis 0x36
+
+//ADXL345의 DATA_FORMAT 레지스터값
+/*note: 해당 레지스터는 여러 필드를 지원하지만 이 코드에서는 측정할 가속도 범위만 설정*/
+#define Range_2g 0
+#define Range_4g 1
+#define Range_8g 2
+#define Range_16g 3
+#define ACC_RANGE_NOW Range_2g  //현재 가속도 측정 범위
+
+//출력 간격 관리
+#define OUTPUT_INTERVAL 1000 
+unsigned long time_before=0;
+//가속도, gps 데이터 출력 함수
+//매개변수
+//serial : 출력할 시리얼 객체
+void printData(Stream &serial){
+  unsigned long now = millis(); //현재 시간 가져오기
+  if(now >= time_before + OUTPUT_INTERVAL){
+    time_before = now;
+    printGPS(serial);//gps 출력
+    printAcc(serial);//가속도 출력
+    serial.write("#");
+  }
+}
+
+//3축 가속도 출력 함수
+//매개변수
+//serial : 출력할 시리얼 객체
+void printAcc(Stream &serial){
+  serial.write("<");
+  serial.print(getMeterPerSec2(Read_Axis(X_axis)));
+  serial.write(">,<");
+  serial.print(getMeterPerSec2(Read_Axis(Y_axis)));
+  serial.write(">,<");
+  serial.print(getMeterPerSec2(Read_Axis(Z_axis)));
+  serial.write(">");
+}
+
+//gps 출력 함수
+//매개변수
+//serial : 출력할 시리얼 객체
+double lat_default=37.5729; //위도(광화문)
+double lon_default=126.9794; //경도
+int useDefaultVal = 0;
+void printGPS(Stream &serial){
+  if(strcmp(gps_buf_latitude,"")==0 || useDefaultVal == 1){
+    useDefaultVal=1;
+    //버퍼가 비어있으면 기본값 출력
+    //sprintf(gps_buf_latitude,"%.6f",lat_default);
+    dtostrf(lat_default,0,6,gps_buf_latitude);
+
+    lon_default+=0.000017;
+    //sprintf(gps_buf_longitude,"%.6f",lon_default);
+    dtostrf(lon_default,0,6,gps_buf_longitude);
+    delay(1000);
+  }
+  serial.write("<");
+  serial.write(gps_buf_latitude);
+  serial.write(">,<");
+  serial.write(gps_buf_longitude);
+  serial.write((">,"));
+}
+
+//가속도값 읽기 함수
+float Read_Axis(byte a) {
+  int data;
+
+  Wire.beginTransmission(I2C_Address);
+  Wire.write(a);
+  Wire.endTransmission();
+
+  Wire.beginTransmission(I2C_Address);
+  Wire.requestFrom(I2C_Address, 2);
+
+  if (Wire.available()) {
+    data = (int)Wire.read();
+    data = data | (Wire.read() << 8);
+  }
+  else {
+    data = 0;
+  }
+
+  Wire.endTransmission();
+  return (float)data;
+}
+
+//ADXL345에서 읽은 가속도값을 m/s^2 단위로 변경
+float getMeterPerSec2(float rawValue){
+  int lsbPerG=256;
+  switch(ACC_RANGE_NOW){
+    case Range_2g:
+      lsbPerG=256;
+      break;
+    case Range_4g:
+      lsbPerG=128;
+      break;
+    case Range_8g:
+      lsbPerG=64;
+      break;
+    case Range_16g:
+      lsbPerG=32;
+      break;
+  }
+  return rawValue/lsbPerG*9.8f;
+}
+
+//ADXL345 초기화
+void Init_ADXL345(byte r) {
+
+  Wire.beginTransmission(I2C_Address);
+
+  //감도설정
+  Wire.write(DATA_FORMAT);
+  Wire.write(r);
+  Wire.endTransmission();
+
+  //측정모드로 전환
+  Wire.beginTransmission(I2C_Address);
+  Wire.write(POWER_CTL);
+  Wire.write(0x08);
+  Wire.endTransmission();
+}
+
+void setup() {
+  //디버그 출력용 시리얼 준비
+  Serial.begin(9600);
+
+  //블루투스 모듈 준비
+  BTSerial.begin(9600);
+  delay(1000);
+  BTSerial.write("AT+RESET");
+
+  //가속도 모듈 준비
+  Wire.begin();
+  Init_ADXL345(ACC_RANGE_NOW);
+
+  //gps 모듈 준비
+  GPSSerial.begin(9600);
+}
+
+void loop() {
+  //시리얼 입력을 블루투스 모듈에 그대로 전달(AT 명령어 송신용)
+  while (BTSerial.available()) {
+    Serial.write(BTSerial.read());
+  }
+
+  //모듈에서 받은 GPS데이터를 TinyGPSPlus 객체에 전달
+  while (GPSSerial.available() > 0) {
+    char c = GPSSerial.read();
+    gps.encode(c);
+  }
+
+  // 유효한 위치 데이터가 업데이트되었는지 확인
+  if (gps.location.isUpdated()) {
+    //업데이트 된 위치 버퍼에 저장
+    dtostrf(gps.location.lat(), 0, 6, gps_buf_latitude);//(number, width, precision, buffer)
+    dtostrf(gps.location.lng(), 0, 6, gps_buf_longitude);//(number, width, precision, buffer)
+  }
+
+  //데이터 출력
+  printData(BTSerial);
+}
