@@ -37,16 +37,17 @@ public class DebugController {
     }
 
     //받은 요청 raw 데이터 출력 함수
-    //@PostMapping("/login")
-    public String readRawData(HttpServletRequest request) throws IOException {
-        StringBuilder rawData = new StringBuilder();
-        try (BufferedReader reader = request.getReader()) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                rawData.append(line).append("\n");
-            }
-        }
-        System.out.println("Received Raw Data:\n" + rawData.toString()); // 콘솔 출력
+    //@PostMapping("/uploadData")
+    public String readRawData(@RequestBody Map<String,String> request) throws IOException {
+//        StringBuilder rawData = new StringBuilder();
+//        try (BufferedReader reader = request.getReader()) {
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//                rawData.append(line).append("\n");
+//            }
+//        }
+//        log.info("Received Raw Data:\n" + rawData.toString()); // 콘솔 출력
+        log.info("Upload attempt with data: " + request);
         return "Raw Data received";
     }
 }
