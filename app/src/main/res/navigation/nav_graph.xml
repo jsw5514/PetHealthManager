@@ -7,7 +7,7 @@
     <!-- 로그인 -->
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.pet_walking.LoginFragment"
+        android:name="com.example.pet_walking.Login.LoginFragment"
         android:label="로그인"
         tools:layout="@layout/fragment_login" >
         <action
@@ -21,7 +21,7 @@
     <!-- 회원가입 -->
     <fragment
         android:id="@+id/registerFragment"
-        android:name="com.example.pet_walking.RegisterFragment"
+        android:name="com.example.pet_walking.Login.RegisterFragment"
         android:label="회원가입"
         tools:layout="@layout/fragment_register" >
         <action
@@ -29,77 +29,86 @@
             app:destination="@id/loginFragment" />
     </fragment>
 
-    <!-- 메인 기능 프래그먼트들 -->
+    <!-- 홈 -->
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.pet_walking.HomeFragment"
+        android:name="com.example.pet_walking.Home.HomeFragment"
         android:label="홈"
         tools:layout="@layout/home_fragment" />
 
+    <!-- 러닝 -->
     <fragment
         android:id="@+id/runningFragment"
-        android:name="com.example.pet_walking.RunningFragment"
-        android:label="런닝"
+        android:name="com.example.pet_walking.Running.uploader.RunningFragment"
+        android:label="러닝"
         tools:layout="@layout/running_fragment">
         <action
             android:id="@+id/action_runningFragment_to_runSummaryFragment"
             app:destination="@id/runSummaryFragment" />
     </fragment>
 
+    <!-- 러닝 요약 -->
+    <fragment
+        android:id="@+id/runSummaryFragment"
+        android:name="com.example.pet_walking.Running.uploader.RunSummaryFragment"
+        android:label="러닝 요약"
+        tools:layout="@layout/fragment_run_summary">
+        <action
+            android:id="@+id/action_runSummaryFragment_to_runningFragment"
+            app:destination="@id/runningFragment" />
+    </fragment>
+
+    <!-- 사용자 프로필 -->
     <fragment
         android:id="@+id/userFragment"
-        android:name="com.example.pet_walking.UserFragment"
+        android:name="com.example.pet_walking.profile.ui.UserFragment"
         android:label="사용자"
         tools:layout="@layout/user_fragment" />
 
+    <!-- 통계 -->
     <fragment
         android:id="@+id/statisticsFragment"
-        android:name="com.example.pet_walking.StatisticsFragment"
+        android:name="com.example.pet_walking.statistics.StatisticsFragment"
         android:label="통계"
         tools:layout="@layout/statistics_fragment" />
 
-    <fragment
-        android:id="@+id/mapFragment"
-        android:name="com.example.pet_walking.MapFragment"
-        android:label="지도"
-        tools:layout="@layout/map_fragment" />
-
+    <!-- 목표 설정 -->
     <fragment
         android:id="@+id/goalFragment"
-        android:name="com.example.pet_walking.GoalFragment"
+        android:name="com.example.pet_walking.Goal.GoalFragment"
         android:label="목표"
         tools:layout="@layout/goal_fragment" />
 
-    <!-- ✅ 채팅방 목록 Fragment -->
+    <!-- 지도 -->
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.pet_walking.Running.Map.MapFragment"
+        android:label="지도"
+        tools:layout="@layout/map_fragment" />
+
+    <!-- 채팅방 목록 -->
     <fragment
         android:id="@+id/chatRoomListFragment"
-        android:name="com.example.pet_walking.chat.ChatRoomListFragment"
+        android:name="com.example.pet_walking.Chat.ChatRoomListFragment"
         android:label="채팅방 목록"
         tools:layout="@layout/fragment_chat_room_list">
-
-        <!-- 채팅방 입장 -->
         <action
             android:id="@+id/action_chatRoomListFragment_to_chatRoomFragment"
             app:destination="@id/chatRoomFragment" />
-
-        <!-- 채팅방 생성 -->
         <action
             android:id="@+id/action_chatRoomListFragment_to_createChatRoomFragment"
             app:destination="@id/createChatRoomFragment" />
-
-        <!-- 채팅방 참여 -->
         <action
             android:id="@+id/action_chatRoomListFragment_to_joinChatRoomFragment"
             app:destination="@id/joinChatRoomFragment" />
     </fragment>
 
-    <!-- ✅ 채팅방 Fragment -->
+    <!-- 채팅방 -->
     <fragment
         android:id="@+id/chatRoomFragment"
-        android:name="com.example.pet_walking.chat.ChatRoomFragment"
+        android:name="com.example.pet_walking.Chat.ChatRoomFragment"
         android:label="채팅방"
         tools:layout="@layout/fragment_chat_room">
-
         <argument
             android:name="roomId"
             app:argType="integer" />
@@ -108,36 +117,25 @@
             app:argType="string" />
     </fragment>
 
-    <!-- ✅ 채팅방 생성 Fragment -->
+    <!-- 채팅방 생성 -->
     <fragment
         android:id="@+id/createChatRoomFragment"
-        android:name="com.example.pet_walking.chat.CreateChatRoomFragment"
+        android:name="com.example.pet_walking.Chat.CreateChatRoomFragment"
         android:label="채팅방 생성"
         tools:layout="@layout/fragment_create_chat_room">
-
-    <action
-        android:id="@+id/action_createChatRoomFragment_to_chatRoomFragment"
-        app:destination="@id/chatRoomFragment" />
+        <action
+            android:id="@+id/action_createChatRoomFragment_to_chatRoomFragment"
+            app:destination="@id/chatRoomFragment" />
     </fragment>
 
-    <!-- ✅ 채팅방 참여 Fragment -->
+    <!-- 채팅방 참여 -->
     <fragment
         android:id="@+id/joinChatRoomFragment"
-        android:name="com.example.pet_walking.chat.JoinChatRoomFragment"
+        android:name="com.example.pet_walking.Chat.ChatRoomFragment"
         android:label="채팅방 참여"
-        tools:layout="@layout/fragment_join_chat_room" >
+        tools:layout="@layout/fragment_join_chat_room">
         <action
             android:id="@+id/action_joinChatRoomFragment_to_chatRoomFragment"
             app:destination="@id/chatRoomFragment" />
     </fragment>
-
-    <fragment
-        android:id="@+id/runSummaryFragment"
-        android:name="com.example.pet_walking.RunSummaryFragment"
-        android:label="러닝 요약 화면">
-        <action
-            android:id="@+id/action_runSummaryFragment_to_runningFragment"
-            app:destination="@id/runningFragment" />
-    </fragment>
-
 </navigation>

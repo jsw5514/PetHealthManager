@@ -2,113 +2,155 @@ package com.example.pet_walking
 
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import com.example.pet_walking.bluetooth.BluetoothDataListener
+import com.example.pet_walking.Bluetooth.BluetoothDataListener
+import com.example.pet_walking.Home.HomeFragment
 import com.example.pet_walking.bluetooth.BluetoothManager
 import com.example.pet_walking.databinding.ActivityMainBinding
-import kotlin.math.*
+import com.example.pet_walking.profile.repository.PetRepository
+import com.example.pet_walking.profile.repository.UserRepository
 
 class MainActivity : AppCompatActivity() {
 
+    // ViewBinding 객체 → activity_main.xml과 연결
     private lateinit var binding: ActivityMainBinding
-    private val locationList = mutableListOf<Pair<Double, Double>>()
 
+    // 블루투스 통신 전체를 담당할 BluetoothManager 인스턴스
     private lateinit var bluetoothManager: BluetoothManager
-    private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
+    // Android 12 이상에서 요구되는 권한 요청 코드
     private val BLUETOOTH_PERMISSION_REQUEST = 1001
 
+    // Bluetooth 데이터를 수신할 프래그먼트에서 등록하는 리스너 (예: RunningFragment)
+    private var dataListener: BluetoothDataListener? = null
+
+    // BluetoothManager 인스턴스를 외부(프래그먼트 등)에서 가져갈 수 있게 제공
     fun getBluetoothManager(): BluetoothManager = bluetoothManager
 
+    // Bluetooth 수신 데이터 리스너 등록 함수
+    fun setBluetoothDataListener(listener: BluetoothDataListener?) {
+        Log.d("MainActivity", "setBluetoothDataListener 호출됨")
+        this.dataListener = listener
+    }
+
+    // 블루투스 데이터 수신 시작 (수동으로 호출해야 함)
+    fun startListeningBluetooth() {
+        Log.d("MainActivity", "startListeningBluetooth 호출됨")
+        if (!bluetoothManager.isListening) bluetoothManager.startListening()
+    }
+
+    // 액티비티 생성 시 수행되는 초기화 루틴
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        UserRepository.loadFromPreferences(this)//유저 데이터 로딩
-        val userId = UserRepository.getCurrentUser()?.userId
-        val petIds = UserRepository.getCurrentUser()?.petIds ?: emptyList()
+        Log.d("MainActivity", "onCreate 시작됨")
 
-        if (userId != null) {
-            PetRepository.loadProfilesFromServer(userId, petIds) {
-                // 프로필 로딩 후 UI 초기화 또는 기타 작업 가능
-                val firstPetId = petIds.firstOrNull()
-                if (firstPetId != null) {
-                    PetRepository.setCurrentPet(firstPetId)
-                }
-            }
-        }
-
+        // ViewBinding 설정
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 네비게이션 바 연결
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
-        val navController = navHostFragment?.navController
-        //로그인 여부 확인
-        /*navController?.let { nav ->
-            if (UserRepository.getCurrentUser() == null) {
-                nav.navigate(R.id.loginFragment)
-                binding.bottomNavigationView.visibility = View.GONE
-            } else {
-                binding.bottomNavigationView.setupWithNavController(nav)
-                binding.bottomNavigationView.visibility = View.VISIBLE
-            }
-        }*/ // 이 부분 원래는 로그인 시 하단바 보이도록 설정
-//삭제 부분
-        navController?.let { nav ->
-            binding.bottomNavigationView.setupWithNavController(nav)
-            binding.bottomNavigationView.visibility = View.VISIBLE
-            if (UserRepository.getCurrentUser() == null) {
-                nav.navigate(R.id.loginFragment)
-            }
-        }
-//여기까지
+        // 유저와 펫 데이터 초기화 (로컬 + 서버)
+        initUserAndPet()
 
+        // 바텀 네비게이션바와 네비게이션 컨트롤러 연결
+        setupNavigation()
 
-        // ✅ 블루투스 매니저 초기화
-        bluetoothManager = BluetoothManager(
-            onDataReceived = { lat, lon, accX, accY, accZ ->
-                processReceivedData(lat, lon, accX, accY, accZ)
-                dataListener?.onBluetoothDataReceived(lat, lon, accX, accY, accZ) // 🔥 프래그먼트로 전달
-            },
-            onConnectionStatusChanged = { isConnected, message ->
-                runOnUiThread {
-                    updateBluetoothStatus(message)
-                }
-            }
-        )
+        // BluetoothManager 인스턴스 초기화
+        initBluetoothManager()
 
-        //블루투스 권한 확인 후 기기 선택
+        // 블루투스 권한 체크 및 요청
         checkAndRequestBluetoothPermission()
     }
 
-    private fun checkAndRequestBluetoothPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(android.Manifest.permission.BLUETOOTH_CONNECT),
-                    BLUETOOTH_PERMISSION_REQUEST
-                )
-            } else {
-                showBluetoothDeviceDialog()
+    /**
+     * 로그인한 유저의 ID와 펫 ID 목록을 불러오고
+     * 서버에서 펫 프로필들을 로드한 뒤 첫 번째 펫을 현재 선택된 펫으로 설정
+     */
+    private fun initUserAndPet() {
+        Log.d("MainActivity", "initUserAndPet 호출됨")
+        UserRepository.loadFromPreferences(this)  // SharedPreferences에서 유저 정보 복원
+        val user = UserRepository.getCurrentUser()
+        val petIds = user?.petIds ?: return  // 유저 또는 펫 목록이 없으면 종료
+
+        PetRepository.loadProfilesFromServer(user.userId, petIds) {
+            // 첫 번째 펫을 기본 선택
+            petIds.firstOrNull()?.let {
+                PetRepository.setCurrentPet(it)
+                Log.d("MainActivity", "첫 번째 펫 선택됨: $it")
             }
-        } else {
-            showBluetoothDeviceDialog()
         }
     }
 
+    /**
+     * 네비게이션 컨트롤러와 바텀 네비게이션 뷰를 연결하고,
+     * 로그인되어 있지 않다면 LoginFragment로 이동시킴
+     */
+    private fun setupNavigation() {
+        Log.d("MainActivity", "setupNavigation 호출됨")
+        val navHost = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
+        val navController = navHost?.navController
+
+        navController?.let {
+            // 바텀 네비게이션 UI 연결
+            binding.bottomNavigationView.setupWithNavController(it)
+            binding.bottomNavigationView.visibility = View.VISIBLE
+
+            // 로그인되지 않았으면 로그인 화면으로 이동
+            if (UserRepository.getCurrentUser() == null) {
+                Log.d("MainActivity", "로그인 정보 없음 → loginFragment 이동")
+                it.navigate(R.id.loginFragment)
+            }
+        }
+    }
+
+    /**
+     * BluetoothManager 초기화.
+     * 데이터 수신 시에는 dataListener를 통해 프래그먼트에 전달,
+     * 연결 상태 변경 시에는 홈 화면에 상태 메시지 전달
+     */
+    private fun initBluetoothManager() {
+        Log.d("MainActivity", "initBluetoothManager 호출됨")
+        bluetoothManager = BluetoothManager(
+            onDataReceived = { data ->
+                Log.d("MainActivity", "Bluetooth 데이터 수신됨: $data")
+                dataListener?.onBluetoothDataReceived(data.lat, data.lon, data.accX, data.accY, data.accZ)
+            },
+            onConnectionStatusChanged = { _, message ->
+                Log.d("MainActivity", "Bluetooth 연결 상태 변경: $message")
+                runOnUiThread { updateBluetoothStatus(message) }
+            }
+        )
+    }
+
+    /**
+     * Android 12 이상에서 BLUETOOTH_CONNECT 권한이 필요한 경우 요청
+     */
+    private fun checkAndRequestBluetoothPermission() {
+        Log.d("MainActivity", "checkAndRequestBluetoothPermission 호출됨")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT)
+            != PackageManager.PERMISSION_GRANTED) {
+
+            Log.d("MainActivity", "BLUETOOTH_CONNECT 권한 요청")
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.BLUETOOTH_CONNECT),
+                BLUETOOTH_PERMISSION_REQUEST
+            )
+        }
+    }
+
+    /**
+     * 사용자가 권한 요청에 응답했을 때 결과를 처리
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -116,119 +158,25 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == BLUETOOTH_PERMISSION_REQUEST) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                showBluetoothDeviceDialog()
-            } else {
-                Toast.makeText(this, "BLUETOOTH_CONNECT 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
-            }
+            val granted = grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED
+            Log.d("MainActivity", "onRequestPermissionsResult - granted: $granted")
+            Toast.makeText(
+                this,
+                if (granted) "블루투스 권한 허용됨" else "BLUETOOTH_CONNECT 권한이 필요합니다.",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
-
-
-    // 블루투스 기기 선택 다이얼로그
-    private fun showBluetoothDeviceDialog() {
-        val pairedDevices = bluetoothManager.getPairedDevices()?.toList() ?: emptyList()
-        if (pairedDevices.isEmpty()) {
-            Toast.makeText(this, "페어링된 기기가 없습니다.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val deviceNames = pairedDevices.map { it.name ?: "이름 없는 기기" }.toTypedArray()
-        AlertDialog.Builder(this)
-            .setTitle("블루투스 기기 선택")
-            .setItems(deviceNames) { _, which ->
-                val device = pairedDevices[which]
-                bluetoothManager.connectToDevice(
-                    device,
-                    onSuccess = { updateBluetoothStatus("Connected to ${device.name}") },
-                    onFailure = { updateBluetoothStatus("Connection failed") }
-                )
-            }
-            .setNegativeButton("취소", null)
-            .show()
-    }
-
-
-
-    // GPS + 가속도 데이터 수신 시 처리
-    fun processReceivedData(lat: Double, lon: Double, accX: Float, accY: Float, accZ: Float) {
-        locationList.add(lat to lon)
-
-        val distance = if (locationList.size > 1) {
-            val (prevLat, prevLon) = locationList[locationList.size - 2]
-            haversine(prevLat, prevLon, lat, lon)
-        } else 0.0
-
-        val activityIndex = calculateActivityIndex(accX, accY, accZ)
-
-        // ✅ 선택된 펫의 체중 사용 (없거나 숫자 변환 실패 시 기본값 10.0)
-        val currentPet = PetRepository.getCurrentPet()
-        val weight = currentPet?.weight?.let { it.toString().toDoubleOrNull() } ?: 10.0
-        val caloriesBurned = calculateCalories(activityIndex, weight, distance)
-
-        SharedStatsRepository.totalDistance += distance
-        SharedStatsRepository.totalCalories += caloriesBurned
-
-        updateVisibleFragments()
-    }
-
-    private fun updateVisibleFragments() {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
-        val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
-
-        if (currentFragment is HomeFragment && currentFragment.isVisible) {
-            currentFragment.updateStats()
-        }
-        if (currentFragment is StatisticsFragment && currentFragment.isVisible) {
-            currentFragment.updateStats()
-        }
-    }
-
-    // Bluetooth 연결 상태 텍스트 업데이트
+    /**
+     * HomeFragment에서 Bluetooth 연결 상태 메시지를 표시할 수 있도록 전달
+     */
     private fun updateBluetoothStatus(message: String) {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
-        val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
+        Log.d("MainActivity", "updateBluetoothStatus 호출됨: $message")
+        val navHost = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
+        val currentFragment = navHost?.childFragmentManager?.fragments?.firstOrNull()
         if (currentFragment is HomeFragment) {
             currentFragment.updateBluetoothStatus(message)
         }
     }
-
-    private var dataListener: BluetoothDataListener? = null
-    fun setBluetoothDataListener(listener: BluetoothDataListener?) {
-        this.dataListener = listener
-    }
-//블루투스 데이터를 수신대기 시킴 스타트 버튼 누르면 시작되게 함
-    fun startListeningBluetooth() {
-        bluetoothManager.startListening()
-    }
-
-    // 거리 계산 (Haversine)
-    private fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val R = 6371e3
-        val phi1 = Math.toRadians(lat1)
-        val phi2 = Math.toRadians(lat2)
-        val deltaPhi = Math.toRadians(lat2 - lat1)
-        val deltaLambda = Math.toRadians(lon2 - lon1)
-
-        val a = sin(deltaPhi / 2).pow(2.0) + cos(phi1) * cos(phi2) * sin(deltaLambda / 2).pow(2.0)
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        return R * c
-    }
-
-    // 활동 강도 계산
-    private fun calculateActivityIndex(accX: Float, accY: Float, accZ: Float): Double {
-        return sqrt(accX.pow(2) + accY.pow(2) + accZ.pow(2)).toDouble()
-    }
-
-    // 칼로리 계산
-    private fun calculateCalories(activityIndex: Double, weight: Double, distance: Double): Double {
-        val MET = if (activityIndex < 1.5) 2.0 else 6.0
-        val time = distance / (activityIndex + 1)
-        val hours = time / 3600.0
-        return MET * weight * hours
-    }
-
-
-
 }
