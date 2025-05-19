@@ -56,15 +56,16 @@ class HomeFragment : Fragment() {
         // 초기 블루투스 상태 표시
         updateBluetoothStatus("Disconnected", false)
 
-        // 블루투스 상태 텍스트 클릭 → 연결 다이얼로그 실행
+        // 블루투스 상태 텍스트 클릭 → 기기 선택 다이얼로그 실행
         binding.bluetoothStatusTextView.setOnClickListener {
             showBluetoothDeviceDialog { device ->
                 bluetoothManager.connectToDevice(
                     device,
                     onSuccess = {
+                        // 연결 성공 시 UI만 갱신 (startListening은 내부에서 이미 호출됨)
                         requireActivity().runOnUiThread {
                             Toast.makeText(requireContext(), "✅ 블루투스 연결 성공", Toast.LENGTH_SHORT).show()
-                            bluetoothManager.startListening()
+                            updateBluetoothStatus("${device.name} 연결됨", true)
                         }
                     },
                     onFailure = {

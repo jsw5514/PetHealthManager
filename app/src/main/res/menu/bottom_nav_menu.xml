@@ -17,7 +17,7 @@
 
     <item
         android:id="@+id/runningFragment"
-        android:icon="@drawable/ic_runnig"
+        android:icon="@drawable/ic_running"
         android:title="런닝" />
 
 
