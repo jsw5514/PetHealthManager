@@ -3,6 +3,8 @@ package com.example.pet_walking.Bluetooth
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.example.pet_walking.Bluetooth.ParsedData
 import java.io.InputStream
@@ -17,26 +19,26 @@ class BluetoothManager(
     private val onConnectionStatusChanged: (Boolean, String) -> Unit
 ) {
     private val bluetoothAdapter: BluetoothAdapter? =
-        BluetoothAdapter.getDefaultAdapter() // 블루투스 어댑터 참조
-    private var bluetoothSocket: BluetoothSocket? = null // 연결된 소켓
-    private var inputStream: InputStream? = null // 수신 스트림
+        BluetoothAdapter.getDefaultAdapter()
+    private var bluetoothSocket: BluetoothSocket? = null
+    private var inputStream: InputStream? = null
     @Volatile
     var isListening: Boolean = false
         private set
 
+    // 메인 스레드에 포스트할 핸들러
+    private val mainHandler = Handler(Looper.getMainLooper())
+
     companion object {
-        // RFCOMM 통신에 사용되는 표준 UUID
         private val SPP_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
         private const val TAG = "BluetoothManager"
     }
 
-    // 현재 페어링된 블루투스 기기 목록 반환
     fun getPairedDevices(): Set<BluetoothDevice>? {
         Log.d(TAG, "📱 페어링된 기기 요청됨")
         return bluetoothAdapter?.bondedDevices
     }
 
-    // 블루투스 기기 연결 시도
     fun connectToDevice(
         device: BluetoothDevice,
         onSuccess: () -> Unit,
@@ -47,26 +49,29 @@ class BluetoothManager(
                 Log.d(TAG, "🔌 ${device.name}(${device.address}) 연결 시도")
                 disconnect()
 
-                // 소켓 생성 및 연결
                 bluetoothSocket = device.createRfcommSocketToServiceRecord(SPP_UUID)
                 bluetoothAdapter?.cancelDiscovery()
                 bluetoothSocket?.connect()
                 inputStream = bluetoothSocket?.inputStream
 
                 Log.i(TAG, "✅ ${device.name} 연결 성공")
-                onConnectionStatusChanged(true, "${device.name} 연결됨")
-                onSuccess()
+                // UI 업데이트 콜백은 메인 스레드로
+                mainHandler.post {
+                    onConnectionStatusChanged(true, "${device.name} 연결됨")
+                    onSuccess()
+                }
 
                 startListening()
             } catch (e: Exception) {
                 Log.e(TAG, "❌ 연결 실패: ${e.message}")
-                onConnectionStatusChanged(false, "연결 실패: ${device.name}")
-                onFailure()
+                mainHandler.post {
+                    onConnectionStatusChanged(false, "연결 실패: ${device.name}")
+                    onFailure()
+                }
             }
         }
     }
 
-    // 데이터 수신 쓰레드 시작
     fun startListening() {
         if (isListening) {
             Log.w(TAG, "⛔ 이미 수신 중입니다.")
@@ -75,13 +80,15 @@ class BluetoothManager(
 
         if (bluetoothSocket?.isConnected != true || inputStream == null) {
             Log.w(TAG, "⚠️ 소켓 연결 또는 InputStream이 유효하지 않음")
-            onConnectionStatusChanged(false, "수신 실패 (연결 없음)")
+            mainHandler.post {
+                onConnectionStatusChanged(false, "수신 실패 (연결 없음)")
+            }
             return
         }
 
         Log.d(TAG, "▶️ 데이터 수신 시작")
         isListening = true
-        thread(start = true) {
+        thread {
             try {
                 listenForData()
             } catch (e: Exception) {
@@ -93,7 +100,6 @@ class BluetoothManager(
         }
     }
 
-    // 실제로 데이터를 수신하고 파싱하는 루프
     private fun listenForData() {
         val buffer = ByteArray(1024)
         val sb = StringBuilder()
@@ -114,7 +120,10 @@ class BluetoothManager(
                     val parsed = parseReceivedData(fullLine)
                     if (parsed != null) {
                         Log.d(TAG, "✅ 파싱 성공: $parsed")
-                        onDataReceived(parsed)
+                        // onDataReceived 역시 메인 스레드로
+                        mainHandler.post {
+                            onDataReceived(parsed)
+                        }
                     } else {
                         Log.w(TAG, "⚠️ 파싱 실패: $fullLine")
                     }
@@ -122,11 +131,12 @@ class BluetoothManager(
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ 수신 오류: ${e.message}")
-            onConnectionStatusChanged(false, "데이터 수신 중 오류 발생")
+            mainHandler.post {
+                onConnectionStatusChanged(false, "데이터 수신 중 오류 발생")
+            }
         }
     }
 
-    // 블루투스 연결 해제
     fun disconnect() {
         Log.d(TAG, "🔌 연결 해제 시도")
         isListening = false
@@ -134,15 +144,17 @@ class BluetoothManager(
             inputStream?.close()
             bluetoothSocket?.close()
             Log.i(TAG, "🔌 연결 정상 해제 완료")
-            onConnectionStatusChanged(false, "연결 해제됨")
+            mainHandler.post {
+                onConnectionStatusChanged(false, "연결 해제됨")
+            }
         } catch (e: Exception) {
             Log.e(TAG, "❌ 해제 중 오류: ${e.message}")
         }
     }
 
-    // 수신된 문자열을 파싱해서 GPS + 가속도 데이터로 변환
     private fun parseReceivedData(line: String): ParsedData? {
-        val parts = line.split(",").map { it.trim().replace("<", "").replace(">", "") }
+        val parts = line.split(",")
+            .map { it.trim().replace("<", "").replace(">", "") }
         if (parts.size != 5) return null
 
         val lat = parts[0].toDoubleOrNull() ?: return null

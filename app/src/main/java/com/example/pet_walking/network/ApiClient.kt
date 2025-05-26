@@ -12,7 +12,7 @@ object ApiClient {
     private val client = OkHttpClient()
 
     // 서버 기본 URL (에뮬레이터 기준: 실제 기기에서 테스트할 경우 주소 변경 필요)
-    private const val BASE_URL = "http://10.0.2.2:8080"
+    private const val BASE_URL = "https://bold-seal-only.ngrok-free.app"
 
     /**
      * 일반적인 POST 요청 (응답: 문자열)
