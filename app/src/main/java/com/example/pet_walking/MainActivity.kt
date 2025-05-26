@@ -14,7 +14,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.pet_walking.Bluetooth.BluetoothDataListener
 import com.example.pet_walking.Home.HomeFragment
-import com.example.pet_walking.bluetooth.BluetoothManager
+import com.example.pet_walking.Bluetooth.BluetoothManager
 import com.example.pet_walking.databinding.ActivityMainBinding
 import com.example.pet_walking.profile.repository.PetRepository
 import com.example.pet_walking.profile.repository.UserRepository

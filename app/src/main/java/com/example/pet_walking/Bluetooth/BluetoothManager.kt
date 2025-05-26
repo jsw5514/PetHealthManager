@@ -1,4 +1,4 @@
-package com.example.pet_walking.bluetooth
+package com.example.pet_walking.Bluetooth
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice

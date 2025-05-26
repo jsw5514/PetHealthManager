@@ -31,6 +31,8 @@ object ApiClient {
         val requestBody = json.toString().toRequestBody(mediaType)
         val fullUrl = BASE_URL + endpoint
 
+        val startTime = System.currentTimeMillis()//시간 측정 위한 함수
+
         Log.d("ApiClient", "POST 요청 시작: $fullUrl, payload: $json")
 
         val request = Request.Builder()
@@ -40,17 +42,19 @@ object ApiClient {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                Log.e("ApiClient", "서버 연결 실패: ${e.message}")
+                val endTime = System.currentTimeMillis()//시간 측정 End함수
+                Log.e("ApiClient", "서버 연결 실패: ${e.message} (${endTime - startTime} ms)")
                 onFailure("서버 연결 실패: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
+                val endTime = System.currentTimeMillis()//시간 측정 End함수
                 val body = response.body?.string() ?: ""
                 if (response.isSuccessful) {
-                    Log.d("ApiClient", "응답 성공: $body")
+                    Log.d("ApiClient", "응답 성공: $body (${endTime - startTime} ms)")
                     onSuccess(body)
                 } else {
-                    Log.e("ApiClient", "응답 실패: $body")
+                    Log.e("ApiClient", "응답 실패: $body (${endTime - startTime} ms)")
                     onFailure("응답 실패: $body")
                 }
             }

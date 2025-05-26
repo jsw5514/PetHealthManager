@@ -151,10 +151,15 @@ class RunningFragment : Fragment(), BluetoothDataListener {
         mapFragment?.takeIf { it.isMapReady() }?.addLocation(lat, lon)
 
         // 이동 거리 계산
+        /**
+         * 아래 timeStart, timeEnd 요청 시간 측정을 위한 함수
+         */
+        val timeStart = System.currentTimeMillis()
+        val timeEnd = System.currentTimeMillis()
         val distance = lastLat?.let { lat1 ->
             lastLon?.let { lon1 -> StatusUtils.haversine(lat1, lon1, lat, lon) }
         } ?: 0.0
-        Log.d("RunningDebug", "이동 거리 계산: $distance m")
+        Log.d("RunningDebug", "이동 거리 계산: $distance m (${timeEnd - timeStart} ms 소요)")
 
         lastLat = lat
         lastLon = lon
