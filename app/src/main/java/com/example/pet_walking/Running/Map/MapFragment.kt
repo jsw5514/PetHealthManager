@@ -121,6 +121,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     /**
      * Fragment가 종료될 때 MapView도 정리
      */
+
     override fun onDestroyView() {
         mapView.onDestroy()
         super.onDestroyView()
