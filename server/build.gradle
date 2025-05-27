@@ -29,6 +29,9 @@ dependencies {
 	//for DB
 	implementation 'mysql:mysql-connector-java:8.0.32'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	
+	//for spring boot admin
+	implementation("de.codecentric:spring-boot-admin-starter-client:3.4.4")
 }
 
 tasks.named('test') {
