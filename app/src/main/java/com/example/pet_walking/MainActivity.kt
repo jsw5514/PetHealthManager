@@ -76,12 +76,17 @@ class MainActivity : AppCompatActivity() {
      */
     private fun initUserAndPet() {
         Log.d("MainActivity", "initUserAndPet 호출됨")
-        UserRepository.loadFromPreferences(this)  // SharedPreferences에서 유저 정보 복원
+        UserRepository.loadFromPreferences(this)
         val user = UserRepository.getCurrentUser()
-        val petIds = user?.petIds ?: return  // 유저 또는 펫 목록이 없으면 종료
+        val petIds = user?.petIds.orEmpty()
 
+        if (user == null || petIds.isEmpty()) {
+            Log.d("MainActivity", "유저 정보 없거나 펫이 하나도 등록되지 않음 → 로드 스킵")
+            return
+        }
+
+        // petIds 에는 최소 1개의 ID만 있을 때만 이 아래가 실행됩니다.
         PetRepository.loadProfilesFromServer(user.userId, petIds) {
-            // 첫 번째 펫을 기본 선택
             petIds.firstOrNull()?.let {
                 PetRepository.setCurrentPet(it)
                 Log.d("MainActivity", "첫 번째 펫 선택됨: $it")

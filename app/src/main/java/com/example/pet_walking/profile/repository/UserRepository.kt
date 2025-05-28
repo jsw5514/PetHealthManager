@@ -57,7 +57,7 @@ object UserRepository {
         return result
     }
 
-    // ✅ 서버와 연동된 로그인
+    // 서버와 연동된 로그인
     fun login(userId: String, password: String): Boolean {
         var result = false
         val json = JSONObject().apply {
@@ -99,7 +99,7 @@ object UserRepository {
         }
     }
 
-    // ✅ 로컬 SharedPreferences 저장은 캐시용으로 남겨둠
+    // 로컬 SharedPreferences 저장은 캐시용으로 남겨둠
     fun saveToPreferences(context: Context) {
         val prefs = context.getSharedPreferences("UserData", Context.MODE_PRIVATE)
         val json = Gson().toJson(users)

@@ -104,6 +104,7 @@ class RunningFragment : Fragment(), BluetoothDataListener {
         startTime = System.currentTimeMillis()
 
         Log.d("RunningDebug", "러닝 시작됨")
+
     }
 
     // 러닝 종료

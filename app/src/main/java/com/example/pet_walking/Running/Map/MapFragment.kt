@@ -9,6 +9,7 @@ import com.naver.maps.map.*
 import com.naver.maps.map.overlay.PathOverlay
 import com.naver.maps.map.util.FusedLocationSource
 import com.example.pet_walking.R
+import com.naver.maps.map.LocationTrackingMode
 
 /**
  * Naver Map을 표시하고, 외부에서 전달된 위치 데이터를 기반으로
@@ -78,9 +79,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         // PathManager에 점 추가
         PathManager.addPoint(lat, lon)
-
         // Polyline 업데이트
         PolylineManager.updatePolyline(map, PathManager.getPoints())
+
+        val newPos = LatLng(lat, lon)
+        map.moveCamera(CameraUpdate.scrollTo(newPos))
     }
 
     /**
@@ -112,6 +115,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         PolylineManager.applyCorrected(points, naverMap ?: return)
     }
 
+    /** 러닝 시작 시 호출해서 카메라를 현재 위치로 따라오게 만듭니다. */
+    fun startLocationFollow() {
+        naverMap?.apply {
+            // 위치 권한 허용된 상태라고 가정
+            locationTrackingMode = LocationTrackingMode.Follow
+        }
+    }
+
+    /** 원한다면 추적 모드를 꺼서 고정시킬 수도 있습니다. */
+    fun stopLocationFollow() {
+        naverMap?.locationTrackingMode = LocationTrackingMode.None
+    }
+
+
     // MapView 생명주기 연결 (Activity 생명주기와 동기화)
     override fun onStart() { super.onStart(); mapView.onStart() }
     override fun onResume() { super.onResume(); mapView.onResume() }
@@ -130,4 +147,5 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     // 저메모리 경고 시 처리
     override fun onLowMemory() { super.onLowMemory(); mapView.onLowMemory() }
+
 }
