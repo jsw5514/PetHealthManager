@@ -13,11 +13,11 @@ import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.pet_walking.Bluetooth.BluetoothDataListener
-import com.example.pet_walking.Home.HomeFragment
+import com.example.pet_walking.feature.Home.HomeFragment
 import com.example.pet_walking.Bluetooth.BluetoothManager
 import com.example.pet_walking.databinding.ActivityMainBinding
-import com.example.pet_walking.profile.repository.PetRepository
-import com.example.pet_walking.profile.repository.UserRepository
+import com.example.pet_walking.feature.profile.repository.PetRepository
+import com.example.pet_walking.feature.profile.repository.UserRepository
 
 class MainActivity : AppCompatActivity() {
 
@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
      * 네비게이션 컨트롤러와 바텀 네비게이션 뷰를 연결하고,
      * 로그인되어 있지 않다면 LoginFragment로 이동시킴
      */
-    /**
+
     private fun setupNavigation() {
         Log.d("MainActivity", "setupNavigation 호출됨")
         val navHost = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
@@ -116,13 +116,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-*/
+
 
     /**
      * 바텀 네비게이션 수정본
      * 로그인 전 바텀 네비게이션 숨기 처리
      * 아래 내용 오류 없을시 위 내용 삭제 예정
-     */
+
     private fun setupNavigation() {
         Log.d("MainActivity", "setupNavigation 호출됨")
         val navHost = supportFragmentManager
@@ -142,6 +142,7 @@ class MainActivity : AppCompatActivity() {
             binding.bottomNavigationView.setupWithNavController(navController)
         }
     }
+    */
     /**
      * BluetoothManager 초기화.
      * 데이터 수신 시에는 dataListener를 통해 프래그먼트에 전달,
