@@ -1,5 +1,5 @@
 // com/example/pet_walking/feature/running/uploader/StatsUploader.kt
-package com.example.pet_walking.feature.running.uploader
+package com.example.pet_walking.feature.Running.uploader
 
 import android.util.Log
 import com.example.pet_walking.feature.Running.model.RunStats

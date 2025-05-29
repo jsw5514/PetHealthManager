@@ -32,6 +32,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     // 지도 준비 여부를 외부에서 확인할 수 있도록 제공
     fun isMapReady(): Boolean = naverMap != null
 
+    private var isTracking = true  // 기본값: 위치 추적 ON
+
+    fun startTracking() {
+        isTracking = true
+    }
+
+    fun stopTracking() {
+        isTracking = false
+    }
+
     /**
      * 프래그먼트의 View를 생성하고, MapView 초기화
      */
@@ -74,6 +84,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
      * @param lon 경도
      */
     fun addLocation(lat: Double, lon: Double) {
+        if (!isTracking) {
+            Log.d("MapFragment", "🚫 위치 수신 중단 상태입니다. 무시됨.")
+            return
+        }
         Log.d("MapFragment", "📌 addLocation 호출됨: $lat, $lon")
         val map = naverMap ?: return
 
@@ -112,10 +126,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
      * 외부에서 보정된 선을 직접 넘겨줄 경우 지도에 적용
      */
     fun drawCorrectedPath(points: List<LatLng>) {
-        PolylineManager.applyCorrected(points, naverMap ?: return)
+        naverMap?.let { map ->
+            PolylineManager.applyCorrected(points, map)
+        }
     }
 
-    /** 러닝 시작 시 호출해서 카메라를 현재 위치로 따라오게 만듭니다. */
+    /** 러닝 시작 시 호출해서 카메라를 현재 위치로 따라오게 만듦 */
     fun startLocationFollow() {
         naverMap?.apply {
             // 위치 권한 허용된 상태라고 가정
@@ -123,9 +139,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    /** 원한다면 추적 모드를 꺼서 고정시킬 수도 있습니다. */
+    /** 원한다면 추적 모드를 꺼서 고정시킬 수도 있음. */
     fun stopLocationFollow() {
         naverMap?.locationTrackingMode = LocationTrackingMode.None
+    }
+
+    fun clearPolyline() {
+        naverMap?.let { map ->
+            PolylineManager.updatePolyline(map, emptyList())
+        }
     }
 
 

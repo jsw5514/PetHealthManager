@@ -167,4 +167,10 @@ class BluetoothManager(
 
         return ParsedData(lat, lon, accX, accY, accZ)
     }
+
+    fun stopListening() {
+        isListening = false
+        Log.d(TAG, "🛑 stopListening 호출됨: 수신 플래그 false로 설정")
+    }
+
 }

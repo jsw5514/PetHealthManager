@@ -211,4 +211,9 @@ class MainActivity : AppCompatActivity() {
             currentFragment.updateBluetoothStatus(message)
         }
     }
+
+    fun stopListeningBluetooth() {
+        bluetoothManager.stopListening()
+    }
+
 }

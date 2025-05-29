@@ -16,12 +16,13 @@ import com.example.pet_walking.feature.Chat.ChatRoomManager
 import com.example.pet_walking.MainActivity
 import com.example.pet_walking.R
 import com.example.pet_walking.feature.Running.Map.MapFragment
+import com.example.pet_walking.feature.Running.Map.PathManager
 import com.example.pet_walking.feature.Running.model.RunStats
 import com.example.pet_walking.feature.profile.data.PetProfile
 import com.example.pet_walking.feature.profile.repository.PetRepository
 import com.example.pet_walking.feature.profile.repository.RunLogRepository
 import com.example.pet_walking.feature.profile.repository.UserRepository
-import com.example.pet_walking.feature.running.uploader.StatsUploader
+import com.example.pet_walking.feature.Running.uploader.StatsUploader
 import com.example.pet_walking.util.StatusUtils
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -88,11 +89,19 @@ class RunningFragment : Fragment(), BluetoothDataListener {
 
     // 러닝 시작
     private fun startRunning() {
+        mapFragment?.startTracking()
         val pet = PetRepository.getCurrentPet()
         if (pet == null) {
             Toast.makeText(requireContext(), "반려동물 프로필을 먼저 선택하세요.", Toast.LENGTH_SHORT).show()
             return
         }
+        // ✅ 지도 초기화 (기존 선 제거)
+        mapFragment?.clearPolyline()
+        PathManager.clear()
+
+        // ✅ 거리, 칼로리 초기화
+        pet.totalDistance = 0.0
+        pet.totalCalories = 0.0
 
         // UI 전환
         startButton.visibility = View.GONE
@@ -112,6 +121,9 @@ class RunningFragment : Fragment(), BluetoothDataListener {
     private fun stopRunning() {
         running = false
         Log.d("RunningDebug", "러닝 종료됨")
+
+        //위치 추적 중단
+        mapFragment?.stopTracking()
 
         // UI 복구
         startButton.visibility = View.VISIBLE
@@ -141,6 +153,9 @@ class RunningFragment : Fragment(), BluetoothDataListener {
         // 4) 요약 화면으로 이동 (Safe Args로 RunStats 전달)
         val action = RunningFragmentDirections.actionRunningFragmentToRunSummaryFragment(runStats)
         findNavController().navigate(action)
+
+        (activity as? MainActivity)?.setBluetoothDataListener(null)
+        (activity as? MainActivity)?.stopListeningBluetooth() // 수신 종료
     }
 
     // Bluetooth 데이터 수신 시 호출
