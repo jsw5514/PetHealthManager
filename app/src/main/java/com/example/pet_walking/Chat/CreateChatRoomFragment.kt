@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.pet_walking.Login.LoginSession
 import com.example.pet_walking.R
+import com.example.pet_walking.profile.repository.UserRepository
 
 class CreateChatRoomFragment : Fragment() {
 
@@ -19,7 +20,9 @@ class CreateChatRoomFragment : Fragment() {
         button.setOnClickListener {
             Log.d("CreateChatRoom", "🔘 생성 버튼 클릭됨") // ✅ 버튼 클릭 로그
 
-            val userId = LoginSession.userId
+            val userId = UserRepository.getCurrentUserId()
+            Log.d("CreateChatRoom", "▶ UserRepository.getCurrentUserId() = $userId")
+
             if (userId.isNullOrBlank()) {
                 Toast.makeText(requireContext(), "로그인이 필요합니다", Toast.LENGTH_SHORT).show()
                 Log.w("CreateChatRoom", "❗ 로그인 정보 없음. 생성 불가") // ✅ 경고 로그

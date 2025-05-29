@@ -11,6 +11,7 @@ import androidx.navigation.fragment.navArgs
 import com.example.pet_walking.Login.LoginSession
 import com.example.pet_walking.R
 import com.example.pet_walking.Chat.ChatRoomManager
+import com.example.pet_walking.profile.repository.UserRepository
 
 import org.json.JSONObject
 
@@ -37,7 +38,7 @@ class ChatRoomFragment : Fragment() {
         sendButton = view.findViewById(R.id.sendButton)
         leaveButton = view.findViewById(R.id.leaveRoomButton)
 
-        val currentUserId = LoginSession.userId
+        val currentUserId = UserRepository.getCurrentUserId()
         if (currentUserId.isNullOrBlank()) {
             Toast.makeText(requireContext(), "로그인 정보 없음", Toast.LENGTH_SHORT).show()
             findNavController().popBackStack()

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pet_walking.Login.LoginSession
 import com.example.pet_walking.R
+import com.example.pet_walking.profile.repository.UserRepository
 
 class ChatRoomListFragment : Fragment() {
 
@@ -25,7 +26,7 @@ class ChatRoomListFragment : Fragment() {
         val joinBtn = view.findViewById<Button>(R.id.buttonJoinRoom)
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerChatRooms)
 
-        val userId = LoginSession.userId
+        val userId = UserRepository.getCurrentUserId()
 
         // 로그인된 경우에만 어댑터와 채팅방 목록 초기화
         if (!userId.isNullOrBlank()) {
