@@ -98,6 +98,7 @@ class MainActivity : AppCompatActivity() {
      * 네비게이션 컨트롤러와 바텀 네비게이션 뷰를 연결하고,
      * 로그인되어 있지 않다면 LoginFragment로 이동시킴
      */
+    /**
     private fun setupNavigation() {
         Log.d("MainActivity", "setupNavigation 호출됨")
         val navHost = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
@@ -115,7 +116,32 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+*/
 
+    /**
+     * 바텀 네비게이션 수정본
+     * 로그인 전 바텀 네비게이션 숨기 처리
+     * 아래 내용 오류 없을시 위 내용 삭제 예정
+     */
+    private fun setupNavigation() {
+        Log.d("MainActivity", "setupNavigation 호출됨")
+        val navHost = supportFragmentManager
+            .findFragmentById(R.id.fragment_container) as? NavHostFragment
+            ?: return
+        val navController = navHost.navController
+
+        val currentUser = UserRepository.getCurrentUser()
+        if (currentUser == null) {
+            // 로그인 안 된 상태 → 바텀 네비게이션 숨기고 로그인 화면으로 이동
+            Log.d("MainActivity", "로그인 정보 없음 → loginFragment 이동")
+            binding.bottomNavigationView.visibility = View.GONE
+            navController.navigate(R.id.loginFragment)
+        } else {
+            // 로그인 된 상태 → 바텀 네비게이션 보이기 & 연결
+            binding.bottomNavigationView.visibility = View.VISIBLE
+            binding.bottomNavigationView.setupWithNavController(navController)
+        }
+    }
     /**
      * BluetoothManager 초기화.
      * 데이터 수신 시에는 dataListener를 통해 프래그먼트에 전달,
