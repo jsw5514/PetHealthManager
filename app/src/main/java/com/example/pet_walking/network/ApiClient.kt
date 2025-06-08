@@ -69,11 +69,43 @@ object ApiClient {
      */
     fun get(
         fullUrl: String,
-        headers: Map<String,String>,
         onSuccess: (String) -> Unit,
         onFailure: (String) -> Unit
     ) {
         Log.d("ApiClient", "GET 요청 시작: $fullUrl")
+
+        val request = Request.Builder()
+            .url(fullUrl)
+            .get()
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("ApiClient", "GET 실패: ${e.message}")
+                onFailure("GET 실패: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string() ?: ""
+                if (response.isSuccessful) {
+                    Log.d("ApiClient", "GET 응답 성공: $body")
+                    onSuccess(body)
+                } else {
+                    Log.e("ApiClient", "GET 응답 실패: $body")
+                    onFailure("GET 응답 실패: $body")
+                }
+            }
+        })
+    }
+
+    // GET (headers 지원)
+    fun get(
+        fullUrl: String,
+        headers: Map<String,String>,
+        onSuccess: (String) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        Log.d("ApiClient", "GET 요청 시작 (헤더 포함): $fullUrl")
 
         val builder = Request.Builder().url(fullUrl).get()
         for ((key, value) in headers) {
