@@ -30,7 +30,9 @@ object SnapToRoadsService {
         }
 // 좌표들을 Roads API에서 요구하는 형식으로 변환
         val pathParam = path.joinToString("|") { "${it.latitude},${it.longitude}" }
+        Log.d("SnapToRoadsService", "pathParam: $pathParam")
         val url = "https://roads.googleapis.com/v1/snapToRoads?interpolate=true&path=$pathParam&key=$apiKey"
+        Log.d("SnapToRoadsService", "API 호출 URL: $url")
         val headers = mapOf(
             "X-Android-Package" to "com.example.pet_walking",
             "X-Android-Cert" to "EB:28:98:F4:F1:79:B7:CF:D3:93:71:AF:EA:A2:60:F4:2B:1F:20:29"
