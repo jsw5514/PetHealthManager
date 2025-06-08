@@ -69,15 +69,17 @@ object ApiClient {
      */
     fun get(
         fullUrl: String,
+        headers: Map<String,String>,
         onSuccess: (String) -> Unit,
         onFailure: (String) -> Unit
     ) {
         Log.d("ApiClient", "GET 요청 시작: $fullUrl")
 
-        val request = Request.Builder()
-            .url(fullUrl)
-            .get()
-            .build()
+        val builder = Request.Builder().url(fullUrl).get()
+        for ((key, value) in headers) {
+            builder.addHeader(key, value)
+        }
+        val request = builder.build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {

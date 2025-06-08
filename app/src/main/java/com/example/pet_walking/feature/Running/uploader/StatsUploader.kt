@@ -12,7 +12,7 @@ import java.util.UUID
  * 러닝 세션 하나마다 호출해서
  *  • summary(전체 누적 덮어쓰기)
  *  • daily, weekly, monthly, yearly(기간별 누적)
- * 을 한 번에 서버로 업로드합니다.
+ * 을 한 번에 서버로 업로드
  */
 object StatsUploader {
 
