@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
 import com.swjeon.pethealthcaremanager.server.service.FileService;
 import jakarta.persistence.Column;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 * String contentType = 채팅 내용 자료형
 *  String content = 채팅내용
 * */
+@Getter
 @NoArgsConstructor
 public class ChatDTO {
     @NonNull

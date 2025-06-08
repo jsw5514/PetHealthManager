@@ -1,9 +1,11 @@
 package com.swjeon.pethealthcaremanager.server.Entity;
 
 
+import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -30,4 +32,13 @@ public class ChatEntity {
   @Column(name = "CONTENT_PATH")
   private String contentPath;
 
+  public static ChatEntity fromDTO(@NonNull ChatDTO chatDTO, String contentPath) {
+    ChatEntity chatEntity = new ChatEntity();
+    chatEntity.setRoomId(chatDTO.getRoomId());
+    chatEntity.setWriterId(chatDTO.getWriterId());
+    chatEntity.setWriteTime(chatDTO.getWriteTime());
+    chatEntity.setContentType(chatDTO.getContentType());
+    chatEntity.setContentPath(contentPath);
+    return chatEntity;
+  }
 }

@@ -28,7 +28,7 @@ public class ChatController {
      * @return 채팅 업로드 성공여부(boolean)
      */
     @PostMapping("/uploadChat")
-    public boolean uploadChat( @RequestBody Map<String, String> request)
+    public boolean uploadChat(@RequestBody ChatDTO chatDTO)
     {
         int roomId = Integer.parseInt(request.get("roomId"));
         String writerId = request.get("writerId");

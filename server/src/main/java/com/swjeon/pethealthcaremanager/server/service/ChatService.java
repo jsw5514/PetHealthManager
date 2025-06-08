@@ -30,12 +30,12 @@ public class ChatService {
      * @param content 채팅 내용
      * @return 업로드 성공 여부
      */
-    public boolean uploadChat(int roomId, String writerId, LocalDateTime writeTime, String contentType, String content)
+    public boolean uploadChat(ChatDTO chatDTO)
     {
         //채팅 내용 파일로 저장
-        final String TIME_STRING = writeTime.toString().replace(":","-");
-        final String FILE_NAME = writerId + "_" + roomId + "_" + TIME_STRING + ".txt";
-        final String CHAT_PATH = FileService.saveChat(content, FILE_NAME);
+        final String TIME_STRING = chatDTO.getWriteTime().toString().replace(":","-");
+        final String FILE_NAME = chatDTO.getWriterId() + "_" + chatDTO.getRoomId() + "_" + TIME_STRING + ".txt";
+        final String CHAT_PATH = FileService.saveChat(chatDTO.getContent(), FILE_NAME);
         if (CHAT_PATH == null){
             log.error("채팅 내용 저장 실패");
             return false;
@@ -43,12 +43,7 @@ public class ChatService {
             
 
         //파일 경로 및 나머지 데이터 db에 저장
-        ChatEntity chatEntity = new ChatEntity();
-        chatEntity.setRoomId(roomId);
-        chatEntity.setWriterId(writerId);
-        chatEntity.setWriteTime(writeTime);
-        chatEntity.setContentType(contentType);
-        chatEntity.setContentPath(CHAT_PATH);
+        ChatEntity chatEntity = ChatEntity.fromDTO(chatDTO, CHAT_PATH);
         try{
             chatRepository.save(chatEntity);
         }
