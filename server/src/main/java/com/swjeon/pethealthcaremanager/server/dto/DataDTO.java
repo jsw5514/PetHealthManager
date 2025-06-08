@@ -42,16 +42,16 @@ public class DataDTO {
         return uploaderId + "_" + dataId + ".txt";
     }
 
-    public DataEntity toEntity(String dataPath) {
+    public DataEntity toEntity() {
         DataEntity dataEntity = new DataEntity();
         dataEntity.setUploaderId(uploaderId);
         dataEntity.setDataId(dataId);
         dataEntity.setMetaData(metaData);
-        dataEntity.setDataPath(dataPath);
+        dataEntity.setContent(data);
         return dataEntity;
     }
 
-    public static DataDTO fromEntity(DataEntity dataEntity, String content) {
-        return new DataDTO(dataEntity.getUploaderId(), dataEntity.getDataId(), dataEntity.getMetaData(), content);
+    public static DataDTO fromEntity(DataEntity dataEntity) {
+        return new DataDTO(dataEntity.getUploaderId(), dataEntity.getDataId(), dataEntity.getMetaData(), dataEntity.getContent());
     }
 }

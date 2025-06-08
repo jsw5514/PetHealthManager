@@ -25,7 +25,7 @@ public class DataEntity {
   private String dataId;
   @Column(name = "META_DATA")
   private String metaData;
-  @Column(name = "DATA_PATH")
-  private String dataPath;
+  @Column(name = "CONTENT", columnDefinition = "json")
+  private String content;
 
 }

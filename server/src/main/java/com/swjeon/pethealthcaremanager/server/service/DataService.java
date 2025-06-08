@@ -20,16 +20,8 @@ public class DataService {
     }
 
     public boolean uploadData(DataDTO dataDTO) {
-        //데이터 본문을 파일로 저장
-        final String FILE_NAME = dataDTO.generateFileName();
-        final String DATA_PATH = FileService.saveData(dataDTO.getData(), FILE_NAME);
-        if (DATA_PATH == null){
-            log.error("데이터 저장 실패");
-            return false;
-        }
-
-        //본문을 제외한 나머지는 db에 저장
-        DataEntity dataEntity = dataDTO.toEntity(DATA_PATH);
+        //db에 저장
+        DataEntity dataEntity = dataDTO.toEntity();
         try{
             dataRepository.save(dataEntity);
         }
@@ -48,17 +40,10 @@ public class DataService {
         if(optionalDataEntity.isPresent()){ //db 검색에 성공한 경우
             DataEntity dataEntity = optionalDataEntity.get(); //db에 저장된 내용 불러오기
 
-            //파일에서 데이터 내용 불러오기
-            String dataContent = FileService.loadData(dataEntity.getDataPath());
-            if(dataContent == null){
-                log.error("failed to load data file");
-                return null;
-            }
-
-            return DataDTO.fromEntity(dataEntity, dataContent); //DTO로 변환하여 반환
+            return DataDTO.fromEntity(dataEntity); //DTO로 변환하여 반환
         }
-        else{ //db 검색에 실패한 겨우
-            log.error("no such data with downloaderId " + downloaderId + " dataId " + dataId);
+        else{ //db 검색에 실패한 경우
+            log.error("no such data with userId " + downloaderId + " dataId " + dataId);
             return null;
         }
     }

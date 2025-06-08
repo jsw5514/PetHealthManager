@@ -19,24 +19,24 @@ public class ChatController {
         this.chatService = chatService;
     }
 
-    /** 채팅 업로드 함수
-     * @param roomId 채팅방 id
-     * @param writerId 채팅 작성자 id
-     * @param writeTime 채팅 작성 시간
-     * @param contentType 채팅 내용 자료형
-     * @param content 채팅내용(바이너리 데이터는 Base64 인코딩 후 전송)
-     * @return 채팅 업로드 성공여부(boolean)
-     */
-    @PostMapping("/uploadChat")
-    public boolean uploadChat(@RequestBody ChatDTO chatDTO)
-    {
-        int roomId = Integer.parseInt(request.get("roomId"));
-        String writerId = request.get("writerId");
-        LocalDateTime writeTime = LocalDateTime.parse(request.get("writeTime"));
-        String contentType = request.get("contentType");
-        String content = request.get("content");
-        return chatService.uploadChat(roomId, writerId, writeTime, contentType, content);
-    }
+//    /** 채팅 업로드 함수
+//     * @param roomId 채팅방 id
+//     * @param writerId 채팅 작성자 id
+//     * @param writeTime 채팅 작성 시간
+//     * @param contentType 채팅 내용 자료형
+//     * @param content 채팅내용(바이너리 데이터는 Base64 인코딩 후 전송)
+//     * @return 채팅 업로드 성공여부(boolean)
+//     */
+//    @PostMapping("/uploadChat")
+//    public boolean uploadChat(@RequestBody ChatDTO chatDTO)
+//    {
+//        int roomId = Integer.parseInt(request.get("roomId"));
+//        String writerId = request.get("writerId");
+//        LocalDateTime writeTime = LocalDateTime.parse(request.get("writeTime"));
+//        String contentType = request.get("contentType");
+//        String content = request.get("content");
+//        return chatService.uploadChat(roomId, writerId, writeTime, contentType, content);
+//    }
 
     /** 채팅 내용 갱신 함수
      * @param roomId 채팅방 id
