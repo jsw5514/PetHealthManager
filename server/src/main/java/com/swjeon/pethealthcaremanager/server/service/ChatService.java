@@ -23,11 +23,7 @@ public class ChatService {
     }
 
     /** 채팅 업로드 함수
-     * @param roomId 채팅방 id
-     * @param writerId 작성자 id
-     * @param writeTime 작성시간
-     * @param contentType 채팅 내용의 데이터 타입
-     * @param content 채팅 내용
+     * @param chatDTO 채팅 객체
      * @return 업로드 성공 여부
      */
     public boolean uploadChat(ChatDTO chatDTO)
@@ -50,7 +46,8 @@ public class ChatService {
                 chatRepository.save(chatEntity);
             }
             catch (Exception e){
-                log.error("파일 저장은 성공했으나 db에서 에러가 발생함. "+chatPath+"의 파일을 지울것."+e.getMessage());//TODO 파일 삭제 API 제작하여 대체
+                log.error("파일 저장은 성공했으나 db에서 에러가 발생함. "+chatPath+"의 파일은 삭제됨. "+e.getMessage());
+                FileService.deleteChat(chatPath);
                 return false;
             }
             return true;

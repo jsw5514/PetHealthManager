@@ -23,10 +23,10 @@ public class FileService {
      * @return 파일 저장 성공 여부
      */
     private static boolean save(String content, String savePath) {
+        log.info("Attempt to save file savePath: " + savePath + " content: " + content);
         File file = new File(savePath);
 
         try{
-            log.info("Attempt to file save savePath: " + savePath + " content: " + content);
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
             writer.write(content);
             writer.flush();
@@ -43,6 +43,7 @@ public class FileService {
      * @return 파일 내용
      */
     private static String load(String loadPath) {
+        log.info("Attempt to load file loadPath: " + loadPath);
         File file = new File(loadPath);
 
         if(!file.exists()){
@@ -63,6 +64,18 @@ public class FileService {
         }
     }
 
+    private static boolean delete(String filePath) {
+        log.info("Attempt to delete file filePath: " + filePath);
+        File file = new File(filePath);
+        if(!file.exists()){
+            log.error("file not found. filePath: " + filePath);
+            return false;
+        }
+        else {
+            return file.delete();
+        }
+    }
+
     //채팅 저장
     public static String saveChat(ChatDTO chatDTO) {
         String chatPath = CHAT_STORAGE + "/" + chatDTO.getFileName();
@@ -72,14 +85,24 @@ public class FileService {
 
     //채팅 불러오기
     public static String loadChat(String chatFilePath) {
-        //요구된 파일의 경로가 정상적인 데이터 파일 경로인지 확인
-        if (!chatFilePath.startsWith(DATA_STORAGE)) {
+        //요구된 파일의 경로가 정상적인 채팅 파일 경로인지 확인
+        if (!chatFilePath.startsWith(CHAT_STORAGE)) {
             log.error("invalid chat file path: " + chatFilePath);
             return null;
         }
         String loadedContent = load(chatFilePath);
         log.info("chat file loaded in path: " + chatFilePath + " content: " + loadedContent);
         return loadedContent;
+    }
+
+    //채팅 삭제(db 오류시 문제 파일 삭제를 위함)
+    public static boolean deleteChat(String chatFilePath) {
+        //삭제 요청된 파일의 경로가 정상적인 채팅 파일 경로인지 확인
+        if(!chatFilePath.startsWith(CHAT_STORAGE)){
+            log.error("invalid chat file path: " + chatFilePath);
+            return false;
+        }
+        return delete(chatFilePath);
     }
 
     //데이터 저장
