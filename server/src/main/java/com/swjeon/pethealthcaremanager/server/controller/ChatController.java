@@ -39,17 +39,22 @@ public class ChatController {
     }
 
     /** 채팅 내용 갱신 함수
-     * @param roomId 채팅방 id
-     * @param latestTimestamp 마지막으로 데이터를 갱신한 시점, 데이터를 갱신한 적이 없는 경우 생략
+     * @param request 요청 파라미터
+     * ----request 구조----
+     * roomId 채팅방 id
+     * latestTimestamp 마지막으로 데이터를 갱신한 시점, 데이터를 갱신한 적이 없는 경우 생략
+     * -------------------
      * @return 갱신된 채팅 내용(json으로 반환, 실패시 null)
      *          contentList: 채팅 내용 배열(json 배열)
-     *              writeTime: 작성 시간
-     *              writerNickname: 작성자 닉네임
-     *              contentType: 채팅 내용 데이터 타입
-     *              content: 채팅내용(바이너리 데이터는 Base64 인코딩 후 전송)
+     *          writeTime: 작성 시간
+     *          writerNickname: 작성자 닉네임
+     *          contentType: 채팅 내용 데이터 타입
+     *          content: 채팅내용(바이너리 데이터는 Base64 인코딩 후 전송)
      */
     @PostMapping("/downloadChat")
-    public ArrayList<ChatDTO> downloadChat(@RequestParam("roomId") int roomId, @RequestParam(value = "latestTimestamp", required = false) LocalDateTime latestTimestamp) {
+    public ArrayList<ChatDTO> downloadChat(Map<String,Object> request) {
+        int roomId = (Integer) request.get("roomId");
+        LocalDateTime latestTimestamp = LocalDateTime.parse( (String) request.get("latestTimestamp"));
         log.info("downloadChat roomId={}, latestTimestamp={}", roomId, latestTimestamp);
         return chatService.downloadChat(roomId,latestTimestamp);
     }
