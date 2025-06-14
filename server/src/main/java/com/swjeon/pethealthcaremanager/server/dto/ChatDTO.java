@@ -58,6 +58,11 @@ public class ChatDTO {
                 + " " + content;
     }
 
+    public String getFileName() {
+        String timeStamp = writeTime.toString().replace(":","-");
+        return writerId + "_" + roomId + "_" + timeStamp + ".txt";
+    }
+
     public ChatEntity toEntity(){
         ChatEntity chatEntity = new ChatEntity();
         chatEntity.setRoomId(roomId);

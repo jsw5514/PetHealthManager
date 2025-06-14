@@ -1,5 +1,6 @@
 package com.swjeon.pethealthcaremanager.server.service;
 
+import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,9 +64,9 @@ public class FileService {
     }
 
     //채팅 저장
-    public static String saveChat(String content, String fileName) {
-        String chatPath = CHAT_STORAGE + "/" + fileName;
-        boolean isSaved = save(content, chatPath);
+    public static String saveChat(ChatDTO chatDTO) {
+        String chatPath = CHAT_STORAGE + "/" + chatDTO.getFileName();
+        boolean isSaved = save(chatDTO.getContent(), chatPath);
         return isSaved ? chatPath : null;
     }
 
