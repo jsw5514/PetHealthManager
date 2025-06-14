@@ -12,7 +12,7 @@ import lombok.NonNull;
 import java.time.LocalDateTime;
 
 /*ChatDTO 구조
-* 업로드 시에만 필요(NonNull,JsonIgnore 적용)
+* 업로드 시에만 필요(NonNull,WRITE_ONLY 적용)
 * Integer roomId = 채팅방 id
 * String writerId = 채팅 작성자 id
 * -----------------------------
@@ -28,11 +28,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ChatDTO {
     @NonNull
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Integer roomId;
     
     @NonNull
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String writerId;
     
     private String writerNickname;
@@ -50,5 +50,11 @@ public class ChatDTO {
         writeTime = chatEntity.getWriteTime();
         contentType = chatEntity.getContentType();
         content = contentVal;
+    }
+
+    @Override
+    public String toString() {
+        return "room" + roomId + "/[" + writerId + "(" + writerNickname + ")]: " + writeTime + " " + contentType
+                + " " + content;
     }
 }
