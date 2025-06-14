@@ -43,7 +43,7 @@ public class ChatService {
             
 
         //파일 경로 및 나머지 데이터 db에 저장
-        ChatEntity chatEntity = ChatEntity.fromDTO(chatDTO, CHAT_PATH);
+        ChatEntity chatEntity = chatDTO.toEntity(CHAT_PATH);
         try{
             chatRepository.save(chatEntity);
         }

@@ -31,14 +31,4 @@ public class ChatEntity {
   private String contentType;
   @Column(name = "CONTENT_PATH")
   private String contentPath;
-
-  public static ChatEntity fromDTO(@NonNull ChatDTO chatDTO, String contentPath) {
-    ChatEntity chatEntity = new ChatEntity();
-    chatEntity.setRoomId(chatDTO.getRoomId());
-    chatEntity.setWriterId(chatDTO.getWriterId());
-    chatEntity.setWriteTime(chatDTO.getWriteTime());
-    chatEntity.setContentType(chatDTO.getContentType());
-    chatEntity.setContentPath(contentPath);
-    return chatEntity;
-  }
 }

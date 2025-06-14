@@ -57,4 +57,14 @@ public class ChatDTO {
         return "room" + roomId + "/[" + writerId + "(" + writerNickname + ")]: " + writeTime + " " + contentType
                 + " " + content;
     }
+
+    public ChatEntity toEntity(String contentPath) {
+        ChatEntity chatEntity = new ChatEntity();
+        chatEntity.setRoomId(roomId);
+        chatEntity.setWriterId(writerId);
+        chatEntity.setWriteTime(writeTime);
+        chatEntity.setContentType(contentType);
+        chatEntity.setContentPath(contentPath);
+        return chatEntity;
+    }
 }
