@@ -55,7 +55,7 @@ public class ChatController {
     public ArrayList<ChatDTO> downloadChat(Map<String,Object> request) {
         int roomId = (Integer) request.get("roomId");
         LocalDateTime latestTimestamp = LocalDateTime.parse( (String) request.get("latestTimestamp"));
-        log.info("downloadChat roomId={}, latestTimestamp={}", roomId, latestTimestamp);
+        log.info("downloadChat room {}, after {}", roomId, latestTimestamp);
         return chatService.downloadChat(roomId,latestTimestamp);
     }
 

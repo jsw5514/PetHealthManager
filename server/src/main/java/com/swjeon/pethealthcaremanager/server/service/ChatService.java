@@ -31,6 +31,7 @@ public class ChatService {
         if (chatDTO.getContentType().equals("text")) { //텍스트 채팅인 경우
             ChatEntity chatEntity = chatDTO.toEntity();
             chatRepository.save(chatEntity);
+            return true;
         }
         else{ //텍스트 채팅이 아닌 경우(base64로 인코딩 된 바이너리 데이터인 경우)
             //채팅 내용 파일로 저장
@@ -54,6 +55,7 @@ public class ChatService {
         }
     }
 
+    //TODO java doc 추가
     public ArrayList<ChatDTO> downloadChat(int roomId, LocalDateTime latestTimestamp) {
         //db에서 파일 경로 및 기타 정보 불러오기
         List<ChatEntity> chatList = chatRepository.getChatEntitiesByRoomIdAfter(roomId,latestTimestamp);
