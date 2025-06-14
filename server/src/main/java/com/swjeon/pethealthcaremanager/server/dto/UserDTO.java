@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 /*UserDTO 구조
- * 업로드 시에만 필요(NonNull,JsonIgnore 적용)
+ * 업로드 시에만 필요(NonNull,WRITE_ONLY 적용)
  * 없음
  * -----------------------------
  * 다운로드 시에만 필요(어노테이션 미적용)
