@@ -32,26 +32,32 @@ public class ChatService {
      */
     public boolean uploadChat(ChatDTO chatDTO)
     {
-        //채팅 내용 파일로 저장
-        final String TIME_STRING = chatDTO.getWriteTime().toString().replace(":","-");
-        final String FILE_NAME = chatDTO.getWriterId() + "_" + chatDTO.getRoomId() + "_" + TIME_STRING + ".txt";
-        final String CHAT_PATH = FileService.saveChat(chatDTO.getContent(), FILE_NAME);
-        if (CHAT_PATH == null){
-            log.error("채팅 내용 저장 실패");
-            return false;
-        }
-            
-
-        //파일 경로 및 나머지 데이터 db에 저장
-        ChatEntity chatEntity = chatDTO.toEntity(CHAT_PATH);
-        try{
+        if (chatDTO.getContentType().equals("text")) {
+            ChatEntity chatEntity = chatDTO.toEntity();
             chatRepository.save(chatEntity);
         }
-        catch (Exception e){
-            log.error("파일 저장은 성공했으나 db에서 에러가 발생함. "+CHAT_PATH+"의 파일을 지울것."+e.getMessage());//TODO 파일 삭제 API 제작하여 대체
-            return false;
+        else{
+            //채팅 내용 파일로 저장
+            final String TIME_STRING = chatDTO.getWriteTime().toString().replace(":","-");
+            final String FILE_NAME = chatDTO.getWriterId() + "_" + chatDTO.getRoomId() + "_" + TIME_STRING + ".txt";
+            final String CHAT_PATH = FileService.saveChat(chatDTO.getContent(), FILE_NAME);
+            if (CHAT_PATH == null){
+                log.error("채팅 내용 저장 실패");
+                return false;
+            }
+
+
+            //파일 경로 및 나머지 데이터 db에 저장
+            ChatEntity chatEntity = chatDTO.toEntity(CHAT_PATH);
+            try{
+                chatRepository.save(chatEntity);
+            }
+            catch (Exception e){
+                log.error("파일 저장은 성공했으나 db에서 에러가 발생함. "+CHAT_PATH+"의 파일을 지울것."+e.getMessage());//TODO 파일 삭제 API 제작하여 대체
+                return false;
+            }
+            return true;
         }
-        return true;
     }
 
     public ArrayList<ChatDTO> downloadChat(int roomId, LocalDateTime latestTimestamp) {

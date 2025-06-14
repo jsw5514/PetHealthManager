@@ -58,13 +58,24 @@ public class ChatDTO {
                 + " " + content;
     }
 
+    public ChatEntity toEntity(){
+        ChatEntity chatEntity = new ChatEntity();
+        chatEntity.setRoomId(roomId);
+        chatEntity.setWriterId(writerId);
+        chatEntity.setWriteTime(writeTime);
+        chatEntity.setContentType(contentType);
+        chatEntity.setContent(content);
+        return chatEntity;
+
+    }
+
     public ChatEntity toEntity(String contentPath) {
         ChatEntity chatEntity = new ChatEntity();
         chatEntity.setRoomId(roomId);
         chatEntity.setWriterId(writerId);
         chatEntity.setWriteTime(writeTime);
         chatEntity.setContentType(contentType);
-        chatEntity.setContentPath(contentPath);
+        chatEntity.setContent(contentPath);
         return chatEntity;
     }
 }

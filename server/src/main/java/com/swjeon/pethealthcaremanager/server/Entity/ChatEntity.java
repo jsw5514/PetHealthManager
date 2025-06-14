@@ -29,6 +29,6 @@ public class ChatEntity {
   private LocalDateTime writeTime;
   @Column(name = "CONTENT_TYPE")
   private String contentType;
-  @Column(name = "CONTENT_PATH")
-  private String contentPath;
+  @Column(name = "CONTENT")
+  private String content;
 }
