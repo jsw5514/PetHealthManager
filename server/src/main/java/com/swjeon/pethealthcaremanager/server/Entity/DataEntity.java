@@ -2,6 +2,7 @@ package com.swjeon.pethealthcaremanager.server.Entity;
 
 
 import com.swjeon.pethealthcaremanager.server.Entity.IdClass.DataIdClass;
+import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
@@ -28,4 +29,7 @@ public class DataEntity {
   @Column(name = "CONTENT", columnDefinition = "json")
   private String content;
 
+  public DataDTO toDTO() {
+    return new DataDTO(uploaderId, dataId, metaData, content);
+  }
 }

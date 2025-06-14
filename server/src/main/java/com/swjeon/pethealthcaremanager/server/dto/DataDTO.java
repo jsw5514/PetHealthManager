@@ -50,8 +50,4 @@ public class DataDTO {
         dataEntity.setContent(data);
         return dataEntity;
     }
-
-    public static DataDTO fromEntity(DataEntity dataEntity) {
-        return new DataDTO(dataEntity.getUploaderId(), dataEntity.getDataId(), dataEntity.getMetaData(), dataEntity.getContent());
-    }
 }

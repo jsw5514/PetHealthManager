@@ -40,7 +40,7 @@ public class DataService {
         if(optionalDataEntity.isPresent()){ //db 검색에 성공한 경우
             DataEntity dataEntity = optionalDataEntity.get(); //db에 저장된 내용 불러오기
 
-            return DataDTO.fromEntity(dataEntity); //DTO로 변환하여 반환
+            return dataEntity.toDTO(); //DTO로 변환하여 반환
         }
         else{ //db 검색에 실패한 경우
             log.error("no such data with userId " + downloaderId + " dataId " + dataId);
