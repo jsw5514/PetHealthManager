@@ -28,7 +28,6 @@ public class UsersService {
     public boolean signIn(UserDTO userDTO) {
         String id = userDTO.getId();
         String password = userDTO.getPassword();
-        UsersEntity user;
 
         //id 중복 검사
         Optional<UsersEntity> optionalUser = usersRepository.findById(id);
@@ -37,11 +36,9 @@ public class UsersService {
             return false;
         }
         else{
-            user = new UsersEntity();//TODO 엔티티화 매서드 추가
-            user.setId(id);
-            user.setPw(password);
+            UsersEntity usersEntity = userDTO.toEntity();
             try{
-                usersRepository.save(user);
+                usersRepository.save(usersEntity);
             }
             catch (Exception e){
                 log.error(e.getMessage());

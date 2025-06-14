@@ -21,7 +21,6 @@ meda data를 기준으로 데이터를 구분하여 서로 다른 테이블에 �
 +구분된 데이터를 읽어서 시각화하는 코드 추가(Chart.js, matplotlib 등을 적절히 사용)
 
 3. user service 개선
-적절한 유틸 메소드 추가하여 사용(getFileName, toEntity, toDTO)
 보안: 비밀번호 db 저장시 해시함수 적용
 
 4. 그외
