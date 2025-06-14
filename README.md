@@ -10,6 +10,7 @@ spring.datasource.password=your_pass_word
 1. 채팅 구현
 -미구현 함수 목록
 ChatController.java (다수의 미구현 함수가 @RequestParam을 사용하고 있음. @RequestBody로 변경 필요)
+downLoadChat -> 현재 정상작동하지 않음, 수정 필요
 createChatRoom
 inviteChatMember
 leaveChatRoom
