@@ -1,17 +1,15 @@
 # PetHealthManager
 
-### 서버 설정시 주의사항
+### 서버 설정시 주의사항 ###
 application.properties에 db계정을 수동으로 추가해야 합니다.
 ex)
 spring.datasource.username= your_user_name
 spring.datasource.password=your_pass_word
 
-### 서버 todo list
+### 서버 todo list ###
 1. 채팅 구현
 -미구현 함수 목록
 ChatController.java (다수의 미구현 함수가 @RequestParam을 사용하고 있음. @RequestBody로 변경 필요)
-downLoadChat -> 현재 정상작동하지 않음, 수정 필요
-createChatRoom
 inviteChatMember
 leaveChatRoom
 getChatMember

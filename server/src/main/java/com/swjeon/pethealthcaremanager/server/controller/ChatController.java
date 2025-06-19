@@ -60,12 +60,14 @@ public class ChatController {
     }
 
     /** 채팅방 생성 함수
-     * @param creatorId 채팅방 생성자 id
+     * creatorId 채팅방 생성자 id
      * @return 생성된 채팅방 id(int,생성 실패시 0)
      */
     @PostMapping("/createChatRoom")
-    public String createChatRoom(@RequestParam("creatorId") String creatorId){
-        return "not yet implemented"; //TODO not yet implemented
+    public int createChatRoom(@RequestBody Map<String, String> request) {
+        String creatorId = request.get("creatorId");
+        log.warn("createChatRoom creatorId {}", creatorId);
+        return chatService.createChatRoom(creatorId);
     }
 
     /** 채팅 맴버를 채팅방에 초대하는 함수

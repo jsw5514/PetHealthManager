@@ -1,7 +1,10 @@
 package com.swjeon.pethealthcaremanager.server.service;
 
 import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
+import com.swjeon.pethealthcaremanager.server.Entity.ChatMemberEntity;
+import com.swjeon.pethealthcaremanager.server.Entity.ChatRoomEntity;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRepository;
+import com.swjeon.pethealthcaremanager.server.Repository.ChatRoomRepository;
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +19,14 @@ import java.util.List;
 public class ChatService {
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
     private final ChatRepository chatRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatMemberRepository chatMemberRepository;
 
     @Autowired
-    public ChatService(ChatRepository chatRepository) {
+    public ChatService(ChatRepository chatRepository, ChatRoomRepository chatRoomRepository, ChatMemberRepository chatMemberRepository) {
         this.chatRepository = chatRepository;
+        this.chatRoomRepository = chatRoomRepository;
+        this.chatMemberRepository = chatMemberRepository;
     }
 
     /** 채팅 업로드 함수
@@ -55,7 +62,12 @@ public class ChatService {
         }
     }
 
-    //TODO java doc 추가
+
+    /**
+     * @param roomId 채팅을 가져올 채팅방 id
+     * @param latestTimestamp 클라이언트가 갖고있는 가장 최신의 채팅 타임스탬프 
+     * @return 업데이트된 채팅 내용들
+     */
     public ArrayList<ChatDTO> downloadChat(int roomId, LocalDateTime latestTimestamp) {
         //db에서 파일 경로 및 기타 정보 불러오기
         List<ChatEntity> chatList = chatRepository.getChatEntitiesByRoomIdAfter(roomId,latestTimestamp);
@@ -71,6 +83,13 @@ public class ChatService {
             chatContent = FileService.loadChat(chatFileName);
             chatDTOArrayList.add(new ChatDTO(chatEntity, chatContent));
         }
-        return chatDTOArrayList; //TODO roomId만 나오는 버그
+        return chatDTOArrayList;
+    }
+
+    public int createChatRoom(String creatorId) {
+        ChatRoomEntity inserted = chatRoomRepository.save(new ChatRoomEntity());
+        int roodId = inserted.getId();
+        chatMemberRepository.save(new ChatMemberEntity(roodId, creatorId));
+        return roodId;
     }
 }
