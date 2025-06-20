@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // 유저와 펫 데이터 초기화 (로컬 + 서버)
-        initUserAndPet()
+        //initUserAndPet()
 
         // 바텀 네비게이션바와 네비게이션 컨트롤러 연결
         setupNavigation()
@@ -76,29 +76,38 @@ class MainActivity : AppCompatActivity() {
      */
     private fun initUserAndPet() {
         Log.d("MainActivity", "initUserAndPet 호출됨")
+        // 1) 로컬에 캐시된 로그인 정보 불러오기
         UserRepository.loadFromPreferences(this)
         val user = UserRepository.getCurrentUser()
         val petIds = user?.petIds.orEmpty()
 
+        // 로그인 정보 없거나 펫이 없으면 종료
         if (user == null || petIds.isEmpty()) {
             Log.d("MainActivity", "유저 정보 없거나 펫이 하나도 등록되지 않음 → 로드 스킵")
             return
         }
 
-        // petIds 에는 최소 1개의 ID만 있을 때만 이 아래가 실행됩니다.
-        PetRepository.loadProfilesFromServer(user.userId, petIds) {
-            petIds.firstOrNull()?.let {
-                PetRepository.setCurrentPet(it)
-                Log.d("MainActivity", "첫 번째 펫 선택됨: $it")
+        // 2) 메모리 캐시 초기화 후 서버에서 프로필 다시 내려받기
+        PetRepository.loadProfilesFromServer(
+            userId     = user.userId,
+            petIds     = petIds,
+            onComplete = {
+                // 내려받은 뒤 첫 번째 펫 선택
+                petIds.firstOrNull()?.let {
+                    PetRepository.setCurrentPet(it)
+                    Log.d("MainActivity", "첫 번째 펫 선택됨: $it")
+                }
+            },
+            onError    = { err ->
+                Log.e("MainActivity", "펫 프로필 로드 실패: $err")
             }
-        }
+        )
     }
 
     /**
      * 네비게이션 컨트롤러와 바텀 네비게이션 뷰를 연결하고,
      * 로그인되어 있지 않다면 LoginFragment로 이동시킴
      */
-
     private fun setupNavigation() {
         Log.d("MainActivity", "setupNavigation 호출됨")
         val navHost = supportFragmentManager.findFragmentById(R.id.fragment_container) as? NavHostFragment
@@ -117,32 +126,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    /**
-     * 바텀 네비게이션 수정본
-     * 로그인 전 바텀 네비게이션 숨기 처리
-     * 아래 내용 오류 없을시 위 내용 삭제 예정
-
-    private fun setupNavigation() {
-        Log.d("MainActivity", "setupNavigation 호출됨")
-        val navHost = supportFragmentManager
-            .findFragmentById(R.id.fragment_container) as? NavHostFragment
-            ?: return
-        val navController = navHost.navController
-
-        val currentUser = UserRepository.getCurrentUser()
-        if (currentUser == null) {
-            // 로그인 안 된 상태 → 바텀 네비게이션 숨기고 로그인 화면으로 이동
-            Log.d("MainActivity", "로그인 정보 없음 → loginFragment 이동")
-            binding.bottomNavigationView.visibility = View.GONE
-            navController.navigate(R.id.loginFragment)
-        } else {
-            // 로그인 된 상태 → 바텀 네비게이션 보이기 & 연결
-            binding.bottomNavigationView.visibility = View.VISIBLE
-            binding.bottomNavigationView.setupWithNavController(navController)
-        }
-    }
-    */
     /**
      * BluetoothManager 초기화.
      * 데이터 수신 시에는 dataListener를 통해 프래그먼트에 전달,
@@ -212,8 +195,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // 러닝 화면에서 호출해 수신을 중단할 때 사용
     fun stopListeningBluetooth() {
         bluetoothManager.stopListening()
     }
-
 }

@@ -12,7 +12,8 @@ object ChatRoomManager {
 
         ApiClient.post("/createChatRoom", json,
             onSuccess = { response ->
-                callback(response.toIntOrNull() ?: 0)
+                val roomId = response.trim('"').toIntOrNull()?:0
+                callback(roomId)
             },
             onFailure = {
                 callback(0)
@@ -39,7 +40,10 @@ object ChatRoomManager {
         }
 
         ApiClient.post("/leaveChatRoom", json,
-            onSuccess = { response -> callback(response == "true") },
+            onSuccess = { response ->
+                // ✅ 문자열 양끝 따옴표 제거 후 비교
+                callback(response.trim('"').equals("true", ignoreCase = true))
+            },
             onFailure = { callback(false) }
         )
     }

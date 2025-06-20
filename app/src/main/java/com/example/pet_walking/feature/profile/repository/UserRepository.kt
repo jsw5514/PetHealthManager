@@ -7,38 +7,156 @@ import com.example.pet_walking.feature.profile.data.UserProfile
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.json.JSONObject
-import java.util.*
+import java.util.UUID
 
 object UserRepository {
-    private val users = mutableMapOf<String, UserProfile>() // 서버 연동 시 로컬 저장은 캐시로 사용 가능
+    // 로컬 캐시용 맵
+    private val users = mutableMapOf<String, UserProfile>()
     private var loggedInUserId: String? = null
 
-    // ✅ 외부에서 현재 유저 직접 등록 가능하게 추가된 함수
+    /** 현재 로그인한 유저 정보 반환 */
+    fun getCurrentUser(): UserProfile? =
+        loggedInUserId?.let { users[it] }
+
+    /** 현재 로그인한 유저 ID 반환 */
+    fun getCurrentUserId(): String? = loggedInUserId
+
+    /** 캐시에 새 유저 등록 */
     fun setCurrentUser(user: UserProfile) {
         users[user.userId] = user
         loggedInUserId = user.userId
     }
 
-    // ✅ 현재 로그인한 유저 정보 반환
-    fun getCurrentUser(): UserProfile? = loggedInUserId?.let { users[it] }
-
-    // ✅ 현재 로그인한 유저의 ID 반환 (단순 추출용)
-    fun getCurrentUserId(): String? = loggedInUserId
-
     fun addPetToCurrentUser(petId: UUID) {
         getCurrentUser()?.petIds?.add(petId)
     }
 
-    // ✅ 서버와 연동된 회원가입
+    /** SharedPreferences에 캐시 저장 */
+    fun saveToPreferences(context: Context) {
+        val prefs = context.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putString("users", Gson().toJson(users))
+            .putString("loggedInUserId", loggedInUserId)
+            .apply()
+    }
+
+    /** SharedPreferences에서 캐시 불러오기 */
+    fun loadFromPreferences(context: Context) {
+        val prefs = context.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        prefs.getString("users", null)?.let { json ->
+            val type = object : TypeToken<Map<String, UserProfile>>() {}.type
+            val restored: Map<String, UserProfile> = Gson().fromJson(json, type)
+            users.clear()
+            users.putAll(restored)
+        }
+        loggedInUserId = prefs.getString("loggedInUserId", null)
+        Log.d("UserRepository", "[DEBUG] loggedInUserId → $loggedInUserId")
+    }
+
+    /** 로그아웃 처리 */
+    fun logout(context: Context? = null) {
+        loggedInUserId = null
+        context?.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+            ?.edit()
+            ?.remove("loggedInUserId")
+            ?.apply()
+    }
+
+    /**
+     * 서버 연동 로그인 (비동기 콜백)
+     *
+     * @param userId   로그인 할 유저 ID
+     * @param password 비밀번호
+     * @param callback (성공 여부, 에러 메시지) -> Unit
+     */
+    fun login(
+        userId: String,
+        password: String,
+        callback: (success: Boolean, errorMsg: String?) -> Unit
+    ) {
+        val json = JSONObject().apply {
+            put("id", userId)
+            put("password", password)
+        }
+
+        ApiClient.post(
+            endpoint = "/login",
+            json = json,
+            onSuccess = { resp ->
+                // legacy: handle plain "true"/"false" responses
+                val trimmed = resp.trim()
+                if (trimmed == "true" || trimmed == "false") {
+                    val successFlag = trimmed == "true"
+                    if (successFlag) {
+                        // simple user profile when only boolean success is returned
+                        val profile = UserProfile(
+                            userId   = userId,
+                            username = "",
+                            password = password,
+                            petIds   = mutableListOf()
+                        )
+                        setCurrentUser(profile)
+                        callback(true, null)
+                    } else {
+                        callback(false, "아이디 또는 비밀번호가 올바르지 않습니다.")
+                    }
+                    return@post
+                }
+                try {
+                    val obj = JSONObject(resp)
+                    val success = obj.optBoolean("success", false)
+                    if (success) {
+                        // 서버에서 내려준 정보 파싱
+                        val username = obj.optString("username", "")
+                        val pwdFromServer = obj.optString("password", password)
+
+                        // petIds 배열 파싱
+                        val petIds = mutableListOf<UUID>()
+                        obj.optJSONArray("petIds")?.let { arr ->
+                            for (i in 0 until arr.length()) {
+                                petIds.add(UUID.fromString(arr.getString(i)))
+                            }
+                        }
+
+                        // 캐시에 저장
+                        val profile = UserProfile(
+                            userId   = userId,
+                            username = username,
+                            password = pwdFromServer,
+                            petIds   = petIds.toMutableList()
+                        )
+                        setCurrentUser(profile)
+                        callback(true, null)
+                    } else {
+                        callback(false, "아이디 또는 비밀번호가 올바르지 않습니다.")
+                    }
+                } catch (e: Exception) {
+                    Log.e("UserRepository", "로그인 응답 파싱 오류: ${e.message}")
+                    callback(false, "응답 파싱 오류: ${e.message}")
+                }
+            },
+            onFailure = { err ->
+                Log.e("UserRepository", "로그인 요청 실패: $err")
+                callback(false, "서버 요청 실패: $err")
+            }
+        )
+    }
+
+    /**
+     * 서버 연동 회원가입 (동기 방식)
+     *
+     * @return 성공 여부
+     */
     fun registerUser(profile: UserProfile): Boolean {
         var result = false
         val json = JSONObject().apply {
             put("id", profile.userId)
             put("password", profile.password)
         }
-
         val lock = Object()
-        ApiClient.post("/signIn", json,
+        ApiClient.post(
+            endpoint = "/signIn",
+            json = json,
             onSuccess = {
                 result = it.toBooleanStrictOrNull() == true
                 if (result) {
@@ -52,73 +170,7 @@ object UserRepository {
                 synchronized(lock) { lock.notify() }
             }
         )
-
-        synchronized(lock) { lock.wait(3000) } // 최대 3초 대기
+        synchronized(lock) { lock.wait(3000) }  // 최대 3초 대기
         return result
-    }
-
-    // 서버와 연동된 로그인
-    fun login(userId: String, password: String): Boolean {
-        var result = false
-        val json = JSONObject().apply {
-            put("id", userId)
-            put("password", password)
-        }
-
-        val lock = Object()
-        ApiClient.post("/login", json,
-            onSuccess = {
-                result = it.toBooleanStrictOrNull() == true
-                if (result) {
-                    loggedInUserId = userId
-                    if (!users.containsKey(userId)) {
-                        users[userId] = UserProfile(
-                            userId = userId,
-                            username = "", // 서버에서 사용자 정보 받아오지 않음 (확장 필요)
-                            password = password
-                        )
-                    }
-                }
-                synchronized(lock) { lock.notify() }
-            },
-            onFailure = {
-                Log.e("UserRepository", "로그인 실패: $it")
-                synchronized(lock) { lock.notify() }
-            }
-        )
-
-        synchronized(lock) { lock.wait(3000) }
-        return result
-    }
-
-    fun logout(context: Context? = null) {
-        loggedInUserId = null
-        context?.let {
-            val prefs = it.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-            prefs.edit().remove("loggedInUserId").apply()
-        }
-    }
-
-    // 로컬 SharedPreferences 저장은 캐시용으로 남겨둠
-    fun saveToPreferences(context: Context) {
-        val prefs = context.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        val json = Gson().toJson(users)
-        prefs.edit().putString("users", json).apply()
-        prefs.edit().putString("loggedInUserId", loggedInUserId).apply()
-    }
-
-    fun loadFromPreferences(context: Context) {
-        val prefs = context.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        val json = prefs.getString("users", null)
-        val savedId = prefs.getString("loggedInUserId", null)
-
-        json?.let {
-            val type = object : TypeToken<Map<String, UserProfile>>() {}.type
-            val restored = Gson().fromJson<Map<String, UserProfile>>(it, type)
-            users.clear()
-            users.putAll(restored)
-        }
-
-        loggedInUserId = savedId
     }
 }

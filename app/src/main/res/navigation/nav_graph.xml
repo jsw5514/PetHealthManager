@@ -9,7 +9,7 @@
         android:id="@+id/loginFragment"
         android:name="com.example.pet_walking.feature.Login.ui.LoginFragment"
         android:label="로그인"
-        tools:layout="@layout/fragment_login" >
+        tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_userFragment"
             app:destination="@id/userFragment" />
@@ -23,7 +23,7 @@
         android:id="@+id/registerFragment"
         android:name="com.example.pet_walking.feature.Login.ui.RegisterFragment"
         android:label="회원가입"
-        tools:layout="@layout/fragment_register" >
+        tools:layout="@layout/fragment_register">
         <action
             android:id="@+id/action_registerFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
@@ -53,12 +53,9 @@
         android:name="com.example.pet_walking.feature.Running.ui.RunSummaryFragment"
         android:label="러닝 요약"
         tools:layout="@layout/fragment_run_summary">
-
-        <!-- Safe Args argument for passing RunStats -->
         <argument
             android:name="runStats"
             app:argType="com.example.pet_walking.feature.Running.model.RunStats" />
-
         <action
             android:id="@+id/action_runSummaryFragment_to_runningFragment"
             app:destination="@id/runningFragment" />
@@ -137,7 +134,7 @@
     <!-- 채팅방 참여 -->
     <fragment
         android:id="@+id/joinChatRoomFragment"
-        android:name="com.example.pet_walking.feature.Chat.ChatRoomFragment"
+        android:name="com.example.pet_walking.feature.Chat.JoinChatRoomFragment"
         android:label="채팅방 참여"
         tools:layout="@layout/fragment_join_chat_room">
         <action

@@ -119,6 +119,7 @@ class RunningFragment : Fragment(), BluetoothDataListener {
 
     // 러닝 종료
     private fun stopRunning() {
+        Log.d("RunningDebug", "stopRunning() 진입")
         running = false
         Log.d("RunningDebug", "러닝 종료됨")
 
@@ -145,7 +146,9 @@ class RunningFragment : Fragment(), BluetoothDataListener {
 
         // 2) 서버 업로드
         StatsUploader.upload(userId, pet.id, pet.totalDistance, pet.totalCalories)
-        StatsUploader.logRun(userId, pet.id, runStats) // 이 줄 추가 필요
+        Log.d("RunningDebug", "upload() 호출 완료")
+        StatsUploader.logRun(userId, pet.id, runStats)
+        Log.d("RunningDebug", "✅ logRun() 호출 완료")
 
         // 3) 지도 보정
         mapFragment?.applyCorrectedPolyline(getString(R.string.google_roads_api_key))

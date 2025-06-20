@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.pet_walking.feature.Login.LoginSession
 import com.example.pet_walking.R
 import com.example.pet_walking.feature.profile.repository.UserRepository
 
@@ -18,55 +17,64 @@ class ChatRoomListFragment : Fragment() {
     private val joinedRooms = mutableListOf<Pair<Int, String>>()  // roomId, creatorId
     private lateinit var adapter: ChatRoomListAdapter
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
 
-        val view = inflater.inflate(R.layout.fragment_chat_room_list, container, false)
+        // ── 뷰 inflate ─────────────────────────────────────────────
+        val view = inflater.inflate(
+            R.layout.fragment_chat_room_list,
+            container,
+            false
+        )
 
-        val createBtn = view.findViewById<Button>(R.id.buttonCreateRoom)
-        val joinBtn = view.findViewById<Button>(R.id.buttonJoinRoom)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerChatRooms)
+        // ── 위젯 참조 ─────────────────────────────────────────────
+        val createBtn   = view.findViewById<Button>(R.id.buttonCreateRoom)
+        val joinBtn     = view.findViewById<Button>(R.id.buttonJoinRoom)
+        val recycler    = view.findViewById<RecyclerView>(R.id.recyclerChatRooms)
 
+        // ── 로그인 사용자인지 확인 ─────────────────────────────────
         val userId = UserRepository.getCurrentUserId()
+        Log.d("ChatRoomListFragment", "userId = $userId")
 
-        // 로그인된 경우에만 어댑터와 채팅방 목록 초기화
         if (!userId.isNullOrBlank()) {
-            adapter = ChatRoomListAdapter(joinedRooms) { roomId, creatorId ->
+
+            // 리스트-어댑터 초기화
+            adapter = ChatRoomListAdapter(joinedRooms) { roomId, _ ->
                 val action = ChatRoomListFragmentDirections
                     .actionChatRoomListFragmentToChatRoomFragment(roomId, userId)
                 findNavController().navigate(action)
             }
 
-            recyclerView.layoutManager = LinearLayoutManager(requireContext())
-            recyclerView.adapter = adapter
+            recycler.layoutManager = LinearLayoutManager(requireContext())
+            recycler.adapter       = adapter
 
-            // 참여 중인 채팅방 목록 불러오기
-            ChatRoomManager.getJoinedChatRooms(userId) { rooms ->
-                activity?.runOnUiThread {
-                    joinedRooms.clear()
-                    joinedRooms.addAll(rooms)
-                    adapter.notifyDataSetChanged()
-                }
-            }
+            // 참여 중인 채팅방 가져오기
+            refreshChatRoomList(userId)
         }
 
-        // ✅ 생성 버튼 클릭 시점에서 로그인 여부 확인
+        // ── 채팅방 “생성” 버튼 ────────────────────────────────────
         createBtn.setOnClickListener {
             Log.d("ChatRoomListFragment", "👆 생성 버튼 클릭됨")
-            val currentUser = LoginSession.userId
+            val currentUser = UserRepository.getCurrentUserId()     // ✅ 변경
             if (currentUser.isNullOrBlank()) {
                 Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
             } else {
-                findNavController().navigate(R.id.action_chatRoomListFragment_to_createChatRoomFragment)
+                findNavController()
+                    .navigate(R.id.action_chatRoomListFragment_to_createChatRoomFragment)
             }
         }
 
-        // ✅ 참여 버튼 클릭 시점에서 로그인 여부 확인
+        // ── 채팅방 “참여” 버튼 ────────────────────────────────────
         joinBtn.setOnClickListener {
-            val currentUser = LoginSession.userId
+            val currentUser = UserRepository.getCurrentUserId()     // ✅ 변경
             if (currentUser.isNullOrBlank()) {
                 Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
             } else {
-                findNavController().navigate(R.id.action_chatRoomListFragment_to_joinChatRoomFragment)
+                findNavController()
+                    .navigate(R.id.action_chatRoomListFragment_to_joinChatRoomFragment)
             }
         }
 
@@ -76,8 +84,10 @@ class ChatRoomListFragment : Fragment() {
     private fun refreshChatRoomList(userId: String) {
         ChatRoomManager.getJoinedChatRooms(userId) { rooms ->
             activity?.runOnUiThread {
-                joinedRooms.clear()
-                joinedRooms.addAll(rooms)
+                joinedRooms.apply {
+                    clear()
+                    addAll(rooms)
+                }
                 adapter.notifyDataSetChanged()
             }
         }
