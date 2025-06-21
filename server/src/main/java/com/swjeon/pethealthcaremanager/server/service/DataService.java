@@ -33,9 +33,9 @@ public class DataService {
         return true;
     }
 
-    public DataDTO downloadData(String downloaderId, String dataId) {
+    public DataDTO downloadData(String downloaderId, String dataId, String dataType) {
         //db에서 파일 경로를 포함한 정보 불러오기
-        DataIdClass id = new DataIdClass(downloaderId,dataId);
+        DataIdClass id = new DataIdClass(downloaderId,dataId,dataType);
         Optional<DataEntity> optionalDataEntity = dataRepository.findById(id);
         if(optionalDataEntity.isPresent()){ //db 검색에 성공한 경우
             DataEntity dataEntity = optionalDataEntity.get(); //db에 저장된 내용 불러오기

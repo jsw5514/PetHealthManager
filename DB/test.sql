@@ -9,8 +9,8 @@ VALUES
 (2, 'user3', 'video', '/videos/example2.mp4'),
 (2, 'user4', 'text', 'this is test message 2'),
 (3, 'user5', 'audio', '/audios/example3.mp3');
-INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, CONTENT) VALUES ("testid", "testDataId", "just test data", '{ "content":"this is json content"}');
-INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, CONTENT) VALUES ("testid", "testPetUUID", "pet_profile", ' {
+INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testDataId", "just test data", '{ "content":"this is json content"}');
+INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID", "pet_profile", ' {
     "name": "1",
     "age": "1",
     "gender": "암컷",
@@ -19,7 +19,7 @@ INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, CONTENT) VALUES ("testid", "t
     "totalDistance": 0,
     "totalCalories": 0
   }');
-  INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, CONTENT) VALUES ("testid", "testPetUUID2", "pet_profile", ' {
+  INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID2", "pet_profile", ' {
     "name": "2",
     "age": "1",
     "gender": "암컷",
@@ -28,6 +28,41 @@ INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, CONTENT) VALUES ("testid", "t
     "totalDistance": 0,
     "totalCalories": 0
   }');
+   INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID", "running_stats", '{
+  "uploaderId": "testid",
+  "dataId": "02439a83-d9c9-4694-9eb3-3676149f11c7",
+  "metaData": "running_stats",
+  "data": {
+    "summary": {
+      "totalDistance": 1,
+      "totalCalories": 540
+    },
+    "daily": {
+      "2025-06-08": {
+        "distance": 1,
+        "calories": 1
+      }
+    },
+    "weekly": {
+      "2025-W24": {
+        "distance": 7.3,
+        "calories": 320
+      }
+    },
+    "monthly": {
+      "2025-06": {
+        "distance": 1,
+        "calories": 1
+      }
+    },
+    "yearly": {
+      "2025": {
+        "distance": 1,
+        "calories": 1
+      }
+    }
+  }
+}');
 
 -- 데이터 출력용
 SELECT * FROM USERS;

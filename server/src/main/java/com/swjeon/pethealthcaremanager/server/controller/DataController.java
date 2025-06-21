@@ -47,8 +47,9 @@ public class DataController {
     public DataDTO downloadData(@RequestBody Map<String,String> downloadRequest)
     {
         log.info("Download attempt with data: " + downloadRequest);
-        final String DOWNLOADER_ID = downloadRequest.get("downloaderId");
-        final String DATA_ID = downloadRequest.get("dataId");
-        return dataService.downloadData(DOWNLOADER_ID, DATA_ID);
+        String downloaderId = downloadRequest.get("downloaderId");
+        String dataId = downloadRequest.get("dataId");
+        String dataType = downloadRequest.get("dataType");
+        return dataService.downloadData(downloaderId, dataId, dataType);
     }
 }

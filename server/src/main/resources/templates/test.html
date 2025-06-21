@@ -9,11 +9,11 @@
 <ul id="pet-list"></ul>
 
 <script th:inline="javascript">
-    let petList = document.getElementById("pet-list");
-    let petProfiles = /*[[${petProfiles}]]*/ 'no profiles';
+    let petList = document.getElementById("pet-list")
+    let petProfiles = /*[[${petProfiles}]]*/ 'no profiles'
     petProfiles.forEach((petProfile,index)=>{
         let data = JSON.parse(petProfile.data)
-        let listItem = document.createElement("li");
+        let listItem = document.createElement("li")
         listItem.innerHTML = `
             <div class="pet-info">
                 <p><strong>사용자 ID:</strong> ${petProfile.uploaderId}</p>
@@ -25,10 +25,10 @@
                 <p>총 운동거리: ${data.totalDistance}m</p>
                 <p>총 소모 칼로리: ${data.totalCalories}kcal</p>
             </div>
-        `;
+        `
 
         //리스트에 작성한 아이템 추가
-        petList.appendChild(listItem);
+        petList.appendChild(listItem)
 
         //debug output
         console.log("userId: ", petProfile.uploaderId,

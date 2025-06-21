@@ -46,7 +46,7 @@ public class DataDTO {
         DataEntity dataEntity = new DataEntity();
         dataEntity.setUploaderId(uploaderId);
         dataEntity.setDataId(dataId);
-        dataEntity.setMetaData(metaData);
+        dataEntity.setDataType(metaData);
         dataEntity.setContent(data);
         return dataEntity;
     }

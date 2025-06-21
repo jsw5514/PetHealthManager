@@ -12,22 +12,24 @@ import java.util.Objects;
 public class DataIdClass implements Serializable {
     private String uploaderId;
     private String dataId;
+    private String dataType;
     
     public DataIdClass(){}
-    public DataIdClass(String uploaderId, String dataId) {
+    public DataIdClass(String uploaderId, String dataId, String dataType) {
         this.uploaderId = uploaderId;
         this.dataId = dataId;
+        this.dataType = dataType;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         DataIdClass that = (DataIdClass) o;
-        return Objects.equals(uploaderId, that.uploaderId) && Objects.equals(dataId, that.dataId);
+        return Objects.equals(uploaderId, that.uploaderId) && Objects.equals(dataId, that.dataId) && Objects.equals(dataType, that.dataType);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(uploaderId, dataId);
+        return Objects.hash(uploaderId, dataId, dataType);
     }
 }

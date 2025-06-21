@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 
 @Entity
 @Table(name = "data")
@@ -24,12 +22,13 @@ public class DataEntity {
   @Id
   @Column(name = "DATA_ID")
   private String dataId;
-  @Column(name = "META_DATA")
-  private String metaData;
+  @Id
+  @Column(name = "DATA_TYPE")
+  private String dataType;
   @Column(name = "CONTENT", columnDefinition = "json")
   private String content;
 
   public DataDTO toDTO() {
-    return new DataDTO(uploaderId, dataId, metaData, content);
+    return new DataDTO(uploaderId, dataId, dataType, content);
   }
 }
