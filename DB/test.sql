@@ -30,13 +30,17 @@ INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "t
   }');
    INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID", "running_stats", '{
     "summary": {
-      "totalDistance": 1,
-      "totalCalories": 540
+      "totalDistance": 7.3,
+      "totalCalories": 320
     },
     "daily": {
       "2025-06-08": {
-        "distance": 1,
-        "calories": 1
+        "distance": 3,
+        "calories": 100
+      },
+      "2025-06-09": {
+        "distance": 4.3,
+        "calories": 220
       }
     },
     "weekly": {
@@ -47,8 +51,8 @@ INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "t
     },
     "monthly": {
       "2025-06": {
-        "distance": 1,
-        "calories": 1
+        "distance": 7.3,
+        "calories": 320
       }
     },
     "yearly": {
@@ -61,13 +65,17 @@ INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "t
 ');
    INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID2", "running_stats", '{
     "summary": {
-      "totalDistance": 1,
-      "totalCalories": 540
+      "totalDistance": 7.3,
+      "totalCalories": 320
     },
     "daily": {
       "2025-06-08": {
-        "distance": 1,
-        "calories": 1
+        "distance": 3,
+        "calories": 100
+      },
+      "2025-06-09": {
+        "distance": 4.3,
+        "calories": 220
       }
     },
     "weekly": {
@@ -78,8 +86,8 @@ INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "t
     },
     "monthly": {
       "2025-06": {
-        "distance": 1,
-        "calories": 1
+        "distance": 7.3,
+        "calories": 320
       }
     },
     "yearly": {

@@ -8,13 +8,74 @@
         async function getStats(userId, petId) {
             //console.log(`userId: ${userId}  petId: ${petId} 로 요청 전송`)
             try {
-                const res = await fetch(`/api/stats?userId=${encodeURIComponent(userId)}&petId=${encodeURIComponent(petId)}`);
-                if (!res.ok) throw new Error('서버 응답 실패');
-                const data = await res.json();
-                console.log(data);
+                const res = await fetch(`/api/stats?userId=${encodeURIComponent(userId)}&petId=${encodeURIComponent(petId)}`)
+                if (!res.ok) throw new Error('서버 응답 실패')
+                return await res.json()
             } catch (e) {
                 console.error('오류 발생:', e);
             }
+        }
+
+        function drawChart(canvas, labels, datasets) {
+            canvas.width = 400;
+            canvas.height = 200;
+            let context = canvas.getContext('2d');
+            let config = {
+                //막대그래프
+                type: 'bar',
+
+                //차트에 출력될 데이터
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+
+                //차트 속성 지정
+                options: {
+                    responsive: false
+                }
+            }
+            let chart = new Chart(context, config)
+        }
+
+        function showDatas(titleText,data,listItem) {
+            //제목 설정
+            let title = document.createElement("strong")
+            title.textContent = titleText
+            listItem.appendChild(title)
+
+            let labels = Object.keys(data)
+            const calories = labels.map(date => data[date].calories);  // [1, 319]
+            const distances = labels.map(date => data[date].distance); // [1, 6.3]
+
+            //차트 생성
+            let canvasCalories = document.createElement("canvas");
+            let canvasDistances = document.createElement("canvas");
+            let datasets = [
+                {
+                    label: '칼로리(kcal)',
+                    backgroundColor: 'rgb(255,0,0)',
+                    borderColor: 'yellow',
+                    borderWidth: 2,
+                    data: calories,
+                    fill: true
+                },
+                {
+                    label: '거리(km)',
+                    backgroundColor: 'rgb(0,255,0)',
+                    borderColor: 'yellow',
+                    borderWidth: 2,
+                    data: distances,
+                    fill: true
+                }
+            ]
+            drawChart(canvasCalories, labels, [datasets[0]])
+            drawChart(canvasDistances, labels, [datasets[1]])
+
+            //작성한 차트를 리스트 아이템에 추가
+            listItem.appendChild(canvasCalories)
+            listItem.appendChild(canvasDistances)
+
         }
     </script>
 </head>
@@ -33,28 +94,38 @@
                 <p><strong>반려동물 정보</strong></p>
                 <p>이름: ${data.name}</p>
                 <p>나이: ${data.age}</p>
-                <p>성별: ${data.gender}</p
+                <p>성별: ${data.gender}</p>
                 <p>몸무게: ${data.weight}kg</p>
-                <p>총 운동거리: ${data.totalDistance}m</p>
+                <p>총 운동거리: ${data.totalDistance}km</p>
                 <p>총 소모 칼로리: ${data.totalCalories}kcal</p>
             </div>
         `
-        let runningStats = getStats(petProfile.uploaderId, petProfile.dataId)
-        console.log(runningStats)
 
-        //리스트에 작성한 아이템 추가
-        petList.appendChild(listItem)
+        //통계 데이터 요청
+        getStats(petProfile.uploaderId, petProfile.dataId)
+            .then( runningStats => {
+                let statsData = JSON.parse(runningStats[0].data)
+                let dailyData = statsData.daily
+                showDatas("일일 통계",statsData.daily,listItem)
+                showDatas("주간 통계",statsData.weekly,listItem)
+                showDatas("월간 통계",statsData.monthly,listItem)
+
+                //리스트에 작성한 아이템 추가
+                petList.appendChild(listItem)
+            })
+
+
 
         //debug output
-        console.log("userId: ", petProfile.uploaderId,
-            "\npetId: ", petProfile.dataId,
-            "\npetName: ", data.name,
-            "\npetAge: ", data.age,
-            "\npetGender: ", data.gender,
-            "\npetWeight: ", data.weight,
-            "\npetWalkedDistance: ", data.totalDistance,
-            "\npetUsedCalories: ", data.totalCalories
-        )
+        // console.log("userId: ", petProfile.uploaderId,
+        //     "\npetId: ", petProfile.dataId,
+        //     "\npetName: ", data.name,
+        //     "\npetAge: ", data.age,
+        //     "\npetGender: ", data.gender,
+        //     "\npetWeight: ", data.weight,
+        //     "\npetWalkedDistance: ", data.totalDistance,
+        //     "\npetUsedCalories: ", data.totalCalories
+        // )
     })
 </script>
 </body>
