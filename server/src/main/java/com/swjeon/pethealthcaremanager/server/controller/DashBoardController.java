@@ -1,6 +1,5 @@
 package com.swjeon.pethealthcaremanager.server.controller;
 
-import com.swjeon.pethealthcaremanager.server.Repository.DataRepository;
 import com.swjeon.pethealthcaremanager.server.service.DashBoardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,7 +15,6 @@ public class DashBoardController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("petProfiles", dashBoardService.findProfiles());
-        model.addAttribute("name", "testname");
         return "test";
     }
 }

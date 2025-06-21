@@ -19,6 +19,15 @@ INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, CONTENT) VALUES ("testid", "t
     "totalDistance": 0,
     "totalCalories": 0
   }');
+  INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, CONTENT) VALUES ("testid", "testPetUUID2", "pet_profile", ' {
+    "name": "2",
+    "age": "1",
+    "gender": "암컷",
+    "weight": 1,
+    "imageUri": "",
+    "totalDistance": 0,
+    "totalCalories": 0
+  }');
 
 -- 데이터 출력용
 SELECT * FROM USERS;

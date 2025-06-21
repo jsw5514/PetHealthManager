@@ -3,11 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <title>Pet Stats Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+<ul id="pet-list"></ul>
+
 <script th:inline="javascript">
-    let userName = /*[[${name}]]*/ 'defaultName';
-    console.log(userName);
+    let petList = document.getElementById("pet-list");
+    let petProfiles = /*[[${petProfiles}]]*/ 'no profiles';
+    petProfiles.forEach((petProfile,index)=>{
+        let data = JSON.parse(petProfile.data)
+        let listItem = document.createElement("li");
+        listItem.innerHTML = `
+            <div class="pet-info">
+                <p><strong>사용자 ID:</strong> ${petProfile.uploaderId}</p>
+                <p><strong>반려동물 정보</strong></p>
+                <p>이름: ${data.name}</p>
+                <p>나이: ${data.age}</p>
+                <p>성별: ${data.gender}</p
+                <p>몸무게: ${data.weight}kg</p>
+                <p>총 운동거리: ${data.totalDistance}m</p>
+                <p>총 소모 칼로리: ${data.totalCalories}kcal</p>
+            </div>
+        `;
+
+        //리스트에 작성한 아이템 추가
+        petList.appendChild(listItem);
+
+        //debug output
+        console.log("userId: ", petProfile.uploaderId,
+            "\npetId: ", petProfile.dataId,
+            "\npetName: ", data.name,
+            "\npetAge: ", data.age,
+            "\npetGender: ", data.gender,
+            "\npetWeight: ", data.weight,
+            "\npetWalkedDistance: ", data.totalDistance,
+            "\npetUsedCalories: ", data.totalCalories
+        )
+    })
 </script>
 </body>
 </html>
