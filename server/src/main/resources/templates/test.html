@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <title>Pet Stats Chart</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        async function getStats(userId, petId) {
+            //console.log(`userId: ${userId}  petId: ${petId} 로 요청 전송`)
+            try {
+                const res = await fetch(`/api/stats?userId=${encodeURIComponent(userId)}&petId=${encodeURIComponent(petId)}`);
+                if (!res.ok) throw new Error('서버 응답 실패');
+                const data = await res.json();
+                console.log(data);
+            } catch (e) {
+                console.error('오류 발생:', e);
+            }
+        }
+    </script>
 </head>
 <body>
 <ul id="pet-list"></ul>
@@ -11,7 +24,7 @@
 <script th:inline="javascript">
     let petList = document.getElementById("pet-list")
     let petProfiles = /*[[${petProfiles}]]*/ 'no profiles'
-    petProfiles.forEach((petProfile,index)=>{
+    petProfiles.forEach((petProfile)=>{
         let data = JSON.parse(petProfile.data)
         let listItem = document.createElement("li")
         listItem.innerHTML = `
@@ -26,6 +39,8 @@
                 <p>총 소모 칼로리: ${data.totalCalories}kcal</p>
             </div>
         `
+        let runningStats = getStats(petProfile.uploaderId, petProfile.dataId)
+        console.log(runningStats)
 
         //리스트에 작성한 아이템 추가
         petList.appendChild(listItem)

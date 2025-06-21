@@ -20,4 +20,13 @@ public class DashBoardService {
         }
         return profiles;
     }
+
+    public List<DataDTO> findStats(String userId, String petId) {
+        List<DataEntity> statEntities = dataRepository.findStatsById(userId, petId);
+        ArrayList<DataDTO> stats = new ArrayList<>();
+        for (DataEntity statEntity : statEntities) {
+            stats.add(statEntity.toDTO());
+        }
+        return stats;
+    }
 }

@@ -12,4 +12,9 @@ public interface DataRepository extends JpaRepository<DataEntity, DataIdClass> {
     @Query(value = "SELECT * FROM data WHERE DATA_TYPE = 'pet_profile'", nativeQuery = true)
     List<DataEntity> findProfiles();
 
+    @Query(value = "SELECT * FROM data " +
+            "WHERE DATA_TYPE = 'running_stats' " +
+            "AND UPLOADER_ID =:uploaderId " +
+            "AND DATA_ID =:dataId", nativeQuery = true)
+    List<DataEntity> findStatsById(@Param("uploaderId") String userId, @Param("dataId") String petId);
 }
