@@ -32,6 +32,10 @@ dependencies {
 	
 	//for spring boot admin
 	implementation("de.codecentric:spring-boot-admin-starter-client:3.4.4")
+
+	//for web control
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
 tasks.named('test') {

@@ -10,6 +10,15 @@ VALUES
 (2, 'user4', 'text', 'this is test message 2'),
 (3, 'user5', 'audio', '/audios/example3.mp3');
 INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, CONTENT) VALUES ("testid", "testDataId", "just test data", '{ "content":"this is json content"}');
+INSERT INTO DATA (UPLOADER_ID, DATA_ID, META_DATA, CONTENT) VALUES ("testid", "testPetUUID", "pet_profile", ' {
+    "name": "1",
+    "age": "1",
+    "gender": "암컷",
+    "weight": 1,
+    "imageUri": "",
+    "totalDistance": 0,
+    "totalCalories": 0
+  }');
 
 -- 데이터 출력용
 SELECT * FROM USERS;
