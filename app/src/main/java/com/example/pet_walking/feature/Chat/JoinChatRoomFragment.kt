@@ -1,48 +1,52 @@
 package com.example.pet_walking.feature.Chat
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.view.*
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.pet_walking.R
 import com.example.pet_walking.feature.profile.repository.UserRepository
+import org.json.JSONObject
 
 class JoinChatRoomFragment : Fragment() {
 
-    private lateinit var editRoomId: EditText   // ← id 를 layout 과 맞춰 주세요!
+    private lateinit var editRoomName: EditText
+    private lateinit var editPassword: EditText
     private lateinit var joinBtn: Button
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val v = inflater.inflate(R.layout.fragment_join_chat_room, container, false)
-
-        editRoomId = v.findViewById(R.id.editJoinRoomId)      // 또는 editJoinRoomId
-        joinBtn    = v.findViewById(R.id.buttonJoin)
+        editRoomName = v.findViewById(R.id.editRoomName)
+        editPassword = v.findViewById(R.id.editPassword)
+        joinBtn = v.findViewById(R.id.buttonJoin)
 
         joinBtn.setOnClickListener {
-            val roomId = editRoomId.text.toString().toIntOrNull()
+            val roomName = editRoomName.text.toString().trim()
+            val password = editPassword.text.toString().trim()
             val userId = UserRepository.getCurrentUserId()
 
-            if (roomId == null) {
-                Toast.makeText(requireContext(), "채팅방 ID를 숫자로 입력해 주세요", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (userId.isNullOrBlank()) {
-                Toast.makeText(requireContext(), "로그인이 필요합니다", Toast.LENGTH_SHORT).show()
+            if (roomName.isBlank() || userId.isNullOrBlank()) {
+                Toast.makeText(requireContext(), "입력 정보를 확인하세요", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            val action = JoinChatRoomFragmentDirections
-                .actionJoinChatRoomFragmentToChatRoomFragment(roomId, userId)
-            findNavController().navigate(action)
+            ChatRoomManager.joinChatRoom(userId, roomName, password) { roomId ->
+                requireActivity().runOnUiThread {
+                    if (roomId > 0) {
+                        Toast.makeText(requireContext(), "참여 완료", Toast.LENGTH_SHORT).show()
+                        val action = JoinChatRoomFragmentDirections
+                            .actionJoinChatRoomFragmentToChatRoomFragment(roomId, userId)
+                        findNavController().navigate(action)
+                    } else {
+                        Toast.makeText(requireContext(), "참여 실패: 이름 또는 비밀번호가 틀립니다", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         }
+
         return v
     }
 }

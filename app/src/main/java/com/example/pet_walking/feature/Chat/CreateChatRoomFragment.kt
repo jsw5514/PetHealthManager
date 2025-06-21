@@ -1,47 +1,53 @@
 package com.example.pet_walking.feature.Chat
 
 import android.os.Bundle
-import android.util.Log // 로그용 import 추가
 import android.view.*
-import android.widget.Button
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.example.pet_walking.feature.Login.LoginSession
 import com.example.pet_walking.R
 import com.example.pet_walking.feature.profile.repository.UserRepository
+import com.example.pet_walking.feature.Login.LoginSession
 
 class CreateChatRoomFragment : Fragment() {
 
+    private lateinit var roomNameEditText: EditText
+    private lateinit var passwordEditText: EditText
+    private lateinit var createRoomButton: Button
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.fragment_create_chat_room, container, false)
-        val button = view.findViewById<Button>(R.id.buttonCreateRoom)
 
-        button.setOnClickListener {
-            Log.d("CreateChatRoom", "🔘 생성 버튼 클릭됨") // ✅ 버튼 클릭 로그
+        roomNameEditText = view.findViewById(R.id.roomNameEditText)
+        passwordEditText = view.findViewById(R.id.passwordEditText)
+        createRoomButton = view.findViewById(R.id.createRoomButton)
 
-            val userId = UserRepository.getCurrentUserId()
-            Log.d("CreateChatRoom", "▶ UserRepository.getCurrentUserId() = $userId")
+        createRoomButton.setOnClickListener {
+            val roomName = roomNameEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
+            val creatorId = UserRepository.getCurrentUserId()
 
-            if (userId.isNullOrBlank()) {
-                Toast.makeText(requireContext(), "로그인이 필요합니다", Toast.LENGTH_SHORT).show()
-                Log.w("CreateChatRoom", "❗ 로그인 정보 없음. 생성 불가") // ✅ 경고 로그
+            if (creatorId.isNullOrBlank()) {
+                Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack()
                 return@setOnClickListener
             }
 
-            Log.d("CreateChatRoom", "👤 현재 로그인 ID: $userId") // ✅ 유저 ID 출력
+            if (roomName.isBlank()) {
+                Toast.makeText(requireContext(), "채팅방 이름을 입력하세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-            button.isEnabled = false
-            ChatRoomManager.createChatRoom(userId) { roomId ->
+            ChatRoomManager.createChatRoom(creatorId, roomName, password) { roomId ->
                 requireActivity().runOnUiThread {
-                    button.isEnabled = true
                     if (roomId > 0) {
-                        Log.d("CreateChatRoom", "✅ 채팅방 생성 성공 - ID: $roomId") // ✅ 성공 로그
-                        val action = CreateChatRoomFragmentDirections
-                            .actionCreateChatRoomFragmentToChatRoomFragment(roomId, userId)
+                        Toast.makeText(requireContext(), "채팅방 생성 완료!", Toast.LENGTH_SHORT).show()
+                        val action = CreateChatRoomFragmentDirections.actionCreateChatRoomFragmentToChatRoomFragment(
+                            roomId = roomId,
+                            userId = creatorId
+                        )
                         findNavController().navigate(action)
                     } else {
-                        Log.e("CreateChatRoom", "❌ 채팅방 생성 실패") // ✅ 실패 로그
                         Toast.makeText(requireContext(), "채팅방 생성 실패", Toast.LENGTH_SHORT).show()
                     }
                 }

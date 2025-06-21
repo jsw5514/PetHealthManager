@@ -5,9 +5,11 @@ import org.json.JSONObject
 
 object ChatRoomManager {
 
-    fun createChatRoom(creatorId: String, callback: (Int) -> Unit) {
+    fun createChatRoom(creatorId: String, roomName: String, password: String?, callback: (Int) -> Unit) {
         val json = JSONObject().apply {
             put("creatorId", creatorId)
+            put("roomName", roomName)
+            if (!password.isNullOrBlank()) put("password", password)
         }
 
         ApiClient.post("/createChatRoom", json,
@@ -92,6 +94,24 @@ object ChatRoomManager {
                 callback(rooms)
             },
             onFailure = { callback(emptyList()) }
+        )
+    }
+
+    fun joinChatRoom(userId: String, roomName: String, password: String, callback: (Int) -> Unit) {
+        val json = JSONObject().apply {
+            put("userId", userId)
+            put("roomName", roomName)
+            put("password", password)
+        }
+
+        ApiClient.post("/joinChatRoom", json,
+            onSuccess = { response ->
+                val roomId = response.trim('"').toIntOrNull() ?: 0
+                callback(roomId)
+            },
+            onFailure = {
+                callback(0)
+            }
         )
     }
 }
