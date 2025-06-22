@@ -203,8 +203,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 object ApiClient {
 
     private val client = OkHttpClient()
-
-    private const val BASE_URL = "http://10.0.2.2:8000"
+    private const val BASE_URL = "https://bold-seal-only.ngrok-free.app"
+    //private const val BASE_URL = "http://10.0.2.2:8000"
 
     fun post(
         endpoint: String,
