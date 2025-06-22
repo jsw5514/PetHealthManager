@@ -113,7 +113,9 @@ class StatisticsFragment : Fragment() {
                     2 -> "monthly"; 3 -> "yearly"
                     else -> "daily"
                 }
+                Log.d("StatsFragment", "📡 loadStatsFromServer() 호출됨")
                 loadStatsFromServer()
+                Log.d("StatsFragment", "📡 loadStatsFromServer() 호출됨")
             }
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }

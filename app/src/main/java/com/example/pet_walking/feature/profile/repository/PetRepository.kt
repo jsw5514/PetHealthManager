@@ -77,7 +77,7 @@ object PetRepository {
         val uploadJson = JSONObject().apply {
             put("uploaderId", userId)
             put("dataId", profile.id.toString())
-            put("metaData", "pet_profile")
+            put("dataType", "pet_profile")
             put("data", dataJson.toString())
         }
 
@@ -124,7 +124,7 @@ object PetRepository {
             val requestJson = JSONObject().apply {
                 put("downloaderId", userId)
                 put("dataId", id.toString())
-                put("metaData", "pet_profile")
+                put("dataType", "pet_profile")
             }
             Log.d("PetRepo", "📤 [download] Request for id=$id → JSON: $requestJson")
 
@@ -133,7 +133,7 @@ object PetRepository {
                     Log.d("PetRepo", "📥 [download] Raw response for id=$id: $response")
                     try {
                         val parsed = JSONObject(response)
-                        val returnedMeta = parsed.optString("metaData")
+                        val returnedMeta = parsed.optString("dataType")
                         if (returnedMeta != "pet_profile") {
                             Log.e("PetRepo", "⚠️ [download] metaData mismatch(id=$id) returned='$returnedMeta', skipping")
                         } else {

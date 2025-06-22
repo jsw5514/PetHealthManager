@@ -81,7 +81,7 @@ object StatsUploader {
         val payload = JSONObject().apply {
             put("uploaderId", userId)
             put("dataId",     petId.toString())
-            put("metaData",   "running_stats")
+            put("dataType",   "running_stats")
             put("data",       dataJson.toString())
         }
 
@@ -99,7 +99,7 @@ object StatsUploader {
         val payload = JSONObject().apply {
             put("uploaderId", userId)
             put("dataId",     petId.toString())
-            put("metaData",   "run_log")  // summary와 구분
+            put("dataType",   "runLog")  // summary와 구분
             put("data", JSONObject().apply {
                 put("distance",  stats.distance)
                 put("calories",  stats.calories)
