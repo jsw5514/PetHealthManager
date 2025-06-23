@@ -2,8 +2,11 @@ package com.swjeon.pethealthcaremanager.server.service;
 
 import com.swjeon.pethealthcaremanager.server.Entity.DataEntity;
 import com.swjeon.pethealthcaremanager.server.Entity.IdClass.DataIdClass;
+import com.swjeon.pethealthcaremanager.server.Entity.PetEntity;
 import com.swjeon.pethealthcaremanager.server.Repository.DataRepository;
+import com.swjeon.pethealthcaremanager.server.Repository.PetRepository;
 import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
+import com.swjeon.pethealthcaremanager.server.dto.PetDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,10 +16,12 @@ import java.util.Optional;
 @Service
 public class DataService {
     private Logger log = LoggerFactory.getLogger(DataService.class);
+    private final PetRepository petRepository;
     private DataRepository dataRepository;
 
-    DataService(DataRepository dataRepository) {
+    DataService(DataRepository dataRepository, PetRepository petRepository) {
         this.dataRepository = dataRepository;
+        this.petRepository = petRepository;
     }
 
     public boolean uploadData(DataDTO dataDTO) {
@@ -46,5 +51,11 @@ public class DataService {
             log.error("no such data with userId " + downloaderId + " dataId " + dataId);
             return null;
         }
+    }
+
+    public boolean uploadPetProfile(PetDTO petDTO) {
+        PetEntity entity = petDTO.toEntity();
+        petRepository.save(entity);
+        return true;
     }
 }

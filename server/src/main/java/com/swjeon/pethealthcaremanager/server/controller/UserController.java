@@ -33,7 +33,7 @@ public class UserController {
 
     //로그인
     @PostMapping("/login")
-    public boolean login(@RequestBody UserDTO loginUser) {
+    public UserDTO login(@RequestBody UserDTO loginUser) {
         log.info("Login attempt with " + loginUser);
         return usersService.login(loginUser);
     }

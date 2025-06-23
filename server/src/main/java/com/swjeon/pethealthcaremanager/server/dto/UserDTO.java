@@ -6,6 +6,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+
 /*UserDTO 구조
  * 업로드 시에만 필요(NonNull,WRITE_ONLY 적용)
  * 없음
@@ -27,6 +29,7 @@ public class UserDTO {
     @NonNull
     private String password;
     private String nickname;
+    private ArrayList<PetDTO> pets;
 
     @Override
     public String toString() {

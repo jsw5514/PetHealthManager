@@ -1,6 +1,7 @@
 package com.swjeon.pethealthcaremanager.server.controller;
 
 import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
+import com.swjeon.pethealthcaremanager.server.dto.PetDTO;
 import com.swjeon.pethealthcaremanager.server.service.DataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,5 +52,11 @@ public class DataController {
         String dataId = downloadRequest.get("dataId");
         String dataType = downloadRequest.get("dataType");
         return dataService.downloadData(downloaderId, dataId, dataType);
+    }
+
+    @PostMapping("/uploadProfile")
+    public boolean uploadPetProfile(@RequestBody PetDTO petDTO) {
+        log.info("Upload attempt with pet: " + petDTO);
+        return dataService.uploadPetProfile(petDTO);
     }
 }

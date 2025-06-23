@@ -1,6 +1,7 @@
 package com.swjeon.pethealthcaremanager.server.service;
 
 import com.swjeon.pethealthcaremanager.server.Entity.UsersEntity;
+import com.swjeon.pethealthcaremanager.server.Repository.PetRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.UsersRepository;
 import com.swjeon.pethealthcaremanager.server.dto.UserDTO;
 import org.slf4j.Logger;
@@ -13,11 +14,13 @@ import java.util.Optional;
 @Service
 public class UsersService {
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
+    private final PetRepository petRepository;
     UsersRepository usersRepository;
 
     @Autowired
-    public UsersService(UsersRepository usersRepository) {
+    public UsersService(UsersRepository usersRepository, PetRepository petRepository) {
         this.usersRepository = usersRepository;
+        this.petRepository = petRepository;
     }
 
     //id 중복여부 확인
@@ -48,17 +51,18 @@ public class UsersService {
         }
     }
 
-    public boolean login(UserDTO userDTO) {
+    public UserDTO login(UserDTO userDTO) {
         String id = userDTO.getId();
         String password = userDTO.getPassword();
         Optional<UsersEntity> optionalUser = usersRepository.findById(id);
 
         //id 검사
         if(optionalUser.isPresent()){
-            UsersEntity user = optionalUser.get();
-            return user.getPw().equals(password); //비밀번호 검사 및 결과 리턴
+            UsersEntity usersEntity = optionalUser.get();
+            if(usersEntity.getPw().equals(password)) {//비밀번호 검사
+                return usersEntity.toDTO(petRepository);
+            }
         }
-        else
-            return false;
+        return null;
     }
 }
