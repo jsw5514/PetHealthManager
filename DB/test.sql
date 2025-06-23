@@ -12,24 +12,6 @@ VALUES
 INSERT INTO PET VALUES ("testPetUUID","testid","1","1","암컷",1,"",0,0);
 INSERT INTO PET VALUES ("testPetUUID2","testid","2","1","암컷",1,"",0,0);
 INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID", "just test data", '{ "content":"this is json content"}');
-INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID", "pet_profile", ' {
-    "name": "1",
-    "age": "1",
-    "gender": "암컷",
-    "weight": 1,
-    "imageUri": "",
-    "totalDistance": 0,
-    "totalCalories": 0
-  }');
-  INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID2", "pet_profile", ' {
-    "name": "2",
-    "age": "1",
-    "gender": "암컷",
-    "weight": 1,
-    "imageUri": "",
-    "totalDistance": 0,
-    "totalCalories": 0
-  }');
    INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID", "running_stats", '{
     "summary": {
       "totalDistance": 7.3,

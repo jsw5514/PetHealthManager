@@ -86,23 +86,22 @@
     let petList = document.getElementById("pet-list")
     let petProfiles = /*[[${petProfiles}]]*/ 'no profiles'
     petProfiles.forEach((petProfile)=>{
-        let data = JSON.parse(petProfile.data)
         let listItem = document.createElement("li")
         listItem.innerHTML = `
             <div class="pet-info">
                 <p><strong>사용자 ID:</strong> ${petProfile.uploaderId}</p>
                 <p><strong>반려동물 정보</strong></p>
-                <p>이름: ${data.name}</p>
-                <p>나이: ${data.age}</p>
-                <p>성별: ${data.gender}</p>
-                <p>몸무게: ${data.weight}kg</p>
-                <p>총 운동거리: ${data.totalDistance}km</p>
-                <p>총 소모 칼로리: ${data.totalCalories}kcal</p>
+                <p>이름: ${petProfile.name}</p>
+                <p>나이: ${petProfile.age}</p>
+                <p>성별: ${petProfile.gender}</p>
+                <p>몸무게: ${petProfile.weight}kg</p>
+                <p>총 운동거리: ${petProfile.totalDistance}km</p>
+                <p>총 소모 칼로리: ${petProfile.totalCalories}kcal</p>
             </div>
         `
 
         //통계 데이터 요청
-        getStats(petProfile.uploaderId, petProfile.dataId)
+        getStats(petProfile.userId, petProfile.petId)
             .then( runningStats => {
                 let statsData = JSON.parse(runningStats[0].data)
                 showDatas("일일 통계",statsData.daily,listItem)

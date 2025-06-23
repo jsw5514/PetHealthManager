@@ -9,5 +9,8 @@ import java.util.List;
 
 public interface PetRepository extends JpaRepository<PetEntity, String> {
     @Query(value = "SELECT * FROM PET WHERE USER_ID =:userId", nativeQuery = true)
-    public List<PetEntity> findByUserId(@Param("userId") String userId);
+    List<PetEntity> findByUserId(@Param("userId") String userId);
+
+    @Query(value = "SELECT * FROM PET", nativeQuery = true)
+    List<PetEntity> findProfiles();
 }
