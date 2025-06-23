@@ -9,7 +9,9 @@ VALUES
 (2, 'user3', 'video', '/videos/example2.mp4'),
 (2, 'user4', 'text', 'this is test message 2'),
 (3, 'user5', 'audio', '/audios/example3.mp3');
-INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testDataId", "just test data", '{ "content":"this is json content"}');
+INSERT INTO PET VALUES ("testPetUUID","testid","1","1","암컷",1,"",0,0);
+INSERT INTO PET VALUES ("testPetUUID2","testid","2","1","암컷",1,"",0,0);
+INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID", "just test data", '{ "content":"this is json content"}');
 INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "testPetUUID", "pet_profile", ' {
     "name": "1",
     "age": "1",
@@ -101,6 +103,7 @@ INSERT INTO DATA (UPLOADER_ID, DATA_ID, DATA_TYPE, CONTENT) VALUES ("testid", "t
 
 -- 데이터 출력용
 SELECT * FROM USERS;
+SELECT * FROM PET;
 SELECT * FROM CHAT_ROOM;
 SELECT * FROM CHAT_MEMBER;
 SELECT * FROM CHAT;
@@ -111,4 +114,5 @@ DROP TABLE CHAT_MEMBER;
 DROP TABLE CHAT;
 DROP TABLE CHAT_ROOM;
 DROP TABLE DATA;
+DROP TABLE PET;
 DROP TABLE USERS;

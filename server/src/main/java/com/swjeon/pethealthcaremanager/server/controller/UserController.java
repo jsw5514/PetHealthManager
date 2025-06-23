@@ -7,15 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
-public class AccountController {
+public class UserController {
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
     private final UsersService usersService;
 
     @Autowired
-    public AccountController(UsersService usersService) {
+    public UserController(UsersService usersService) {
         this.usersService = usersService;
     }
 
