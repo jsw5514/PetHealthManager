@@ -105,10 +105,10 @@
         getStats(petProfile.uploaderId, petProfile.dataId)
             .then( runningStats => {
                 let statsData = JSON.parse(runningStats[0].data)
-                let dailyData = statsData.daily
                 showDatas("일일 통계",statsData.daily,listItem)
                 showDatas("주간 통계",statsData.weekly,listItem)
                 showDatas("월간 통계",statsData.monthly,listItem)
+                showDatas("연간 통계",statsData.yearly,listItem)
 
                 //리스트에 작성한 아이템 추가
                 petList.appendChild(listItem)

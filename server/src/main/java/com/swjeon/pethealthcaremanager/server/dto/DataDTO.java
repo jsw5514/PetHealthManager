@@ -29,13 +29,13 @@ public class DataDTO {
     @NonNull
     private String dataId;
     @NonNull
-    private String metaData;
+    private String dataType;
     @NonNull
     private String data;
 
     @Override
     public String toString() {
-        return "uploaderId: " + uploaderId + ", dataId: " + dataId + ", metaData: " + metaData + ", data: " + data;
+        return "uploaderId: " + uploaderId + ", dataId: " + dataId + ", metaData: " + dataType + ", data: " + data;
     }
 
     public String generateFileName() {
@@ -46,7 +46,7 @@ public class DataDTO {
         DataEntity dataEntity = new DataEntity();
         dataEntity.setUploaderId(uploaderId);
         dataEntity.setDataId(dataId);
-        dataEntity.setDataType(metaData);
+        dataEntity.setDataType(dataType);
         dataEntity.setContent(data);
         return dataEntity;
     }

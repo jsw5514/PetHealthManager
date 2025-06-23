@@ -26,7 +26,6 @@ public class UserDTO {
     private String id;
     @NonNull
     private String password;
-    @NonNull
     private String nickname;
 
     @Override

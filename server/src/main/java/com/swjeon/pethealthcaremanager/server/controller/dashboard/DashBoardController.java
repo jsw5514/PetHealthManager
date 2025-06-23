@@ -15,6 +15,6 @@ public class DashBoardController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("petProfiles", dashBoardService.findProfiles());
-        return "test";
+        return "dashboard";
     }
 }
