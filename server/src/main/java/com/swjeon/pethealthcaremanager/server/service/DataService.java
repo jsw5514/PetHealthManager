@@ -48,7 +48,7 @@ public class DataService {
             return dataEntity.toDTO(); //DTO로 변환하여 반환
         }
         else{ //db 검색에 실패한 경우
-            log.error("no such data with userId " + downloaderId + " dataId " + dataId);
+            log.error("no such data with userId: " + downloaderId + ", dataId: " + dataId + ", dataType: " + dataType);
             return null;
         }
     }
