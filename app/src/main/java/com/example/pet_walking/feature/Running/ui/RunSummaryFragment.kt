@@ -68,7 +68,7 @@ class RunSummaryFragment : Fragment() {
             },
             onError = { error ->
                 requireActivity().runOnUiThread{
-                    Toast.makeText(requireContext(), "경로 보정 실패: $error", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(requireContext(), "경로 보정 실패: $error", Toast.LENGTH_SHORT).show()
                 }
             }
         )

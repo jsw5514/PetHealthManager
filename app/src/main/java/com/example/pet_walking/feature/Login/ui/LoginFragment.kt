@@ -1,4 +1,4 @@
-package com.example.pet_walking.feature.Login.ui
+/*package com.example.pet_walking.feature.Login.ui
 
 import android.os.Bundle
 import android.util.Log
@@ -120,5 +120,92 @@ class LoginFragment : Fragment() {
         }
 
         return view
+    }
+}*/
+package com.example.pet_walking.feature.Login.ui
+
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.example.pet_walking.R
+import com.example.pet_walking.feature.profile.repository.PetRepository
+import com.example.pet_walking.feature.profile.repository.UserRepository
+
+class LoginFragment : Fragment() {
+
+    /* ---------------- View refs ---------------- */
+    private lateinit var userIdInput  : EditText
+    private lateinit var passwordInput: EditText
+    private lateinit var loginButton  : Button
+    private lateinit var joinButton   : Button
+
+    /* ---------------- Lifecycle ---------------- */
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        Log.d("LoginFragment", "[onCreateView]")
+        val v = inflater.inflate(R.layout.fragment_login, container, false)
+
+        userIdInput   = v.findViewById(R.id.userIdInput)
+        passwordInput = v.findViewById(R.id.passwordInput)
+        loginButton   = v.findViewById(R.id.loginButton)
+        joinButton    = v.findViewById(R.id.joinButton)
+
+        /* ───────── 로그인 버튼 ───────── */
+        loginButton.setOnClickListener { attemptLogin() }
+
+        /* ───────── 회원가입 버튼 ─────── */
+        joinButton.setOnClickListener {
+            Log.d("LoginFragment", "join → RegisterFragment")
+            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
+        }
+
+        return v
+    }
+
+    /* ---------------- Helpers ---------------- */
+
+    /** 입력 검증 후 UserRepository.login 호출 */
+    private fun attemptLogin() {
+        val userId   = userIdInput.text.toString().trim()
+        val password = passwordInput.text.toString().trim()
+
+        if (userId.isBlank() || password.isBlank()) {
+            Toast.makeText(requireContext(), "아이디와 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Log.d("LoginFragment", "🚀 login(userId=$userId)")
+        UserRepository.login(userId, password) { ok, err ->
+            requireActivity().runOnUiThread {
+                if (!ok) {
+                    Toast.makeText(requireContext(), err ?: "로그인 실패", Toast.LENGTH_SHORT).show()
+                    return@runOnUiThread
+                }
+
+                Log.d("LoginFragment", "✅ login success, caching prefs")
+                UserRepository.saveToPreferences(requireContext())
+
+                /* -------- 펫 처리 -------- */
+                val petIds = UserRepository.getCurrentUser()?.petIds.orEmpty()
+                Log.d("LoginFragment", "petIds=$petIds")
+
+                // 첫 펫 선택(있을 때만)
+                petIds.firstOrNull()?.let { first ->
+                    PetRepository.setCurrentPet(first)
+                    Log.d("LoginFragment", "currentPet set → $first")
+                }
+
+                /* -------- 다음 화면 -------- */
+                findNavController().navigate(R.id.action_loginFragment_to_userFragment)
+            }
+        }
     }
 }

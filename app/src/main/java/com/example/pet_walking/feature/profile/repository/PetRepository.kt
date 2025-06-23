@@ -1,4 +1,4 @@
-package com.example.pet_walking.feature.profile.repository
+/*package com.example.pet_walking.feature.profile.repository
 
 import android.util.Log
 import com.example.pet_walking.network.ApiClient
@@ -7,7 +7,8 @@ import org.json.JSONObject
 import java.util.*
 
 object PetRepository {
-    private val profiles = mutableMapOf<UUID, PetProfile>()
+    //private val profiles = mutableMapOf<UUID, PetProfile>()
+    internal val profiles = mutableMapOf<UUID, PetProfile>()
     var currentPetId: UUID? = null
 
     init {
@@ -82,7 +83,7 @@ object PetRepository {
         }
 
         Log.d("PetRepo", "📤 [upload] Request JSON: $uploadJson")
-        ApiClient.post("/uploadData", uploadJson,
+        ApiClient.post("/uploadProfile", uploadJson,
             onSuccess = { response ->
                 Log.d("PetRepo", "📥 [upload] Raw response: $response")
                 val success = response.toBooleanStrictOrNull() == true
@@ -115,7 +116,7 @@ object PetRepository {
         var loadedCount = 0
 
         if (petIds.isEmpty()) {
-            Log.d("PetRepo", "loadProfilesFromServer() petIds가 비어있음 → 바로 onComplete 호출")
+            Log.e("PetRepo", "loadProfilesFromServer() petIds가 비어있음 → 바로 onComplete 호출")
             onComplete()
             return
         }
@@ -178,4 +179,157 @@ object PetRepository {
             )
         }
     }
+}*/
+
+package com.example.pet_walking.feature.profile.repository
+
+import android.util.Log
+import com.example.pet_walking.feature.profile.data.PetProfile
+import com.example.pet_walking.network.ApiClient
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.UUID
+
+/**
+ * --------------------------------------------------------------------
+ *  PetRepository
+ *  ────────────────────────────────────────────────────────────────────
+ *  • 서버 ↔ 앱 사이 펫(Pet) 프로필 동기화 담당
+ *    ▶ 로그인 시 서버 응답의 "pets" 배열을 캐시에 저장
+ *    ▶ 새 펫 생성/수정 시  `/uploadProfile`(PetDTO) 로 전송
+ *  • 실시간 다운로드(/downloadData) 로직은 제거
+ *    → 서버가 로그인 응답에 모든 펫 정보를 보내주기 때문
+ *  • 모든 퍼블릭 API 는 UI 레이어(뷰모델/프래그먼트) 가 사용
+ * --------------------------------------------------------------------
+ */
+object PetRepository {
+
+    /** 내부 캐시: petId(UUID) → PetProfile (앱 프로세스 생존 동안 유지) */
+    internal val profiles: MutableMap<UUID, PetProfile> = mutableMapOf()
+
+    /** 유저가 현재 선택한 펫(없으면 null) */
+    var currentPetId: UUID? = null
+        private set
+
+    init { Log.d("PetRepo", "PetRepository initialized") }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* 1) 서버 → 캐시 : 로그인 응답에서 pets 배열 주입                  */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    /**
+     * 로그인 성공 후 서버가 내려준 전체 JSON(예: `{"id": …, "pets":[…]}`) 을 넘기면
+     * 내부 캐시를 초기화하고 `pets` 배열을 파싱·저장한다.
+     *
+     * @param loginJson  서버 로그인 응답 원본
+     */
+    /*fun injectPetsFromJson(loginJson: JSONObject) {
+        profiles.clear()
+
+        val arr: JSONArray = loginJson.optJSONArray("pets") ?: JSONArray()
+
+        Log.d("PetRepo", "injectPetsFromJson → begin (size=${arr.length()})")
+
+        for (i in 0 until arr.length()) {
+            try {
+                val petObj = arr.getJSONObject(i)
+                val pet    = petObj.toPetProfile()
+                profiles[pet.id] = pet
+                Log.d("PetRepo", "  ✓ pets[$i] parsed → ${pet.id}")
+            } catch (e: Exception) {
+                Log.e("PetRepo", "  ✗ pets[$i] parse error: ${e.message}")
+            }
+        }
+        Log.d("PetRepo", "injectPetsFromJson ← done (cache=${profiles.size})")
+    }*/
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* 2) 캐시 → 서버 : 신규/수정 업로드                               */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    /**
+     * 새 PetProfile 을 로컬 캐시에 넣고 즉시 서버로 업로드.
+     *
+     * @param profile   생성된 PetProfile
+     * @param userId    로그인한 유저 ID
+     * @param onComplete true=업로드 성공 / false=실패
+     */
+    fun addProfile(
+        profile   : PetProfile,
+        userId    : String,
+        onComplete: (Boolean) -> Unit
+    ) {
+        Log.d("PetRepo", "addProfile() → id=${profile.id}, userId=$userId")
+
+        profiles[profile.id] = profile
+        uploadProfileToServer(userId, profile, onComplete)
+    }
+
+    /**
+     * 내부: PetDTO 사양으로 JSON 직렬화 후 `/uploadProfile` 호출
+     */
+    private fun uploadProfileToServer(
+        userId    : String,
+        profile   : PetProfile,
+        onComplete: (Boolean) -> Unit
+    ) {
+        /* PetDTO 와 동일한 키로 채움 */
+        val json = JSONObject().apply {
+            put("petId"        , profile.id.toString())   // PK
+            put("userId"       , userId)                  // FK
+            put("name"         , profile.name)
+            put("age"          , profile.age)
+            put("gender"       , profile.gender)
+            put("weight"       , profile.weight)
+            put("imgUrl"       , profile.imageUri ?: "")
+            put("totalDistance", profile.totalDistance)
+            put("totalCalories", profile.totalCalories)
+        }
+
+        Log.d("PetRepo", "📤 [uploadProfile] $json")
+
+        ApiClient.post(
+            endpoint  = "/uploadProfile",
+            json      = json,
+            onSuccess = { resp ->
+                val ok = resp.trim().toBooleanStrictOrNull() == true
+                Log.d("PetRepo", "📥 uploadProfile 응답=[$resp] → success=$ok")
+                onComplete(ok)
+            },
+            onFailure = { err ->
+                Log.e("PetRepo", "❌ uploadProfile 실패: $err")
+                onComplete(false)
+            }
+        )
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* 3) 캐시 관련 편의 메서드                                        */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    fun removeProfile(id: UUID) {
+        Log.d("PetRepo", "removeProfile() → id=$id")
+        profiles.remove(id)
+        if (currentPetId == id) currentPetId = null
+    }
+
+    fun setCurrentPet(id: UUID?) { currentPetId = id }
+    fun getCurrentPet(): PetProfile?       = profiles[currentPetId]
+    fun getProfile(id: UUID): PetProfile?  = profiles[id]
+    fun getAllProfiles(): List<PetProfile> = profiles.values.toList()
 }
+
+/* ────────────────────────────────────────────────────────────────── */
+/* 확장 함수 : JSONObject → PetProfile                               */
+/* ────────────────────────────────────────────────────────────────── */
+private fun JSONObject.toPetProfile(): PetProfile =
+    PetProfile(
+        id            = UUID.fromString(getString("petId")),
+        name          = getString("name"),
+        age           = getString("age"),
+        gender        = getString("gender"),
+        weight        = getDouble("weight"),
+        imageUri      = optString("imgUrl").ifBlank { null },
+        totalDistance = optDouble("totalDistance", 0.0),
+        totalCalories = optDouble("totalCalories", 0.0)
+    )

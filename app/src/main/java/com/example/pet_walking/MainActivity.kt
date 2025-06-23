@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // 유저와 펫 데이터 초기화 (로컬 + 서버)
-        //initUserAndPet()
+        initUserAndPet()
 
         // 바텀 네비게이션바와 네비게이션 컨트롤러 연결
         setupNavigation()
@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("MainActivity", "유저 정보 없거나 펫이 하나도 등록되지 않음 → 로드 스킵")
             return
         }
-
+/*
         // 2) 메모리 캐시 초기화 후 서버에서 프로필 다시 내려받기
         PetRepository.loadProfilesFromServer(
             userId     = user.userId,
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
             onError    = { err ->
                 Log.e("MainActivity", "펫 프로필 로드 실패: $err")
             }
-        )
+        )*/
     }
 
     /**
