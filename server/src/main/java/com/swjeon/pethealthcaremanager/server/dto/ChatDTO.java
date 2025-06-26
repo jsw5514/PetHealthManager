@@ -1,10 +1,7 @@
 package com.swjeon.pethealthcaremanager.server.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
-import com.swjeon.pethealthcaremanager.server.service.FileService;
-import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;

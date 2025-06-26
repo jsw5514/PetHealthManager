@@ -6,6 +6,7 @@ import com.swjeon.pethealthcaremanager.server.Entity.ChatRoomEntity;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRoomRepository;
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
+import com.swjeon.pethealthcaremanager.server.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class ChatService {
         }
         else{ //텍스트 채팅이 아닌 경우(base64로 인코딩 된 바이너리 데이터인 경우)
             //채팅 내용 파일로 저장
-            String chatPath = FileService.saveChat(chatDTO);
+            String chatPath = FileUtil.saveChat(chatDTO);
             if (chatPath == null){
                 log.error("채팅 내용 저장 실패");
                 return false;
@@ -55,7 +56,7 @@ public class ChatService {
             }
             catch (Exception e){
                 log.error("파일 저장은 성공했으나 db에서 에러가 발생함. "+chatPath+"의 파일은 삭제됨. "+e.getMessage());
-                FileService.deleteChat(chatPath);
+                FileUtil.deleteChat(chatPath);
                 return false;
             }
             return true;
@@ -80,7 +81,7 @@ public class ChatService {
         for(ChatEntity chatEntity : chatList){
             chatTimeString = chatEntity.getWriteTime().toString().replace(":","-");
             chatFileName = chatEntity.getWriterId() + "_" + chatEntity.getRoomId() + "_" + chatTimeString + ".txt";
-            chatContent = FileService.loadChat(chatFileName);
+            chatContent = FileUtil.loadChat(chatFileName);
             chatDTOArrayList.add(new ChatDTO(chatEntity, chatContent));
         }
         return chatDTOArrayList;

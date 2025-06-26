@@ -1,4 +1,4 @@
-package com.swjeon.pethealthcaremanager.server.service;
+package com.swjeon.pethealthcaremanager.server.util;
 
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import org.slf4j.Logger;
@@ -10,8 +10,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 //외부에 노출되지 않는 유틸용 서비스
-public class FileService {
-    private static final Logger log = LoggerFactory.getLogger(FileService.class.getSimpleName());
+public class FileUtil {
+    private static final Logger log = LoggerFactory.getLogger(FileUtil.class.getSimpleName());
     //채팅 저장 경로
     private static final String CHAT_STORAGE=System.getProperty("user.dir")+"/storage/chat";
     //일반 데이터 저장 경로
