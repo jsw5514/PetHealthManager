@@ -26,7 +26,7 @@ public class DataController {
      * String uploaderId = 업로더 id
      * String dataId = 데이터 식별자
      *                 (같은 유저가 올린 데이터 사이에서 특정 데이터를 구별하기 위함, 클라이언트 임의로 설정
-     * String metaData = 데이터 종류 등 데이터에 대해 추가로 저장하고 싶은 정보
+     * String dataType = 데이터 종류 등 데이터에 대해 추가로 저장하고 싶은 정보
      * String data = 데이터 자체(바이너리 데이터는 base64로 인코딩하여 전송)
      * -------------------
      * @return 요청 성공여부(boolean)
