@@ -5,6 +5,7 @@ import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 * String contentType = 채팅 내용 자료형
 *  String content = 채팅내용
 * */
+@Setter
 @Getter
 @NoArgsConstructor
 public class ChatDTO {

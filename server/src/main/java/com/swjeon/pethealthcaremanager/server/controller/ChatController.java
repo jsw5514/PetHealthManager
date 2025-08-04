@@ -52,7 +52,7 @@ public class ChatController {
      *          content: 채팅내용(바이너리 데이터는 Base64 인코딩 후 전송)
      */
     @PostMapping("/downloadChat")
-    public ArrayList<ChatDTO> downloadChat(Map<String,Object> request) {
+    public ArrayList<ChatDTO> downloadChat(@RequestBody Map<String,Object> request) {
         int roomId = (Integer) request.get("roomId");
         LocalDateTime latestTimestamp = LocalDateTime.parse( (String) request.get("latestTimestamp"));
         log.info("downloadChat room {}, after {}", roomId, latestTimestamp);
