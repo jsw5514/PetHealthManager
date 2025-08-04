@@ -3,18 +3,23 @@ package com.swjeon.pethealthcaremanager.server.service;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatMemberEntity;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatRoomEntity;
+import com.swjeon.pethealthcaremanager.server.Entity.UsersEntity;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRoomRepository;
+import com.swjeon.pethealthcaremanager.server.Repository.UsersRepository;
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import com.swjeon.pethealthcaremanager.server.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ChatService {
@@ -22,12 +27,14 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMemberRepository chatMemberRepository;
+    private final UsersRepository usersRepository;
 
     @Autowired
-    public ChatService(ChatRepository chatRepository, ChatRoomRepository chatRoomRepository, ChatMemberRepository chatMemberRepository) {
+    public ChatService(ChatRepository chatRepository, ChatRoomRepository chatRoomRepository, ChatMemberRepository chatMemberRepository, UsersRepository usersRepository) {
         this.chatRepository = chatRepository;
         this.chatRoomRepository = chatRoomRepository;
         this.chatMemberRepository = chatMemberRepository;
+        this.usersRepository = usersRepository;
     }
 
     /** 채팅 업로드 함수
@@ -37,7 +44,12 @@ public class ChatService {
     public boolean uploadChat(ChatDTO chatDTO)
     {
         if (chatDTO.getContentType().equals("text")) { //텍스트 채팅인 경우
-            ChatEntity chatEntity = chatDTO.toEntity();
+            Optional<UsersEntity> writer = usersRepository.findById(chatDTO.getWriterId());
+            if (writer.isEmpty()) {
+                log.error("채팅 전송자를 찾을 수 없습니다. 존재하지 않는 유저가 전송한 채팅입니다.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 유저가 보낸 채팅입니다.");
+            }
+            ChatEntity chatEntity = chatDTO.toEntityWithNickname(writer.get().getNickname());
             chatRepository.save(chatEntity);
             return true;
         }
@@ -50,7 +62,7 @@ public class ChatService {
             }
 
             //파일 경로 및 나머지 데이터 db에 저장
-            ChatEntity chatEntity = chatDTO.toEntity(chatPath);
+            ChatEntity chatEntity = chatDTO.toEntityWithPath(chatPath);
             try{
                 chatRepository.save(chatEntity);
             }
@@ -64,7 +76,7 @@ public class ChatService {
     }
 
 
-    /**
+    /** 채팅 다운로드 함수
      * @param roomId 채팅을 가져올 채팅방 id
      * @param latestTimestamp 클라이언트가 갖고있는 가장 최신의 채팅 타임스탬프 
      * @return 업데이트된 채팅 내용들
@@ -79,10 +91,7 @@ public class ChatService {
         String chatTimeString = null;
         String chatContent;
         for(ChatEntity chatEntity : chatList){
-            chatTimeString = chatEntity.getWriteTime().toString().replace(":","-");
-            chatFileName = chatEntity.getWriterId() + "_" + chatEntity.getRoomId() + "_" + chatTimeString + ".txt";
-            chatContent = FileUtil.loadChat(chatFileName);
-            chatDTOArrayList.add(new ChatDTO(chatEntity, chatContent));
+            chatDTOArrayList.add(chatEntity.toDTO());
         }
         return chatDTOArrayList;
     }

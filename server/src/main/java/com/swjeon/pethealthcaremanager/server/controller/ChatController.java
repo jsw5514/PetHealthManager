@@ -66,7 +66,7 @@ public class ChatController {
     @PostMapping("/createChatRoom")
     public int createChatRoom(@RequestBody Map<String, String> request) {
         String creatorId = request.get("creatorId");
-        log.warn("createChatRoom creatorId {}", creatorId);
+        log.info("createChatRoom creatorId {}", creatorId);
         return chatService.createChatRoom(creatorId);
     }
 

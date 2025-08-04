@@ -3,6 +3,7 @@ package com.swjeon.pethealthcaremanager.server.Entity;
 
 import com.swjeon.pethealthcaremanager.server.Repository.UsersRepository;
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
+import com.swjeon.pethealthcaremanager.server.util.FileUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -13,6 +14,7 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 
 @Entity
@@ -29,6 +31,8 @@ public class ChatEntity {
   private int roomId;
   @Column(name = "WRITER_ID")
   private String writerId;
+  @Column(name = "WRITER_NICKNAME")
+  private String writerNickname;
   @Column(name = "WRITE_TIME")
   private LocalDateTime writeTime;
   @Column(name = "CONTENT_TYPE")
@@ -36,20 +40,22 @@ public class ChatEntity {
   @Column(name = "CONTENT")
   private String content;
   
-  public ChatDTO toDTO(@Autowired UsersRepository usersRepository) {
+  public ChatDTO toDTO() {
     ChatDTO chatDTO = new ChatDTO();
     chatDTO.setRoomId(roomId);
     chatDTO.setWriterId(writerId);
     chatDTO.setWriteTime(writeTime);
     chatDTO.setContentType(contentType);
-    chatDTO.setContent(content);
+    chatDTO.setWriterNickname(writerNickname);
+    chatDTO.setWriterNickname(Objects.requireNonNullElse(writerNickname, "탈퇴한 사용자"));
 
-    UsersEntity writer = usersRepository.findById(writerId).orElse(null);
-    if (writer != null) {
-      chatDTO.setWriterNickname(writer.getNickname());
+    if (contentType.equals("text")){
+      chatDTO.setContent(content);      
     }
     else {
-      chatDTO.setWriterNickname("탈퇴한 사용자");
+      String chatTimeString = writeTime.toString().replace(":", "-");
+      String chatFileName = writerId + "_" + roomId + "_" + chatTimeString + ".txt";
+      chatDTO.setContent(FileUtil.loadChat(chatFileName));
     }
     return chatDTO;
   }

@@ -62,18 +62,18 @@ public class ChatDTO {
         return writerId + "_" + roomId + "_" + timeStamp + ".txt";
     }
 
-    public ChatEntity toEntity(){
+    public ChatEntity toEntityWithNickname(String writerNickname){
         ChatEntity chatEntity = new ChatEntity();
         chatEntity.setRoomId(roomId);
         chatEntity.setWriterId(writerId);
+        chatEntity.setWriterNickname(writerNickname);
         chatEntity.setWriteTime(writeTime);
         chatEntity.setContentType(contentType);
         chatEntity.setContent(content);
         return chatEntity;
-
     }
 
-    public ChatEntity toEntity(String contentPath) {
+    public ChatEntity toEntityWithPath(String contentPath) {
         ChatEntity chatEntity = new ChatEntity();
         chatEntity.setRoomId(roomId);
         chatEntity.setWriterId(writerId);
