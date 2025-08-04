@@ -12,11 +12,13 @@ import com.swjeon.pethealthcaremanager.server.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +110,31 @@ public class ChatService {
     }
 
     public ResponseEntity<Void> inviteChatMember(int roomId, String memberId) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "not yet implemented"); //TODO not yet implemented
+        try {
+            chatMemberRepository.save(new ChatMemberEntity(roomId, memberId));
+        }
+        catch (DataIntegrityViolationException e){
+            Throwable root = e.getCause();
+            while (root.getCause() != null) {
+                root = root.getCause();
+            }
+            if (root instanceof SQLIntegrityConstraintViolationException ex){
+                switch (ex.getErrorCode()){
+                    case 1452:
+                        //외래키 위반(유저, 혹은 채팅방이 없음)
+                        log.error("잘못된 요청입니다. 채팅방이나 초대대상이 존재하지 않습니다.");
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다. 채팅방이나 초대대상이 존재하지 않습니다.");
+                    case 1062:
+                        //유니크키 위반(이미 존재하는 데이터)'
+                        log.error("이미 초대된 상대입니다.");
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 초대된 상대입니다.");
+                    default:
+                        log.error("알 수 없는 오류입니다.");
+                        throw new RuntimeException("알 수 없는 오류입니다.");
+                }
+            }
+        }
+        return ResponseEntity.ok().build();
     }
 
     public ResponseEntity<Void> leaveChatRoom(int roomId, String memberId) {
