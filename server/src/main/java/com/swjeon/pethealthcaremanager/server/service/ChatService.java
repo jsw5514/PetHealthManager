@@ -89,8 +89,8 @@ public class ChatService {
 
     public int createChatRoom(String creatorId) {
         ChatRoomEntity inserted = chatRoomRepository.save(new ChatRoomEntity());
-        int roodId = inserted.getId();
-        chatMemberRepository.save(new ChatMemberEntity(roodId, creatorId));
-        return roodId;
+        int roomId = inserted.getId();
+        chatMemberRepository.save(new ChatMemberEntity(roomId, creatorId));
+        return roomId;
     }
 }
