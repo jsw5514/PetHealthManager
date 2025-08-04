@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -41,7 +42,7 @@ public class ChatService {
      * @param chatDTO 채팅 객체
      * @return 업로드 성공 여부
      */
-    public boolean uploadChat(ChatDTO chatDTO)
+    public ResponseEntity<Void> uploadChat(ChatDTO chatDTO)
     {
         if (chatDTO.getContentType().equals("text")) { //텍스트 채팅인 경우
             Optional<UsersEntity> writer = usersRepository.findById(chatDTO.getWriterId());
@@ -51,14 +52,14 @@ public class ChatService {
             }
             ChatEntity chatEntity = chatDTO.toEntityWithNickname(writer.get().getNickname());
             chatRepository.save(chatEntity);
-            return true;
+            return ResponseEntity.ok().build();
         }
         else{ //텍스트 채팅이 아닌 경우(base64로 인코딩 된 바이너리 데이터인 경우)
             //채팅 내용 파일로 저장
             String chatPath = FileUtil.saveChat(chatDTO);
             if (chatPath == null){
                 log.error("채팅 내용 저장 실패");
-                return false;
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채팅 내용 저장에 실패했습니다.");
             }
 
             //파일 경로 및 나머지 데이터 db에 저장
@@ -69,9 +70,9 @@ public class ChatService {
             catch (Exception e){
                 log.error("파일 저장은 성공했으나 db에서 에러가 발생함. "+chatPath+"의 파일은 삭제됨. "+e.getMessage());
                 FileUtil.deleteChat(chatPath);
-                return false;
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채팅 내용 저장에 실패했습니다.");
             }
-            return true;
+            return ResponseEntity.ok().build();
         }
     }
 
@@ -96,10 +97,25 @@ public class ChatService {
         return chatDTOArrayList;
     }
 
+    /** 채팅방 생성 함수
+     * @param creatorId 채팅방 생성자 id
+     */
     public int createChatRoom(String creatorId) {
         ChatRoomEntity inserted = chatRoomRepository.save(new ChatRoomEntity());
         int roomId = inserted.getId();
         chatMemberRepository.save(new ChatMemberEntity(roomId, creatorId));
         return roomId;
+    }
+
+    public ResponseEntity<Void> inviteChatMember(int roomId, String memberId) {
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "not yet implemented"); //TODO not yet implemented
+    }
+
+    public ResponseEntity<Void> leaveChatRoom(int roomId, String memberId) {
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "not yet implemented"); //TODO not yet implemented
+    }
+
+    public ResponseEntity<Void> getChatMember(int roomId) {
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "not yet implemented"); //TODO not yet implemented
     }
 }

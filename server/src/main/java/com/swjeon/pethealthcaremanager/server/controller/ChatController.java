@@ -4,6 +4,7 @@ import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import com.swjeon.pethealthcaremanager.server.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class ChatController {
      * @return 채팅 업로드 성공여부(boolean)
      */
     @PostMapping("/uploadChat")
-    public boolean uploadChat(@RequestBody ChatDTO chatDTO)
+    public ResponseEntity<Void> uploadChat(@RequestBody ChatDTO chatDTO)
     {
         log.info("Uploading chat: {}", chatDTO);
         return chatService.uploadChat(chatDTO);
@@ -71,31 +72,36 @@ public class ChatController {
     }
 
     /** 채팅 맴버를 채팅방에 초대하는 함수
-     * @param roomId 초대할 채팅방 id
-     * @param memberId 초대할 사람의 id
+     * roomId 초대할 채팅방 id
+     * memberId 초대할 사람의 id
      * @return 성공여부(boolean)
      */
     @PostMapping("/inviteChatMember")
-    public String inviteChatMember(@RequestParam("roomId") int roomId, @RequestParam("memberId") String memberId) {
-        return "not yet implemented"; //TODO not yet implemented
+    public ResponseEntity<Void> inviteChatMember(@RequestBody Map<String,Object> request) {
+        int roomId = (Integer)request.get("roomId");
+        String memberId = (String)request.get("memberId");
+        return chatService.inviteChatMember(roomId, memberId);
     }
 
     /** 채팅방 나가기 함수
-     * @param roomId 채팅방 id
-     * @param memberId 나갈 맴버 id
+     * roomId 채팅방 id
+     * memberId 나갈 맴버 id
      * @return 성공여부(boolean)
      */
     @PostMapping("/leaveChatRoom")
-    public String leaveChatRoom(@RequestParam("roomId") int roomId, @RequestParam("memberId") String memberId) {
-        return "not yet implemented"; //TODO not yet implemented
+    public ResponseEntity<Void> leaveChatRoom(@RequestBody Map<String,Object> request) {
+        int roomId = (Integer)request.get("roomId");
+        String memberId = (String)request.get("memberId");
+        return chatService.leaveChatRoom(roomId, memberId);
     }
 
     /** 채팅방 맴버 가져오기 함수
-     * @param roomId 채팅방 id
+     * roomId 채팅방 id
      * @return 채팅방 맴버 닉네임 리스트(ArrayList<String>)
      */
     @PostMapping("/getChatMember")
-    public String getChatMember(@RequestParam("roomId") int roomId) {
-        return "not yet implemented"; //TODO not yet implemented
+    public ResponseEntity<Void> getChatMember(@RequestBody Map<String,Object> request) {
+        int roomId = (Integer)request.get("roomId");
+        return chatService.getChatMember(roomId);
     }
 }
