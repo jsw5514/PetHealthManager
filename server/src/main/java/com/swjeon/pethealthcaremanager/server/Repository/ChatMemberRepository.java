@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-interface ChatMemberRepository extends JpaRepository<ChatMemberEntity, ChatMemberIdClass> {
+public interface ChatMemberRepository extends JpaRepository<ChatMemberEntity, ChatMemberIdClass> {
     @Query(value = "SELECT * FROM CHAT_MEMBER " +
             "WHERE ROOM_ID = :roomId", nativeQuery = true)
     List<ChatMemberEntity> findByRoomId(@Param("roomId") int roomId);
