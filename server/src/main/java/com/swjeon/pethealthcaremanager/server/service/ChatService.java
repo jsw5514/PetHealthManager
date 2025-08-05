@@ -3,6 +3,7 @@ package com.swjeon.pethealthcaremanager.server.service;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatMemberEntity;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatRoomEntity;
+import com.swjeon.pethealthcaremanager.server.Entity.IdClass.ChatMemberIdClass;
 import com.swjeon.pethealthcaremanager.server.Entity.UsersEntity;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRoomRepository;
@@ -138,7 +139,20 @@ public class ChatService {
     }
 
     public ResponseEntity<Void> leaveChatRoom(int roomId, String memberId) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "not yet implemented"); //TODO not yet implemented
+        boolean isRoomPresent = chatRoomRepository.findById(roomId).isPresent();
+        Optional<ChatMemberEntity> member = chatMemberRepository.findById(new ChatMemberIdClass(roomId, memberId));
+        boolean isMemberPresent = member.isPresent();
+        if (isRoomPresent && isMemberPresent) {
+            chatMemberRepository.delete(member.get());
+            if (chatMemberRepository.findByRoomId(roomId).isEmpty()){//check chat room is empty
+                chatRoomRepository.deleteById(roomId);
+            }
+        }
+        else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다. 해당 채팅방이 존재하지 않거나 채팅방 내에 해당 맴버가 존재하지 않습니다.");
+        }
+        return ResponseEntity.ok().build();
+        //throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "not yet implemented"); //TODO not yet implemented
     }
 
     public ResponseEntity<Void> getChatMember(int roomId) {
