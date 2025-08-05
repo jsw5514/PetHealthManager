@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -152,10 +153,20 @@ public class ChatService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다. 해당 채팅방이 존재하지 않거나 채팅방 내에 해당 맴버가 존재하지 않습니다.");
         }
         return ResponseEntity.ok().build();
-        //throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "not yet implemented"); //TODO not yet implemented
     }
 
-    public ResponseEntity<Void> getChatMember(int roomId) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "not yet implemented"); //TODO not yet implemented
+    public HashMap<String, List<String>> getChatMember(int roomId) {
+        List<ChatMemberEntity> memberEntities = chatMemberRepository.findByRoomId(roomId);
+        ArrayList<String> members = new ArrayList<>();
+        for (ChatMemberEntity memberEntity : memberEntities) {
+            Optional<UsersEntity> member = usersRepository.findById(memberEntity.getMemberId());
+            if (member.isEmpty()) 
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다. 존재하지 않는 유저가 채팅맴버로 등록되어있습니다.");
+            else 
+                members.add(member.get().getNickname());
+        }
+        HashMap<String,List<String>> memberMap = new HashMap<>();
+        memberMap.put("members",members);
+        return memberMap;
     }
 }

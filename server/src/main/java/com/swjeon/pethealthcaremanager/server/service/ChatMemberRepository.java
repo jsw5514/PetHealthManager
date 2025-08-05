@@ -12,5 +12,5 @@ import java.util.Optional;
 interface ChatMemberRepository extends JpaRepository<ChatMemberEntity, ChatMemberIdClass> {
     @Query(value = "SELECT * FROM CHAT_MEMBER " +
             "WHERE ROOM_ID = :roomId", nativeQuery = true)
-    List<Optional<ChatMemberEntity>> findByRoomId(@Param("roomId") int roomId);
+    List<ChatMemberEntity> findByRoomId(@Param("roomId") int roomId);
 }

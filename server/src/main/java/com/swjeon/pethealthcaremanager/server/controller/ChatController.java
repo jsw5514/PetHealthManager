@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -103,7 +105,7 @@ public class ChatController {
      * @return 채팅방 맴버 닉네임 리스트(ArrayList<String>)
      */
     @PostMapping("/getChatMember")
-    public ResponseEntity<Void> getChatMember(@RequestBody Map<String,Object> request) {
+    public HashMap<String, List<String>> getChatMember(@RequestBody Map<String,Object> request) {
         int roomId = (Integer)request.get("roomId");
         return chatService.getChatMember(roomId);
     }
