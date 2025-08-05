@@ -1,7 +1,7 @@
-package com.swjeon.pethealthcaremanager.server.controller;
+package com.swjeon.pethealthcaremanager.server.Controller;
 
 import com.swjeon.pethealthcaremanager.server.dto.UserDTO;
-import com.swjeon.pethealthcaremanager.server.service.UsersService;
+import com.swjeon.pethealthcaremanager.server.Service.UsersService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

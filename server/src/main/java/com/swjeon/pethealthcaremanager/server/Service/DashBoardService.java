@@ -1,4 +1,4 @@
-package com.swjeon.pethealthcaremanager.server.service;
+package com.swjeon.pethealthcaremanager.server.Service;
 
 import com.swjeon.pethealthcaremanager.server.Entity.DataEntity;
 import com.swjeon.pethealthcaremanager.server.Entity.PetEntity;

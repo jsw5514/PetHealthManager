@@ -1,6 +1,6 @@
-package com.swjeon.pethealthcaremanager.server.controller;
+package com.swjeon.pethealthcaremanager.server.Controller;
 
-import com.swjeon.pethealthcaremanager.server.service.GoalService;
+import com.swjeon.pethealthcaremanager.server.Service.GoalService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 

@@ -1,7 +1,7 @@
-package com.swjeon.pethealthcaremanager.server.controller.dashboard;
+package com.swjeon.pethealthcaremanager.server.Controller.dashboard;
 
 import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
-import com.swjeon.pethealthcaremanager.server.service.DashBoardService;
+import com.swjeon.pethealthcaremanager.server.Service.DashBoardService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,15 +1,12 @@
-package com.swjeon.pethealthcaremanager.server.controller;
+package com.swjeon.pethealthcaremanager.server.Controller;
 
-import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
-import com.swjeon.pethealthcaremanager.server.service.DataService;
-import com.swjeon.pethealthcaremanager.server.service.UsersService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.swjeon.pethealthcaremanager.server.Service.DataService;
+import com.swjeon.pethealthcaremanager.server.Service.UsersService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Map;
 

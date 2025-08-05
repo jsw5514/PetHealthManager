@@ -1,7 +1,7 @@
-package com.swjeon.pethealthcaremanager.server.controller;
+package com.swjeon.pethealthcaremanager.server.Controller;
 
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
-import com.swjeon.pethealthcaremanager.server.service.ChatService;
+import com.swjeon.pethealthcaremanager.server.Service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

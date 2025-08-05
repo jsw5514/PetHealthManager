@@ -1,10 +1,11 @@
-package com.swjeon.pethealthcaremanager.server.service;
+package com.swjeon.pethealthcaremanager.server.Service;
 
 import com.swjeon.pethealthcaremanager.server.Entity.ChatEntity;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatMemberEntity;
 import com.swjeon.pethealthcaremanager.server.Entity.ChatRoomEntity;
 import com.swjeon.pethealthcaremanager.server.Entity.IdClass.ChatMemberIdClass;
 import com.swjeon.pethealthcaremanager.server.Entity.UsersEntity;
+import com.swjeon.pethealthcaremanager.server.Repository.ChatMemberRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRoomRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.UsersRepository;

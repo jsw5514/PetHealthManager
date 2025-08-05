@@ -1,6 +1,6 @@
-package com.swjeon.pethealthcaremanager.server.controller.dashboard;
+package com.swjeon.pethealthcaremanager.server.Controller.dashboard;
 
-import com.swjeon.pethealthcaremanager.server.service.DashBoardService;
+import com.swjeon.pethealthcaremanager.server.Service.DashBoardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
