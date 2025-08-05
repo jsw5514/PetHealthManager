@@ -1,17 +1,14 @@
 package com.swjeon.pethealthcaremanager.server.Controller;
 
+import com.swjeon.pethealthcaremanager.server.Service.DataService;
 import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
 import com.swjeon.pethealthcaremanager.server.dto.PetDTO;
-import com.swjeon.pethealthcaremanager.server.Service.DataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/data")
 public class DataController {
     private Logger log = LoggerFactory.getLogger(DataController.class);
     private DataService dataService;
@@ -31,7 +28,7 @@ public class DataController {
      * -------------------
      * @return 요청 성공여부(boolean)
      */
-    @PostMapping("/uploadData")
+    @PostMapping
     public boolean uploadData(@RequestBody DataDTO dataDTO)
     {
         log.info("Upload attempt with data: " + dataDTO);
@@ -39,18 +36,15 @@ public class DataController {
     }
 
     /** 데이터 다운로드 함수
-     * @param downloadRequest 다운로드 요청 객체
-     *                        downloaderId 다운로드 하려는 사람의 id(업로더와 동일해야함)
-     *                        dataId 데이터 식별자
+     * @param downloaderId 다운로드 하려는 사람의 id(업로더와 동일해야함)
+     * @param dataId 데이터 식별자
+     * @param dataType 데이터 타입
      * @return 원하는 데이터(dataDTO, 오류 발생시 null)
      */
-    @PostMapping("/downloadData")
-    public DataDTO downloadData(@RequestBody Map<String,String> downloadRequest)
+    @GetMapping
+    public DataDTO downloadData(@RequestParam String downloaderId, @RequestParam String dataId, @RequestParam String dataType)
     {
-        log.info("Download attempt with data: " + downloadRequest);
-        String downloaderId = downloadRequest.get("downloaderId");
-        String dataId = downloadRequest.get("dataId");
-        String dataType = downloadRequest.get("dataType");
+        log.info("Download attempt with downloaderId: " + downloaderId + ", dataId: " + dataId + ", dataType: " + dataType);
         return dataService.downloadData(downloaderId, dataId, dataType);
     }
 

@@ -1,13 +1,11 @@
 package com.swjeon.pethealthcaremanager.server.Controller;
 
-import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import com.swjeon.pethealthcaremanager.server.Service.ChatService;
+import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,6 +15,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequestMapping("/chat")
 public class ChatController {
     private final ChatService chatService;
 
@@ -37,7 +36,7 @@ public class ChatController {
      * -------------------
      * @return 채팅 업로드 성공여부(boolean)
      */
-    @PostMapping("/uploadChat")
+    @PostMapping("/upload")
     public ResponseEntity<Void> uploadChat(@RequestBody ChatDTO chatDTO)
     {
         log.info("Uploading chat: {}", chatDTO);
@@ -57,7 +56,7 @@ public class ChatController {
      *          contentType: 채팅 내용 데이터 타입
      *          content: 채팅내용(바이너리 데이터는 Base64 인코딩 후 전송)
      */
-    @PostMapping("/downloadChat")
+    @PostMapping("/download")
     public ArrayList<ChatDTO> downloadChat(@RequestBody Map<String,Object> request) {
         int roomId = (Integer) request.get("roomId");
         LocalDateTime latestTimestamp = LocalDateTime.parse( (String) request.get("latestTimestamp"));
@@ -69,7 +68,7 @@ public class ChatController {
      * creatorId 채팅방 생성자 id
      * @return 생성된 채팅방 id(int,생성 실패시 0)
      */
-    @PostMapping("/createChatRoom")
+    @PostMapping("/room")
     public int createChatRoom(@RequestBody Map<String, String> request) {
         String creatorId = request.get("creatorId");
         log.info("createChatRoom creatorId {}", creatorId);
@@ -81,9 +80,8 @@ public class ChatController {
      * memberId 초대할 사람의 id
      * @return 성공여부(boolean)
      */
-    @PostMapping("/inviteChatMember")
-    public ResponseEntity<Void> inviteChatMember(@RequestBody Map<String,Object> request) {
-        int roomId = (Integer)request.get("roomId");
+    @PostMapping("/room/{roomId}/member")
+    public ResponseEntity<Void> inviteChatMember(@PathVariable Integer roomId, @RequestBody Map<String,Object> request) {
         String memberId = (String)request.get("memberId");
         return chatService.inviteChatMember(roomId, memberId);
     }
@@ -93,10 +91,8 @@ public class ChatController {
      * memberId 나갈 맴버 id
      * @return 성공여부(boolean)
      */
-    @PostMapping("/leaveChatRoom")
-    public ResponseEntity<Void> leaveChatRoom(@RequestBody Map<String,Object> request) {
-        int roomId = (Integer)request.get("roomId");
-        String memberId = (String)request.get("memberId");
+    @DeleteMapping("/room/{roomId}/member/{memberId}")
+    public ResponseEntity<Void> leaveChatRoom(@PathVariable Integer roomId, @PathVariable String memberId) {
         return chatService.leaveChatRoom(roomId, memberId);
     }
 
@@ -104,9 +100,8 @@ public class ChatController {
      * roomId 채팅방 id
      * @return 채팅방 맴버 닉네임 리스트(ArrayList<String>)
      */
-    @PostMapping("/getChatMember")
-    public HashMap<String, List<String>> getChatMember(@RequestBody Map<String,Object> request) {
-        int roomId = (Integer)request.get("roomId");
+    @GetMapping("/room/{roomId}/member")
+    public HashMap<String, List<String>> getChatMember(@PathVariable Integer roomId) {
         return chatService.getChatMember(roomId);
     }
 }

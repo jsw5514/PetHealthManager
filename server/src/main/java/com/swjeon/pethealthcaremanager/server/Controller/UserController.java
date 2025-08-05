@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/user")
 public class UserController {
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
     private final UsersService usersService;
@@ -18,14 +19,14 @@ public class UserController {
     }
 
     //id 중복확인
-    @GetMapping("/checkDuplicateId")
+    @GetMapping("/check-id")
     public boolean checkDuplicateId(@RequestParam("id") String id) {
         log.info("check duplicate id by id " + id);
         return usersService.checkDuplicateId(id);
     }
 
     //회원가입
-    @PostMapping("/signIn")
+    @PostMapping("/sign-in")
     public boolean signIn(@RequestBody UserDTO signInUser) {
         log.info("Sign in attempt with " + signInUser);
         return usersService.signIn(signInUser);
