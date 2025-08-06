@@ -2,18 +2,17 @@ package com.swjeon.pethealthcaremanager.server.Controller;
 
 import com.swjeon.pethealthcaremanager.server.Service.UsersService;
 import com.swjeon.pethealthcaremanager.server.dto.UserDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+@Slf4j
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
     private final UsersService usersService;
 
     @Autowired

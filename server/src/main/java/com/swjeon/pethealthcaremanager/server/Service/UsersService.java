@@ -4,16 +4,15 @@ import com.swjeon.pethealthcaremanager.server.Entity.UsersEntity;
 import com.swjeon.pethealthcaremanager.server.Repository.PetRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.UsersRepository;
 import com.swjeon.pethealthcaremanager.server.dto.UserDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class UsersService {
-    private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
     private final PetRepository petRepository;
     UsersRepository usersRepository;
 

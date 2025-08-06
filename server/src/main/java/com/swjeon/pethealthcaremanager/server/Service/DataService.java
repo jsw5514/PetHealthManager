@@ -5,16 +5,15 @@ import com.swjeon.pethealthcaremanager.server.Entity.IdClass.DataIdClass;
 import com.swjeon.pethealthcaremanager.server.Repository.DataRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.PetRepository;
 import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class DataService {
-    private Logger log = LoggerFactory.getLogger(DataService.class);
     private DataRepository dataRepository;
 
     DataService(DataRepository dataRepository, PetRepository petRepository) {

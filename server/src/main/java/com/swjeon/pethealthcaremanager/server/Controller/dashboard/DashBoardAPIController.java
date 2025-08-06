@@ -1,21 +1,19 @@
 package com.swjeon.pethealthcaremanager.server.Controller.dashboard;
 
-import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
 import com.swjeon.pethealthcaremanager.server.Service.DashBoardService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 public class DashBoardAPIController {
-    Logger log = LoggerFactory.getLogger(DashBoardAPIController.class);
     private final DashBoardService dashBoardService;
-
     public DashBoardAPIController(DashBoardService dashBoardService) {
         this.dashBoardService = dashBoardService;
     }
