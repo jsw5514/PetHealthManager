@@ -1,7 +1,6 @@
 package com.swjeon.pethealthcaremanager.server.Entity;
 
 
-import com.swjeon.pethealthcaremanager.server.Repository.UsersRepository;
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import com.swjeon.pethealthcaremanager.server.util.FileUtil;
 import jakarta.persistence.Column;
@@ -11,7 +10,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

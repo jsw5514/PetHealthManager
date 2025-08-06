@@ -61,25 +61,25 @@ public class ChatDTO {
         String timeStamp = writeTime.toString().replace(":","-");
         return writerId + "_" + roomId + "_" + timeStamp + ".txt";
     }
+    
+    public ChatEntity toEntity() {//텍스트 채팅의 경우
+        ChatEntity chatEntity = makeEntity(new ChatEntity());
+        chatEntity.setContent(content);
+        return chatEntity;
+    }
+    
+    public ChatEntity toEntity(String contentPath) { //바이너리 데이터가 포함된 채팅의 경우
+        ChatEntity chatEntity = makeEntity(new ChatEntity());
+        chatEntity.setContent(contentPath);
+        return chatEntity;
+    }
 
-    public ChatEntity toEntityWithNickname(String writerNickname){
-        ChatEntity chatEntity = new ChatEntity();
+    private ChatEntity makeEntity(ChatEntity chatEntity){
         chatEntity.setRoomId(roomId);
         chatEntity.setWriterId(writerId);
         chatEntity.setWriterNickname(writerNickname);
         chatEntity.setWriteTime(writeTime);
         chatEntity.setContentType(contentType);
-        chatEntity.setContent(content);
-        return chatEntity;
-    }
-
-    public ChatEntity toEntityWithPath(String contentPath) {
-        ChatEntity chatEntity = new ChatEntity();
-        chatEntity.setRoomId(roomId);
-        chatEntity.setWriterId(writerId);
-        chatEntity.setWriteTime(writeTime);
-        chatEntity.setContentType(contentType);
-        chatEntity.setContent(contentPath);
         return chatEntity;
     }
 }

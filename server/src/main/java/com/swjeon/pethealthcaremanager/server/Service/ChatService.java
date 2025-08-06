@@ -14,16 +14,11 @@ import com.swjeon.pethealthcaremanager.server.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.SQLIntegrityConstraintViolationException;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,39 +40,41 @@ public class ChatService {
 
     /** 채팅 업로드 함수
      * @param chatDTO 채팅 객체
-     * @return 업로드 성공 여부
      */
-    public ResponseEntity<Void> uploadChat(ChatDTO chatDTO)
+    public void uploadChat(ChatDTO chatDTO) throws IOException
     {
+        //전송자 닉네임 확인
+        Optional<UsersEntity> writer = usersRepository.findById(chatDTO.getWriterId());
+        if (writer.isEmpty()) {
+            log.error("채팅 전송자를 찾을 수 없습니다. 존재하지 않는 유저가 전송한 채팅입니다.");
+            throw new IllegalArgumentException();
+        }
+        chatDTO.setWriterNickname(writer.get().getNickname());
+        
         if (chatDTO.getContentType().equals("text")) { //텍스트 채팅인 경우
-            Optional<UsersEntity> writer = usersRepository.findById(chatDTO.getWriterId());
-            if (writer.isEmpty()) {
-                log.error("채팅 전송자를 찾을 수 없습니다. 존재하지 않는 유저가 전송한 채팅입니다.");
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 유저가 보낸 채팅입니다.");
-            }
-            ChatEntity chatEntity = chatDTO.toEntityWithNickname(writer.get().getNickname());
+            ChatEntity chatEntity = chatDTO.toEntity();
             chatRepository.save(chatEntity);
-            return ResponseEntity.ok().build();
+            return;
         }
         else{ //텍스트 채팅이 아닌 경우(base64로 인코딩 된 바이너리 데이터인 경우)
             //채팅 내용 파일로 저장
             String chatPath = FileUtil.saveChat(chatDTO);
             if (chatPath == null){
-                log.error("채팅 내용 저장 실패");
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채팅 내용 저장에 실패했습니다.");
+                log.error("채팅 내용 파일 저장 실패");
+                throw new IOException();
             }
 
             //파일 경로 및 나머지 데이터 db에 저장
-            ChatEntity chatEntity = chatDTO.toEntityWithPath(chatPath);
+            ChatEntity chatEntity = chatDTO.toEntity(chatPath);
             try{
                 chatRepository.save(chatEntity);
             }
             catch (Exception e){
-                log.error("파일 저장은 성공했으나 db에서 에러가 발생함. "+chatPath+"의 파일은 삭제됨. "+e.getMessage());
+                log.error("파일 저장은 성공했으나 db 저장 중 에러가 발생함. "+chatPath+"의 파일은 삭제됨. "+e.getMessage());
                 FileUtil.deleteChat(chatPath);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채팅 내용 저장에 실패했습니다.");
+                throw e;
             }
-            return ResponseEntity.ok().build();
+            return;
         }
     }
 
@@ -93,9 +90,6 @@ public class ChatService {
         ArrayList<ChatDTO> chatDTOArrayList = new ArrayList<>();
 
         //채팅 파일 불러오기
-        String chatFileName = null;
-        String chatTimeString = null;
-        String chatContent;
         for(ChatEntity chatEntity : chatList){
             chatDTOArrayList.add(chatEntity.toDTO());
         }
@@ -112,35 +106,11 @@ public class ChatService {
         return roomId;
     }
 
-    public ResponseEntity<Void> inviteChatMember(int roomId, String memberId) {
-        try {
-            chatMemberRepository.save(new ChatMemberEntity(roomId, memberId));
-        }
-        catch (DataIntegrityViolationException e){
-            Throwable root = e.getCause();
-            while (root.getCause() != null) {
-                root = root.getCause();
-            }
-            if (root instanceof SQLIntegrityConstraintViolationException ex){
-                switch (ex.getErrorCode()){
-                    case 1452:
-                        //외래키 위반(유저, 혹은 채팅방이 없음)
-                        log.error("잘못된 요청입니다. 채팅방이나 초대대상이 존재하지 않습니다.");
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다. 채팅방이나 초대대상이 존재하지 않습니다.");
-                    case 1062:
-                        //유니크키 위반(이미 존재하는 데이터)'
-                        log.error("이미 초대된 상대입니다.");
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 초대된 상대입니다.");
-                    default:
-                        log.error("알 수 없는 오류입니다.");
-                        throw new RuntimeException("알 수 없는 오류입니다.");
-                }
-            }
-        }
-        return ResponseEntity.ok().build();
+    public void inviteChatMember(int roomId, String memberId) {
+        chatMemberRepository.save(new ChatMemberEntity(roomId, memberId));
     }
 
-    public ResponseEntity<Void> leaveChatRoom(int roomId, String memberId) {
+    public void leaveChatRoom(int roomId, String memberId) {
         boolean isRoomPresent = chatRoomRepository.findById(roomId).isPresent();
         Optional<ChatMemberEntity> member = chatMemberRepository.findById(new ChatMemberIdClass(roomId, memberId));
         boolean isMemberPresent = member.isPresent();
@@ -151,23 +121,20 @@ public class ChatService {
             }
         }
         else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다. 해당 채팅방이 존재하지 않거나 채팅방 내에 해당 맴버가 존재하지 않습니다.");
+            throw new IllegalStateException();
         }
-        return ResponseEntity.ok().build();
     }
 
-    public HashMap<String, List<String>> getChatMember(int roomId) {
+    public List<String> getChatMember(int roomId) {
         List<ChatMemberEntity> memberEntities = chatMemberRepository.findByRoomId(roomId);
         ArrayList<String> members = new ArrayList<>();
         for (ChatMemberEntity memberEntity : memberEntities) {
             Optional<UsersEntity> member = usersRepository.findById(memberEntity.getMemberId());
-            if (member.isEmpty()) 
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다. 존재하지 않는 유저가 채팅맴버로 등록되어있습니다.");
-            else 
+            if (member.isPresent()) 
                 members.add(member.get().getNickname());
+            else
+                throw new IllegalStateException("채팅맴버 확인 중 오류 발생. 존재하지 않는 유저가 채팅맴버로 등록되어있음.");
         }
-        HashMap<String,List<String>> memberMap = new HashMap<>();
-        memberMap.put("members",members);
-        return memberMap;
+        return members;
     }
 }

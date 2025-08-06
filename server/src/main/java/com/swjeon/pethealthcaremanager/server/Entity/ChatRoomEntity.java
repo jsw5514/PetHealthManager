@@ -1,10 +1,9 @@
 package com.swjeon.pethealthcaremanager.server.Entity;
 
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 
 @Entity
