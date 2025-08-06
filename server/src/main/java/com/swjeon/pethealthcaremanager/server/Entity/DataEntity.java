@@ -3,9 +3,9 @@ package com.swjeon.pethealthcaremanager.server.Entity;
 
 import com.swjeon.pethealthcaremanager.server.Entity.IdClass.DataIdClass;
 import com.swjeon.pethealthcaremanager.server.dto.DataDTO;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import jakarta.persistence.*;
 import lombok.Setter;
 
 
