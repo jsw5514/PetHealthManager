@@ -144,7 +144,7 @@ public class ChatController {
             chatService.leaveChatRoom(roomId, memberId);
         }
         catch (IllegalStateException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다. 해당 채팅방이 존재하지 않거나 채팅방 내에 해당 맴버가 존재하지 않습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "잘못된 요청입니다. 해당 채팅방이 존재하지 않거나 채팅방 내에 해당 맴버가 존재하지 않습니다.");
         }
         return ResponseEntity.ok().build();
     }

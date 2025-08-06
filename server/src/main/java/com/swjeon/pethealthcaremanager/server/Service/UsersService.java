@@ -28,26 +28,15 @@ public class UsersService {
         return usersRepository.existsById(id); //JPA 기본 제공 함수 사용
     }
 
-    public boolean signIn(UserDTO userDTO) {
-        String id = userDTO.getId();
-        String password = userDTO.getPassword();
-
+    public void signIn(UserDTO userDTO) {
         //id 중복 검사
-        Optional<UsersEntity> optionalUser = usersRepository.findById(id);
-        if(optionalUser.isPresent()) {
-            log.error("User with id " + id + " already exists");
-            return false;
+        if(checkDuplicateId(userDTO.getId())){
+            log.error("해당 id를 사용하는 유저가 이미 존재합니다.");
+            throw new IllegalStateException();
         }
         else{
             UsersEntity usersEntity = userDTO.toEntity();
-            try{
-                usersRepository.save(usersEntity);
-            }
-            catch (Exception e){
-                log.error(e.getMessage());
-                return false;
-            }
-            return true;
+            usersRepository.save(usersEntity);
         }
     }
 
