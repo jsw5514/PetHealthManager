@@ -2,6 +2,7 @@ package com.swjeon.pethealthcaremanager.server.Entity;
 
 
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
+import com.swjeon.pethealthcaremanager.server.util.FileManager;
 import com.swjeon.pethealthcaremanager.server.util.FileUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,7 +54,7 @@ public class ChatEntity {
     else {
       String chatTimeString = writeTime.toString().replace(":", "-");
       String chatFileName = writerId + "_" + roomId + "_" + chatTimeString + ".txt";
-      chatDTO.setContent(FileUtil.loadChat(chatFileName));
+      chatDTO.setContent(FileManager.loadChat(chatFileName));
     }
     return chatDTO;
   }

@@ -1,6 +1,5 @@
 package com.swjeon.pethealthcaremanager.server.util;
 
-import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;
@@ -13,17 +12,13 @@ import java.util.List;
 //외부에 노출되지 않는 유틸용 서비스
 @Slf4j
 public class FileUtil {
-    //채팅 저장 경로
-    private static final String CHAT_STORAGE=System.getProperty("user.dir")+"/storage/chat";
-    //일반 데이터 저장 경로
-    private static final String DATA_STORAGE=System.getProperty("user.dir")+"/storage/data";
     
-    /** 파일 저장 함수
+    /** 텍스트 파일 저장 함수
      * @param content 저장할 파일 내용
      * @param savePath 저장경로
      * @return 파일 저장 성공 여부
      */
-    private static boolean save(String content, String savePath) {
+    public static boolean save(String content, String savePath) {
         log.info("Attempt to save file savePath: " + savePath + " content: " + content);
         File file = new File(savePath);
 
@@ -39,11 +34,11 @@ public class FileUtil {
         return true;
     }
 
-    /** 파일 불러오기 함수
+    /** 텍스트 파일 불러오기 함수
      * @param loadPath 불러올 파일 경로
      * @return 파일 내용
      */
-    private static String load(String loadPath) {
+    public static String load(String loadPath) {
         log.info("Attempt to load file loadPath: " + loadPath);
         File file = new File(loadPath);
 
@@ -65,8 +60,12 @@ public class FileUtil {
         }
     }
 
-    private static boolean delete(String filePath) {
-        log.info("Attempt to delete file filePath: " + filePath);
+    /** 파일 삭제 함수
+     * @param filePath 삭제할 파일 경로
+     * @return 파일 내용
+     */
+    public static boolean delete(String filePath) {
+        log.warn("Attempt to delete file filePath: " + filePath);
         File file = new File(filePath);
         if(!file.exists()){
             log.error("file not found. filePath: " + filePath);
@@ -75,53 +74,5 @@ public class FileUtil {
         else {
             return file.delete();
         }
-    }
-
-    //채팅 저장
-    public static String saveChat(ChatDTO chatDTO) {
-        String chatPath = CHAT_STORAGE + "/" + chatDTO.getFileName();
-        boolean isSaved = save(chatDTO.getContent(), chatPath);
-        return isSaved ? chatPath : null;
-    }
-
-    //채팅 불러오기
-    public static String loadChat(String chatFilePath) {
-        //요구된 파일의 경로가 정상적인 채팅 파일 경로인지 확인
-        if (!chatFilePath.startsWith(CHAT_STORAGE)) {
-            log.error("invalid chat file path: " + chatFilePath);
-            return null;
-        }
-        String loadedContent = load(chatFilePath);
-        log.info("chat file loaded in path: " + chatFilePath + " content: " + loadedContent);
-        return loadedContent;
-    }
-
-    //채팅 삭제(db 오류시 문제 파일 삭제를 위함)
-    public static boolean deleteChat(String chatFilePath) {
-        //삭제 요청된 파일의 경로가 정상적인 채팅 파일 경로인지 확인
-        if(!chatFilePath.startsWith(CHAT_STORAGE)){
-            log.error("invalid chat file path: " + chatFilePath);
-            return false;
-        }
-        return delete(chatFilePath);
-    }
-
-    //데이터 저장
-    public static String saveData(String content, String fileName) {
-        String dataPath = DATA_STORAGE + "/" + fileName;
-        boolean isSaved = save(content, dataPath);
-        return isSaved ? dataPath : null;
-    }
-    
-    //데이터 불러오기
-    public static String loadData(String dataFilePath) {
-        //요구된 파일의 경로가 정상적인 데이터 파일 경로인지 확인
-        if (!dataFilePath.startsWith(DATA_STORAGE)) {
-            log.error("invalid data file path: " + dataFilePath);
-            return null;
-        }
-        String loadedContent = load(dataFilePath);
-        log.info("data file loaded in path: " + dataFilePath + " content: " + loadedContent);
-        return loadedContent;
     }
 }

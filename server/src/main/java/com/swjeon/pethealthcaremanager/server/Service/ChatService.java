@@ -10,7 +10,7 @@ import com.swjeon.pethealthcaremanager.server.Repository.ChatRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.ChatRoomRepository;
 import com.swjeon.pethealthcaremanager.server.Repository.UsersRepository;
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
-import com.swjeon.pethealthcaremanager.server.util.FileUtil;
+import com.swjeon.pethealthcaremanager.server.util.FileManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,7 +57,7 @@ public class ChatService {
         }
         else{ //텍스트 채팅이 아닌 경우(base64로 인코딩 된 바이너리 데이터인 경우)
             //채팅 내용 파일로 저장
-            String chatPath = FileUtil.saveChat(chatDTO);
+            String chatPath = FileManager.saveChat(chatDTO);
             if (chatPath == null){
                 log.error("채팅 내용 파일 저장 실패");
                 throw new IOException();
@@ -70,7 +70,7 @@ public class ChatService {
             }
             catch (Exception e){
                 log.error("파일 저장은 성공했으나 db 저장 중 에러가 발생함. "+chatPath+"의 파일은 삭제됨. "+e.getMessage());
-                FileUtil.deleteChat(chatPath);
+                FileManager.deleteChat(chatPath);
                 throw e;
             }
             return;
