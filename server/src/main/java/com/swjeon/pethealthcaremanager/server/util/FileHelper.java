@@ -9,9 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-//외부에 노출되지 않는 유틸용 서비스
 @Slf4j
-public class FileUtil {
+public class FileHelper {
     
     /** 텍스트 파일 저장 함수
      * @param content 저장할 파일 내용

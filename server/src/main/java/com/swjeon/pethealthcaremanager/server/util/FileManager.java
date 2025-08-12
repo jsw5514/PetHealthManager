@@ -3,7 +3,7 @@ package com.swjeon.pethealthcaremanager.server.util;
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.swjeon.pethealthcaremanager.server.util.FileUtil.*;
+import static com.swjeon.pethealthcaremanager.server.util.FileHelper.*;
 
 @Slf4j
 public class FileManager {

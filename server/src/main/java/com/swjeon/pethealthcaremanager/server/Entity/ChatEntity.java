@@ -3,7 +3,6 @@ package com.swjeon.pethealthcaremanager.server.Entity;
 
 import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import com.swjeon.pethealthcaremanager.server.util.FileManager;
-import com.swjeon.pethealthcaremanager.server.util.FileUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
