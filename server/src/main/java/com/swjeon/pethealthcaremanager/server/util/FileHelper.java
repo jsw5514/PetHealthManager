@@ -2,12 +2,7 @@ package com.swjeon.pethealthcaremanager.server.util;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
+import java.io.*;
 
 @Slf4j
 public class FileHelper {
@@ -21,14 +16,13 @@ public class FileHelper {
         log.info("Attempt to save file savePath: " + savePath + " content: " + content);
         File file = new File(savePath);
 
-        try{
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))){
             writer.write(content);
             writer.flush();
         }
         catch (Exception e){
             log.error(e.getMessage());
-            return false;
+            throw new RuntimeException(e);
         }
         return true;
     }
@@ -40,22 +34,29 @@ public class FileHelper {
     public static String load(String loadPath) {
         log.info("Attempt to load file loadPath: " + loadPath);
         File file = new File(loadPath);
-
-        if(!file.exists()){
-            log.error("file not found. loadPath: " + loadPath);
-            return null;
+        
+        try {
+            if (!file.exists()) {
+                log.error("file not found. loadPath: " + loadPath);
+                throw new FileNotFoundException(loadPath);
+            } else {
+                log.debug("file found. loadPath: " + loadPath);
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line).append('\n');
+                    }
+                    return sb.toString();
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    return null;
+                }
+            }
         }
-        else {
-            log.debug("file found. loadPath: " + loadPath);
-            try{
-                Path path = Path.of(loadPath);
-                List<String> lines = Files.readAllLines(path);
-                return String.join(System.lineSeparator(), lines);
-            }
-            catch (Exception e){
-                log.error(e.getMessage());
-                return null;
-            }
+        catch (FileNotFoundException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
