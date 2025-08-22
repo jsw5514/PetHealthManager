@@ -183,6 +183,10 @@ object UserRepository {
  *  • SharedPreferences 로 오프라인 캐싱
  *  • 레거시(boolean) / 신규(JSON) 두 가지 응답 모두 지원
  */
+/*
+/**
+ * 8월 22일 수정 전 코드
+ */
 package com.example.pet_walking.feature.profile.repository
 
 import android.content.Context
@@ -357,6 +361,208 @@ object UserRepository {
         }
 
         /* 첫 번째 펫을 기본 선택 */
+        petRepo.setCurrentPet(petRepo.profiles.keys.firstOrNull())
+        Log.d("UserRepo", "✅ 총 ${petRepo.profiles.size}마리 캐시 완료")
+    }
+}*/
+package com.example.pet_walking.feature.profile.repository
+
+import android.content.Context
+import android.util.Log
+import com.example.pet_walking.feature.profile.data.PetProfile
+import com.example.pet_walking.feature.profile.data.UserProfile
+import com.example.pet_walking.network.ApiClient
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.UUID
+
+object UserRepository {
+
+    /*────────────────── 캐시 ──────────────────*/
+    private val users = mutableMapOf<String, UserProfile>()   // userId → UserProfile
+    private var loggedInUserId: String? = null                // 현재 로그인 ID
+
+    /* getter 도우미 */
+    fun getCurrentUser(): UserProfile?   = loggedInUserId?.let { users[it] }
+    fun getCurrentUserId():   String?    = loggedInUserId
+    private fun setCurrentUser(u: UserProfile) { users[u.userId] = u; loggedInUserId = u.userId }
+    fun addPetToCurrentUser(id: UUID)    { getCurrentUser()?.petIds?.add(id) }
+
+    /*──────────────── SharedPreferences ────────────────*/
+    fun saveToPreferences(ctx: Context) {
+        ctx.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+            .edit()
+            .putString("users", Gson().toJson(users))
+            .putString("loggedInUserId", loggedInUserId)
+            .apply()
+        Log.d("UserRepo", "🗄️  cache saved (${users.size} users)")
+    }
+
+    fun loadFromPreferences(ctx: Context) {
+        val p = ctx.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        p.getString("users", null)?.let {
+            val type = object : TypeToken<Map<String, UserProfile>>() {}.type
+            users.clear(); users.putAll(Gson().fromJson(it, type))
+        }
+        loggedInUserId = p.getString("loggedInUserId", null)
+        Log.d("UserRepo", "🗄️  cache loaded (loggedIn=$loggedInUserId)")
+    }
+
+    fun logout(ctx: Context? = null) {
+        loggedInUserId = null
+        ctx?.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+            ?.edit()?.remove("loggedInUserId")?.apply()
+        Log.d("UserRepo", "🔒 로그아웃 완료")
+    }
+
+    /*────────────────── 로그인 ──────────────────*/
+    fun login(
+        userId: String,
+        password: String,
+        callback: (success: Boolean, errorMsg: String?) -> Unit
+    ) {
+        val req = JSONObject()
+            .put("id", userId)
+            .put("password", password)
+
+        Log.d("UserRepo", "📤 POST /user/login → $req")
+
+        ApiClient.post("/user/login", req,
+            onSuccess = { raw ->
+                Log.d("UserRepo", "📥 /user/login 응답 → $raw")
+
+                // (0) 레거시 "true"/"false" 문자열 대응
+                raw.trim().let { plain ->
+                    if (plain == "true" || plain == "false") {
+                        val ok = plain == "true"
+                        if (ok) setCurrentUser(
+                            UserProfile(
+                                username = "",
+                                userId   = userId,
+                                password = password,
+                                petIds   = mutableListOf()
+                            )
+                        )
+                        callback(ok, if (ok) null else "ID/PW 불일치")
+                        return@post
+                    }
+                }
+
+                // (1) JSON 응답 파싱 (신규 스펙)
+                try {
+                    val obj = JSONObject(raw)
+                    val success = obj.optBoolean("success", true) // success 키 없으면 200이면 성공으로 간주
+                    if (!success) {
+                        callback(false, obj.optString("message", "로그인 실패"))
+                        return@post
+                    }
+
+                    // 유저 프로필 만들기 (비밀번호는 보안상 서버가 안 줄 수 있으니 입력값 사용)
+                    val me = UserProfile(
+                        username = obj.optString("nickname", ""),
+                        userId   = obj.optString("id", userId),
+                        password = password,
+                        petIds   = mutableListOf()
+                    )
+                    setCurrentUser(me)
+
+                    // (a) 상세 pets 배열이 온 경우
+                    if (obj.has("pets")) {
+                        injectPetsFromJson(obj.getJSONArray("pets"))
+                    }
+                    // (b) petIds 배열만 온 경우
+                    else if (obj.has("petIds")) {
+                        val ids = obj.getJSONArray("petIds")
+                        for (i in 0 until ids.length()) {
+                            val uuid = runCatching { UUID.fromString(ids.getString(i)) }.getOrNull()
+                            if (uuid != null) {
+                                users[me.userId]?.petIds?.add(uuid)
+                            }
+                        }
+                    }
+
+                    callback(true, null)
+
+                } catch (e: Exception) {
+                    Log.e("UserRepo", "❌ JSON 파싱 오류: ${e.message}")
+                    callback(false, "파싱 실패: ${e.message}")
+                }
+            },
+            onFailure = { err ->
+                Log.e("UserRepo", "❌ /user/login 네트워크 오류: $err")
+                callback(false, "네트워크 오류: $err")
+            }
+        )
+    }
+
+    /*────────────────── 회원가입(동기) ──────────────────*/
+    fun registerUser(profile: UserProfile): Boolean {
+        var ok = false
+        val body = JSONObject()
+            .put("id", profile.userId)
+            .put("password", profile.password)
+            .put("nickname", profile.username)
+
+        val lock = Object()
+
+        Log.d("UserRepo", "📤 POST /user/sign-in → $body")
+
+        ApiClient.post("/user/sign-in", body,
+            onSuccess = { resp ->
+                ok = try {
+                    val trim = resp.trim()
+                    when {
+                        trim.startsWith("{") -> JSONObject(trim).optBoolean("success", true)
+                        else -> trim.toBooleanStrictOrNull() == true || trim.isEmpty()
+                    }
+                } catch (_: Exception) { true }
+                if (ok) setCurrentUser(profile)
+                synchronized(lock) { lock.notify() }
+            },
+            onFailure = { err ->
+                Log.e("UserRepo", "❌ 회원가입 실패: $err")
+                synchronized(lock) { lock.notify() }
+            })
+
+        synchronized(lock) { lock.wait(3000) }   // 최대 3초 대기
+        return ok
+    }
+
+    /*──────────────── pets 배열 → PetRepository ────────────────*/
+    private fun injectPetsFromJson(arr: JSONArray) {
+        val petRepo = PetRepository
+        petRepo.profiles.clear()
+
+        Log.d("UserRepo", "🔄 pets 배열 파싱 (size=${arr.length()})")
+
+        fun safeUuid(raw: String): UUID? =
+            try { UUID.fromString(raw) }
+            catch (_: IllegalArgumentException) {
+                Log.e("UserRepo", "잘못된 UUID '$raw' → 스킵"); null
+            }
+
+        for (i in 0 until arr.length()) {
+            val j = arr.getJSONObject(i)
+            val id = safeUuid(j.getString("petId")) ?: continue
+
+            val pet = PetProfile(
+                id             = id,
+                name           = j.getString("name"),
+                age            = j.getString("age"),
+                gender         = j.getString("gender"),
+                weight         = j.getDouble("weight"),
+                imageUri       = j.optString("imgUrl").ifBlank { null },
+                totalDistance  = j.optDouble("totalDistance", 0.0),
+                totalCalories  = j.optDouble("totalCalories", 0.0)
+            )
+
+            petRepo.profiles[id] = pet
+            users[loggedInUserId]?.petIds?.add(id)
+            Log.d("UserRepo", "  ✓ pet[$i] 캐시 → $id")
+        }
+
         petRepo.setCurrentPet(petRepo.profiles.keys.firstOrNull())
         Log.d("UserRepo", "✅ 총 ${petRepo.profiles.size}마리 캐시 완료")
     }

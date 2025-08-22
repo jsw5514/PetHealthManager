@@ -217,6 +217,10 @@ object StatsLoader {
         )
     }
 }*/
+/*
+/**
+ * 수정전 8월22일
+ */
 //  com/example/pet_walking/feature/statistics/StatsLoader.kt
 package com.example.pet_walking.feature.statistics
 
@@ -320,5 +324,117 @@ object StatsLoader {
     /* yyyy-MM-dd → UTC timestamp(00:00:00) */
     private fun parseDateUtc(key: String): Long =
         kotlin.runCatching { DATE_FMT.parse(key)?.time ?: System.currentTimeMillis() }
+            .getOrDefault(System.currentTimeMillis())
+}*/
+package com.example.pet_walking.feature.statistics
+
+import android.util.Log
+import com.example.pet_walking.feature.Running.model.RunStats
+import com.example.pet_walking.network.ApiClient
+import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
+
+/**
+ * -------------------------------------------------------------------
+ *  StatsLoader
+ *  ------------------------------------------------------------------
+ *  • GET /data?downloaderId=...&dataId=...&dataType=running_stats
+ *  • 응답의 data(JSON 문자열 또는 객체)에서
+ *      daily:{ "yyyy-MM-dd": {distance, calories}, ... }
+ *    를 꺼내 List<RunStats> 로 변환한다.
+ *  • 서버에 기록이 없거나 본문이 비면 → 빈 리스트 반환.
+ * -------------------------------------------------------------------
+ */
+object StatsLoader {
+
+    // yyyy-MM-dd → long(UTC midnight) 변환용
+    private val DATE_FMT = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }
+
+    fun loadRunLogs(
+        userId: String,
+        petId: String,
+        onResult: (List<RunStats>) -> Unit,
+        onError: (Throwable) -> Unit = {}
+    ) {
+        // ✅ 새 규격: GET /data
+        val endpoint =
+            "/data?downloaderId=${userId}&dataId=${petId}&dataType=running_stats"
+
+        Log.d("StatsLoader", "📤 GET $endpoint")
+
+        ApiClient.getByEndpoint(
+            endpoint = endpoint,
+            onSuccess = { raw ->
+                try {
+                    val body = raw.trim()
+                    if (body.isEmpty()) {
+                        Log.i("StatsLoader", "서버에 저장된 통계 없음 → 빈 리스트 반환")
+                        onResult(emptyList())
+                        return@getByEndpoint
+                    }
+
+                    // 1) 최상위 JSONObject 시도
+                    val dataJson: JSONObject? = runCatching {
+                        val root = JSONObject(body)
+                        when {
+                            // 케이스 A: { ..., "data": "{...}" }
+                            root.has("data") && root.get("data") is String ->
+                                JSONObject(root.getString("data"))
+
+                            // 케이스 B: { ..., "data": { ... } }
+                            root.has("data") && root.get("data") is JSONObject ->
+                                root.getJSONObject("data")
+
+                            // 케이스 C: 최상위가 곧바로 daily/summary 를 가짐
+                            root.has("daily") || root.has("summary") -> root
+
+                            else -> null
+                        }
+                    }.getOrNull()
+                        ?: runCatching { JSONObject(body) }.getOrNull() // 케이스 D: 본문이 곧바로 JSON 문자열
+
+                    if (dataJson == null) {
+                        Log.w("StatsLoader", "예상치 못한 응답 형식 → 빈 리스트 반환")
+                        onResult(emptyList())
+                        return@getByEndpoint
+                    }
+
+                    val dailyObj = dataJson.optJSONObject("daily") ?: JSONObject()
+
+                    // 날짜 키 정렬(yyyy-MM-dd 이므로 문자열 정렬 == 시간 오름차순)
+                    val keys = dailyObj.keys().asSequence().toList().sorted()
+
+                    val list = ArrayList<RunStats>(keys.size)
+                    for (k in keys) {
+                        val day = dailyObj.optJSONObject(k) ?: continue
+                        list += RunStats(
+                            distance  = day.optDouble("distance", 0.0),
+                            calories  = day.optDouble("calories", 0.0),
+                            timestamp = parseDateUtc(k)
+                        )
+                    }
+
+                    Log.d("StatsLoader", "📥 파싱 완료 → ${list.size}개 RunStats")
+                    onResult(list)
+
+                } catch (e: Exception) {
+                    Log.e("StatsLoader", "❌ running_stats 파싱 실패", e)
+                    onError(e)
+                }
+            },
+            onFailure = { err ->
+                Log.e("StatsLoader", "❌ GET /data 실패: $err")
+                onError(RuntimeException(err))
+            }
+        )
+    }
+
+    /** yyyy-MM-dd → UTC timestamp(해당 날짜 00:00:00) */
+    private fun parseDateUtc(key: String): Long =
+        runCatching { DATE_FMT.parse(key)?.time ?: System.currentTimeMillis() }
             .getOrDefault(System.currentTimeMillis())
 }

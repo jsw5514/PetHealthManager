@@ -180,7 +180,10 @@ object PetRepository {
         }
     }
 }*/
-
+/*
+/**
+ * 8월22일 수정전 코드
+ */
 package com.example.pet_walking.feature.profile.repository
 
 import android.util.Log
@@ -332,4 +335,153 @@ private fun JSONObject.toPetProfile(): PetProfile =
         imageUri      = optString("imgUrl").ifBlank { null },
         totalDistance = optDouble("totalDistance", 0.0),
         totalCalories = optDouble("totalCalories", 0.0)
-    )
+    )*/
+package com.example.pet_walking.feature.profile.repository
+
+import android.util.Log
+import com.example.pet_walking.feature.profile.data.PetProfile
+import com.example.pet_walking.network.ApiClient
+import org.json.JSONObject
+import java.util.UUID
+
+object PetRepository {
+
+    /** 내부 캐시: petId(UUID) → PetProfile (앱 프로세스 생존 동안 유지) */
+    internal val profiles: MutableMap<UUID, PetProfile> = mutableMapOf()
+
+    /** 유저가 현재 선택한 펫(없으면 null) */
+    var currentPetId: UUID? = null
+        private set
+
+    init { Log.d("PetRepo", "PetRepository initialized") }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* 업로드(신규/수정)                                                */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    /**
+     * 새 PetProfile 을 로컬 캐시에 넣고 즉시 서버로 업로드.
+     *
+     * @param profile   생성된 PetProfile
+     * @param userId    로그인한 유저 ID
+     * @param onComplete true=업로드 성공 / false=실패
+     */
+    fun addProfile(
+        profile   : PetProfile,
+        userId    : String,
+        onComplete: (Boolean) -> Unit
+    ) {
+        Log.d("PetRepo", "addProfile() → id=${profile.id}, userId=$userId")
+        profiles[profile.id] = profile
+        uploadProfileToServer(userId, profile, onComplete)
+    }
+
+    /** 내부: 서버 규격에 맞춰 JSON 직렬화 후 POST /pet/profile 호출 */
+    private fun uploadProfileToServer(
+        userId    : String,
+        profile   : PetProfile,
+        onComplete: (Boolean) -> Unit
+    ) {
+        val json = JSONObject().apply {
+            put("petId"        , profile.id.toString())   // PK
+            put("userId"       , userId)                  // FK
+            put("name"         , profile.name)
+            put("age"          , profile.age)
+            put("gender"       , profile.gender)
+            put("weight"       , profile.weight)
+            put("imgUrl"       , profile.imageUri ?: "")
+            put("totalDistance", profile.totalDistance)
+            put("totalCalories", profile.totalCalories)
+        }
+
+        Log.d("PetRepo", "📤 [POST /pet/profile] $json")
+
+        ApiClient.post(
+            endpoint  = "/pet/profile",
+            json      = json,
+            onSuccess = { resp ->
+                val ok = isOkResponse(resp)
+                Log.d("PetRepo", "📥 /pet/profile 응답=[$resp] → success=$ok")
+                onComplete(ok)
+            },
+            onFailure = { err ->
+                Log.e("PetRepo", "❌ /pet/profile 실패: $err")
+                onComplete(false)
+            }
+        )
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* 삭제(서버 + 캐시)                                               */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    /**
+     * 서버에서 펫 프로필 삭제 후(DELETE /pet/profile), 캐시에서도 제거.
+     *
+     * @param userId  로그인 유저 ID (서버 검증용)
+     * @param petId   삭제할 펫 UUID
+     */
+    fun deleteProfile(
+        userId: String,
+        petId: UUID,
+        onComplete: (Boolean) -> Unit
+    ) {
+        val params = mapOf(
+            "userId" to userId,
+            "petId"  to petId.toString()
+        )
+
+        Log.d("PetRepo", "🗑️ [DELETE /pet/profile] params=$params")
+
+        ApiClient.delete(
+            endpoint  = "/pet/profile",
+            params    = params,
+            onSuccess = { resp ->
+                val ok = isOkResponse(resp)
+                if (ok) {
+                    profiles.remove(petId)
+                    if (currentPetId == petId) currentPetId = null
+                    Log.d("PetRepo", "✅ 삭제 완료 (서버+캐시): $petId")
+                } else {
+                    Log.w("PetRepo", "⚠️ 서버 삭제 응답 false: $resp")
+                }
+                onComplete(ok)
+            },
+            onFailure = { err ->
+                Log.e("PetRepo", "❌ /pet/profile 삭제 실패: $err")
+                onComplete(false)
+            }
+        )
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* 캐시 관련 편의 메서드                                           */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    /** 로컬 캐시만 제거(서버 통신 없음) — 필요 시 UI에서 직접 호출 */
+    fun removeProfileLocal(id: UUID) {
+        Log.d("PetRepo", "removeProfileLocal() → id=$id")
+        profiles.remove(id)
+        if (currentPetId == id) currentPetId = null
+    }
+
+    /** 과거 호환용(로컬 제거) */
+    fun removeProfile(id: UUID) = removeProfileLocal(id)
+
+    fun setCurrentPet(id: UUID?) { currentPetId = id }
+    fun getCurrentPet(): PetProfile?       = currentPetId?.let { profiles[it] }
+    fun getProfile(id: UUID): PetProfile?  = profiles[id]
+    fun getAllProfiles(): List<PetProfile> = profiles.values.toList()
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* 내부 유틸                                                      */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    private fun isOkResponse(resp: String): Boolean = try {
+        val s = resp.trim()
+        when {
+            s.startsWith("{") -> JSONObject(s).optBoolean("success", true)
+            else -> s.trim('"').equals("true", true) || s.isEmpty()
+        }
+    } catch (_: Exception) { true }
+}

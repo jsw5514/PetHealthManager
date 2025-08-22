@@ -1,4 +1,7 @@
-package com.example.pet_walking.feature.Running.Map
+/**
+ * 8월22일 수정전
+ */
+/*package com.example.pet_walking.feature.Running.Map
 
 import android.util.Log
 import com.example.pet_walking.network.ApiClient
@@ -55,6 +58,76 @@ object SnapToRoadsService {
                         correctedPath.add(LatLng(lat, lng))
                     }
                     //결과 콜백 호출
+                    onResult(correctedPath)
+                } catch (e: Exception) {
+                    onError("파싱 오류: ${e.message}")
+                }
+            },
+            onFailure = { error ->
+                onError("요청 실패: $error")
+            }
+        )
+    }
+}*/
+package com.example.pet_walking.feature.Running.Map
+
+import android.util.Log
+import com.example.pet_walking.network.ApiClient
+import com.naver.maps.geometry.LatLng
+import org.json.JSONObject
+
+/**
+ * Google Roads API를 사용하여 GPS 경로를 실제 도로에 맞춰 보정해주는 서비스 클래스
+ */
+object SnapToRoadsService {
+
+    /**
+     * @param path    GPS 좌표 리스트 (LatLng)
+     * @param apiKey  Google Roads API Key
+     * @param onResult 성공 시: 보정된 좌표 리스트 콜백
+     * @param onError  실패/예외 시: 에러 메시지 콜백
+     */
+    fun snapToRoads(
+        path: List<LatLng>,
+        apiKey: String,
+        onResult: (List<LatLng>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (path.isEmpty()) {
+            onError("경로가 비어 있습니다.")
+            return
+        }
+
+        // Roads API 포맷으로 path 구성 (lat,lng|lat,lng|...)
+        val pathParam = path.joinToString("|") { "${it.latitude},${it.longitude}" }
+        Log.d("SnapToRoadsService", "pathParam: $pathParam")
+
+        val url =
+            "https://roads.googleapis.com/v1/snapToRoads?interpolate=true&path=$pathParam&key=$apiKey"
+        Log.d("SnapToRoadsService", "API 호출 URL: $url")
+
+        // 필요 시 헤더(없어도 동작하지만 유지)
+        val headers = mapOf(
+            "X-Android-Package" to "com.example.pet_walking",
+            "X-Android-Cert" to "EB:28:98:F4:F1:79:B7:CF:D3:93:71:AF:EA:A2:60:F4:2B:1F:20:29"
+        )
+
+        // ✅ 헤더가 있는 GET은 getWithHeaders 를 사용 (중복 시그니처 충돌 방지)
+        ApiClient.getWithHeaders(
+            fullUrl = url,
+            headers = headers,
+            onSuccess = { response ->
+                try {
+                    val json = JSONObject(response)
+                    val snappedPoints = json.getJSONArray("snappedPoints")
+
+                    val correctedPath = mutableListOf<LatLng>()
+                    for (i in 0 until snappedPoints.length()) {
+                        val loc = snappedPoints.getJSONObject(i).getJSONObject("location")
+                        val lat = loc.getDouble("latitude")
+                        val lng = loc.getDouble("longitude")
+                        correctedPath.add(LatLng(lat, lng))
+                    }
                     onResult(correctedPath)
                 } catch (e: Exception) {
                     onError("파싱 오류: ${e.message}")

@@ -315,7 +315,7 @@ class RunningFragment : Fragment(), BluetoothDataListener {
             put("content", base64)
         }
 
-        ChatNetworkHelper.postJson("/uploadChat", json) { success ->
+        ChatNetworkHelper.postJson("/chat/upload", json) { success ->
             if (success) Log.d("RunningDebug", "러닝 요약 이미지 전송 성공")
         }
     }
