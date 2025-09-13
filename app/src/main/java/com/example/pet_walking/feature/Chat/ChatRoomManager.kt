@@ -1,128 +1,13 @@
 package com.example.pet_walking.feature.Chat
-/*
-import com.example.pet_walking.network.ApiClient
-import org.json.JSONObject
 
-object ChatRoomManager {
-
-    fun createChatRoom(creatorId: String, roomName: String, password: String?, callback: (Int) -> Unit) {
-        val json = JSONObject().apply {
-            put("creatorId", creatorId)
-            put("roomName", roomName)
-            if (!password.isNullOrBlank()) put("password", password)
-        }
-
-        ApiClient.post("/createChatRoom", json,
-            onSuccess = { response ->
-                val roomId = response.trim('"').toIntOrNull()?:0
-                callback(roomId)
-            },
-            onFailure = {
-                callback(0)
-            }
-        )
-    }
-
-    fun inviteMember(roomId: Int, memberId: String, callback: (Boolean) -> Unit) {
-        val json = JSONObject().apply {
-            put("roomId", roomId)
-            put("memberId", memberId)
-        }
-
-        ApiClient.post("/inviteChatMember", json,
-            onSuccess = { response -> callback(response == "true") },
-            onFailure = { callback(false) }
-        )
-    }
-
-    fun leaveChatRoom(roomId: Int, memberId: String, callback: (Boolean) -> Unit) {
-        val json = JSONObject().apply {
-            put("roomId", roomId)
-            put("memberId", memberId)
-        }
-
-        ApiClient.post("/leaveChatRoom", json,
-            onSuccess = { response ->
-                // ✅ 문자열 양끝 따옴표 제거 후 비교
-                callback(response.trim('"').equals("true", ignoreCase = true))
-            },
-            onFailure = { callback(false) }
-        )
-    }
-
-    fun getChatMembers(roomId: Int, callback: (List<String>) -> Unit) {
-        val json = JSONObject().apply {
-            put("roomId", roomId)
-        }
-
-        ApiClient.post("/getChatMember", json,
-            onSuccess = { response ->
-                try {
-                    val result = JSONObject("{\"list\":$response}")
-                    val members = mutableListOf<String>()
-                    val array = result.getJSONArray("list")
-                    for (i in 0 until array.length()) {
-                        members.add(array.getString(i))
-                    }
-                    callback(members)
-                } catch (e: Exception) {
-                    callback(emptyList())
-                }
-            },
-            onFailure = { callback(emptyList()) }
-        )
-    }
-
-    fun getJoinedChatRooms(userId: String, callback: (List<Pair<Int, String>>) -> Unit) {
-        val json = JSONObject().apply {
-            put("userId", userId)
-        }
-
-        ApiClient.post("/getJoinedRooms", json,
-            onSuccess = { response ->
-                val rooms = mutableListOf<Pair<Int, String>>()
-                try {
-                    val jsonObj = JSONObject(response)
-                    val roomArray = jsonObj.getJSONArray("rooms")
-                    for (i in 0 until roomArray.length()) {
-                        val room = roomArray.getJSONObject(i)
-                        val roomId = room.getInt("roomId")
-                        val creatorId = room.getString("creatorId")
-                        rooms.add(Pair(roomId, creatorId))
-                    }
-                } catch (_: Exception) {}
-                callback(rooms)
-            },
-            onFailure = { callback(emptyList()) }
-        )
-    }
-
-    fun joinChatRoom(userId: String, roomName: String, password: String, callback: (Int) -> Unit) {
-        val json = JSONObject().apply {
-            put("userId", userId)
-            put("roomName", roomName)
-            put("password", password)
-        }
-
-        ApiClient.post("/joinChatRoom", json,
-            onSuccess = { response ->
-                val roomId = response.trim('"').toIntOrNull() ?: 0
-                callback(roomId)
-            },
-            onFailure = {
-                callback(0)
-            }
-        )
-    }
-}*/
-
+import android.util.Log
 import com.example.pet_walking.network.ApiClient
 import org.json.JSONArray
 import org.json.JSONObject
 
 object ChatRoomManager {
 
-    /** 채팅방 생성: POST /chat/room  */
+    /** 채팅방 생성: POST /chat/room */
     fun createChatRoom(
         creatorId: String,
         roomName: String,
@@ -137,11 +22,10 @@ object ChatRoomManager {
 
         ApiClient.post("/chat/room", json,
             onSuccess = { body ->
-                // 서버가 {"roomId":123} 또는 "123" 둘 중 하나를 줄 수 있으니 모두 대응
                 val roomId = try {
-                    JSONObject(body).optInt("roomId", 0)
+                    JSONObject(body).optInt("roomId", 0)      // {"roomId":123}
                 } catch (_: Exception) {
-                    body.trim('"').toIntOrNull() ?: 0
+                    body.trim('"').toIntOrNull() ?: 0         // "123"
                 }
                 callback(roomId)
             },
@@ -149,17 +33,14 @@ object ChatRoomManager {
         )
     }
 
-    /** 채팅방 초대: POST /chat/room/{roomId}/member */
+    /** 멤버 초대: POST /chat/room/{roomId}/member  (body: {"memberId": "<id>"}) */
     fun inviteMember(roomId: Int, memberId: String, callback: (Boolean) -> Unit) {
         val json = JSONObject().apply { put("memberId", memberId) }
 
         ApiClient.post("/chat/room/$roomId/member", json,
             onSuccess = { body ->
-                // 2xx면 성공으로 취급, 혹시 "false" 내려오면 실패 처리
-                val ok = when {
-                    body.trim().equals("false", true) -> false
-                    else -> true
-                }
+                // 빈 본문(204/200)도 성공으로 간주. 서버가 "false"만 보내면 실패 처리.
+                val ok = !body.trim().equals("false", ignoreCase = true)
                 callback(ok)
             },
             onFailure = { callback(false) }
@@ -168,7 +49,6 @@ object ChatRoomManager {
 
     /** 채팅방 나가기: DELETE /chat/room/{roomId}/member/{memberId} */
     fun leaveChatRoom(roomId: Int, memberId: String, callback: (Boolean) -> Unit) {
-        // ApiClient에 delete가 있어야 함 (아래 참고)
         ApiClient.delete("/chat/room/$roomId/member/$memberId",
             onSuccess = { _ -> callback(true) },
             onFailure = { _ -> callback(false) }
@@ -181,18 +61,14 @@ object ChatRoomManager {
             onSuccess = { body ->
                 try {
                     val members = mutableListOf<String>()
-                    // 배열이 문자열 배열 or 객체 배열일 수 있어 모두 처리
                     val arr = try { JSONArray(body) } catch (_: Exception) {
-                        // 혹시 {"members":[...]} 형태면 꺼내서 파싱
-                        val obj = JSONObject(body)
-                        obj.optJSONArray("members") ?: JSONArray()
+                        JSONObject(body).optJSONArray("members") ?: JSONArray()
                     }
                     for (i in 0 until arr.length()) {
                         val v = arr.get(i)
                         when (v) {
                             is String -> members.add(v)
                             is JSONObject -> {
-                                // 우선순위대로 키 탐색
                                 val name = v.optString("nickname",
                                     v.optString("memberId",
                                         v.optString("userId", "")))
@@ -209,30 +85,53 @@ object ChatRoomManager {
         )
     }
 
-    /* ▼ 아래 두 개는 변경 공지가 없어 일단 기존대로 둠.
-       서버 스펙이 갱신되면 엔드포인트만 바꿔주면 됨. */
-
+    /**
+     * 참여 중인 채팅방 목록: POST /char/room/list
+     * body: {"userId":"<id>"}
+     * 응답은 배열 또는 {"rooms":[...]} 형태 모두 처리
+     */
     fun getJoinedChatRooms(userId: String, callback: (List<Pair<Int, String>>) -> Unit) {
-        val json = JSONObject().apply { put("userId", userId) }
-        ApiClient.post("/getJoinedRooms", json,
+        val body = JSONObject().put("userId", userId)
+
+        ApiClient.post("/chat/room/list", body,
             onSuccess = { response ->
                 val rooms = mutableListOf<Pair<Int, String>>()
                 try {
-                    val jsonObj = JSONObject(response)
-                    val roomArray = jsonObj.getJSONArray("rooms")
-                    for (i in 0 until roomArray.length()) {
-                        val room = roomArray.getJSONObject(i)
-                        val roomId = room.getInt("roomId")
-                        val creatorId = room.getString("creatorId")
-                        rooms.add(roomId to creatorId)
+                    val txt = response.trim()
+                    val arr: JSONArray = when {
+                        txt.startsWith("[") -> JSONArray(txt)
+                        else -> {
+                            val obj = JSONObject(txt)
+                            obj.optJSONArray("rooms")
+                                ?: obj.optJSONArray("list")
+                                ?: JSONArray()
+                        }
                     }
-                } catch (_: Exception) { /* ignore */ }
+                    for (i in 0 until arr.length()) {
+                        val o = arr.getJSONObject(i)
+                        val roomId = o.optInt("roomId", o.optInt("id", 0))
+                        val creatorId = o.optString(
+                            "creatorId",
+                            o.optString("ownerId", o.optString("creator", ""))
+                        )
+                        if (roomId != 0) rooms.add(roomId to creatorId)
+                    }
+                } catch (e: Exception) {
+                    Log.e("ChatRoomManager", "getJoinedChatRooms parse error", e)
+                }
                 callback(rooms)
             },
-            onFailure = { callback(emptyList()) }
+            onFailure = {
+                Log.e("ChatRoomManager", "getJoinedChatRooms api failure")
+                callback(emptyList())
+            }
         )
     }
 
+    /**
+     * (레거시) 임의 참가 API – 서버에 없으면 사용하지 마세요.
+     * 현재 서버가 초대(Invite) 방식만 지원하면 이 함수는 쓰이지 않습니다.
+     */
     fun joinChatRoom(userId: String, roomName: String, password: String, callback: (Int) -> Unit) {
         val json = JSONObject().apply {
             put("userId", userId)
