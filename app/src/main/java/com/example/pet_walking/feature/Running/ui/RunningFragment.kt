@@ -18,7 +18,6 @@ import com.example.pet_walking.R
 import com.example.pet_walking.feature.Running.Map.MapFragment
 import com.example.pet_walking.feature.Running.Map.PathManager
 import com.example.pet_walking.feature.Running.model.RunStats
-import com.example.pet_walking.feature.Running.testRun.DemoRunSimulator
 import com.example.pet_walking.feature.profile.data.PetProfile
 import com.example.pet_walking.feature.profile.repository.PetRepository
 import com.example.pet_walking.feature.profile.repository.RunLogRepository
