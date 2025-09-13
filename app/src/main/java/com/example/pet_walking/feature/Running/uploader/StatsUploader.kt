@@ -207,7 +207,7 @@ object StatsUploader {
         val payload = JSONObject().apply {
             put("uploaderId", userId)
             put("dataId",     petId.toString())
-            put("metaData",   "running_stats")     // ✅ dataType → metaData
+            put("dataType",   "running_stats")     // ✅ dataType → metaData
             put("data",       dataJson.toString())
         }
 
@@ -231,7 +231,7 @@ object StatsUploader {
         val payload = JSONObject().apply {
             put("uploaderId", userId)
             put("dataId",     petId.toString())
-            put("metaData",   "run_log")          // ✅ "runLog" → "run_log"
+            put("dataType",   "run_log")          // ✅ "runLog" → "run_log"
             put("data", JSONObject().apply {
                 put("distance",  stats.distance)
                 put("calories",  stats.calories)

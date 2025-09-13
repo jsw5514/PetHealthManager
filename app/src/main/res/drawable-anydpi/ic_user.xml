@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960"
+    android:tint="#000000"
+    android:alpha="0.8">
+
+  <!-- 바깥 테두리 박스(검정) -->
+  <path
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"
+      android:strokeWidth="60"
+      android:pathData="M30,30 H930 V930 H30 Z"/>
+
+  <!-- 기존 아이콘 경로 -->
+  <path
+      android:fillColor="@android:color/white"
+      android:pathData="M480,240Q447,240 423.5,216.5Q400,193 400,160Q400,127 423.5,103.5Q447,80 480,80Q513,80 536.5,103.5Q560,127 560,160Q560,193 536.5,216.5Q513,240 480,240ZM360,880L360,360L120,360L120,280L840,280L840,360L600,360L600,880L520,880L520,640L440,640L440,880L360,880Z"/>
+</vector>
