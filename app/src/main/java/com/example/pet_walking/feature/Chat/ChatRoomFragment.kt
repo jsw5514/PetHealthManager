@@ -264,26 +264,40 @@ class ChatRoomFragment : Fragment() {
     }
 
     private fun fetchMessages() {
-        val json = JSONObject().apply {
+        val req = JSONObject().apply {
             put("roomId", args.roomId)
-            put("latestTimestamp", lastTimestamp)
+            put("latestTimestamp", lastTimestamp)   // 서버가 요구하는 키 유지
+            // put("limit", 50) // 서버가 지원하면 페이지 크기 옵션
         }
 
-        // ✅ 변경: /downloadChat → /chat/download
-        ChatNetworkHelper.postJsonWithResult("/chat/download", json) { result ->
-            result?.let { jsonObj ->
-                val contentList = jsonObj.optJSONArray("contentList") ?: return@postJsonWithResult
-                for (i in 0 until contentList.length()) {
-                    val item     = contentList.getJSONObject(i)
-                    val nickname = item.optString("writerNickname", "익명")
-                    val content  = item.optString("content", "")
-                    requireActivity().runOnUiThread {
-                        addChatMessage(nickname, content)
-                    }
+        ChatNetworkHelper.postJsonWithResult("/chat/download", req) { res ->
+            res ?: return@postJsonWithResult
+
+            val items = res.optJSONArray("contentList") ?: return@postJsonWithResult
+            var maxWriteTime = lastTimestamp
+
+            for (i in 0 until items.length()) {
+                val it        = items.getJSONObject(i)
+                val nickname  = it.optString("writerNickname", "익명")
+                val content   = it.optString("content", "")
+                val writerId  = it.optString("writerId", "")         // 서버가 주면 사용
+                val writeTime = it.optLong("writeTime", 0L)          // ★ 서버 시각(ms)
+
+                // UI 반영 (writerId를 addChatMessage에 넘길 수 있으면 더 정확)
+                requireActivity().runOnUiThread {
+                    // addChatMessage(nickname, content, writerId)  // 권장
+                    addChatMessage(nickname, content)               // 기존 시그니처 유지 시
                 }
-                // 서버에서 타임스탬프를 내려주면 그 값을 쓰는 게 안전하지만,
-                // 현재 스키마를 모르므로 우선 클라이언트 시각으로 갱신 유지
-                lastTimestamp = System.currentTimeMillis()
+
+                if (writeTime > maxWriteTime) maxWriteTime = writeTime
+            }
+
+            // 서버가 nextSince를 주면 그 값을 우선 사용
+            val nextSince = res.optLong("nextSince", 0L)
+            lastTimestamp = when {
+                nextSince    > lastTimestamp -> nextSince
+                maxWriteTime > lastTimestamp -> maxWriteTime
+                else                         -> System.currentTimeMillis() // 서버 시각이 없을 때 최후 폴백
             }
         }
     }
