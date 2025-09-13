@@ -3,6 +3,7 @@ package com.example.pet_walking.feature.Chat
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +23,16 @@ import java.util.TimeZone
 
 class ChatRoomFragment : Fragment() {
 
+    companion object {
+        private const val TAG = "ChatRoomFragment"
+
+        // 서버 스펙: ISO-8601 "yyyy-MM-dd'T'HH:mm:ss"
+        private const val SERVER_TS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss"
+
+        // ★ 서버가 요구한 최소 타임스탬프 (LocalDateTime.MIN 대신)
+        private const val MIN_TIMESTAMP_ISO = "0000-01-01T00:00:00"
+    }
+
     private val args: ChatRoomFragmentArgs by navArgs()
     private lateinit var groupInfoTextView: TextView
     private lateinit var chatContainer: LinearLayout
@@ -29,14 +40,7 @@ class ChatRoomFragment : Fragment() {
     private lateinit var sendButton: ImageButton
     private lateinit var leaveButton: Button
 
-    // 서버 스펙: ISO-8601 문자열 타임스탬프 사용
-    companion object {
-        private const val SERVER_TS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss"
-        // 서버 요청 시 latestTimestamp가 항상 필요하므로 최소값을 기본으로 사용
-        private const val MIN_TIMESTAMP_ISO = "-999999999-01-01T00:00:00"
-    }
-
-    // 증분 조회 기준(항상 유효한 값 보장)
+    // ★ 증분 조회 기준(항상 유효한 값으로 시작)
     private var lastSinceIso: String = MIN_TIMESTAMP_ISO
 
     private val handler = Handler(Looper.getMainLooper())
@@ -71,6 +75,9 @@ class ChatRoomFragment : Fragment() {
             if (content.isNotBlank()) {
                 sendMessage(content)
                 messageInput.text.clear()
+            } else {
+                // ★ 빈 메시지 방지 피드백
+                Toast.makeText(requireContext(), "메시지를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -101,7 +108,14 @@ class ChatRoomFragment : Fragment() {
 
     /** 메시지 전송 */
     private fun sendMessage(content: String) {
-        val writerId = LoginSession.userId ?: return
+        // ★ writerId 널 안전 처리 + 사용자 피드백
+        val writerId = LoginSession.userId ?: UserRepository.getCurrentUserId()
+        if (writerId.isNullOrBlank()) {
+            Log.e(TAG, "sendMessage: writerId is null")
+            Toast.makeText(requireContext(), "로그인이 만료되었습니다. 다시 로그인해 주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val nowIso = nowIsoString() // 예: "2025-08-05T12:00:00"
 
         val json = JSONObject().apply {
@@ -117,6 +131,7 @@ class ChatRoomFragment : Fragment() {
                 if (success) {
                     fetchMessages()
                 } else {
+                    Log.e(TAG, "sendMessage: /chat/upload failed")
                     Toast.makeText(requireContext(), "메시지 전송 실패", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -131,10 +146,24 @@ class ChatRoomFragment : Fragment() {
         }
 
         ChatNetworkHelper.postJsonWithResult("/chat/download", req) { res ->
-            res ?: return@postJsonWithResult
+            if (res == null) {
+                // ★ 조용히 return 하지 말고 알림/로그
+                Log.e(TAG, "fetchMessages: response null")
+                activity?.runOnUiThread {
+                    Toast.makeText(requireContext(), "채팅 불러오기에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+                return@postJsonWithResult
+            }
 
             // ChatNetworkHelper가 배열 응답을 {"contentList":[...]}로 래핑한다고 가정
-            val items = res.optJSONArray("contentList") ?: return@postJsonWithResult
+            val items = res.optJSONArray("contentList")
+            if (items == null) {
+                Log.e(TAG, "fetchMessages: contentList missing")
+                activity?.runOnUiThread {
+                    Toast.makeText(requireContext(), "메시지 목록이 비어 있습니다.", Toast.LENGTH_SHORT).show()
+                }
+                return@postJsonWithResult
+            }
 
             // 서버 시각 기준 최신값 계산
             var maxIso: String? = null
@@ -155,7 +184,10 @@ class ChatRoomFragment : Fragment() {
             }
 
             // 다음 요청 기준점을 서버 시각으로 갱신 (없으면 기존 값 유지)
-            if (maxIso != null) lastSinceIso = maxIso!!
+            if (maxIso != null) {
+                lastSinceIso = maxIso!!
+                Log.d(TAG, "fetchMessages: lastSinceIso → $lastSinceIso")
+            }
         }
     }
 
@@ -198,7 +230,7 @@ class ChatRoomFragment : Fragment() {
     /** 현재 시각을 서버 포맷으로 반환 */
     private fun nowIsoString(): String {
         val sdf = SimpleDateFormat(SERVER_TS_PATTERN, Locale.US)
-        // 서버가 UTC를 요구하면 주석 해제
+        // 서버가 UTC 요구 시 주석 해제:
         // sdf.timeZone = TimeZone.getTimeZone("UTC")
         return sdf.format(Date())
     }
