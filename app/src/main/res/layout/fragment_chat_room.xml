@@ -41,6 +41,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="16dp" />
 
+    <!-- 초대 버튼 -->
+    <Button
+        android:id="@+id/inviteMemberButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="초대"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/leaveRoomButton"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="8dp"/>
+
     <!-- 채팅 목록 -->
     <ScrollView
         android:id="@+id/chatScrollView"

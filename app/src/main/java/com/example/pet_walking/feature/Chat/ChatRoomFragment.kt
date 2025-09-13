@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -29,18 +30,21 @@ class ChatRoomFragment : Fragment() {
         // 서버 스펙: ISO-8601 "yyyy-MM-dd'T'HH:mm:ss"
         private const val SERVER_TS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss"
 
-        // ★ 서버가 요구한 최소 타임스탬프 (LocalDateTime.MIN 대신)
+        // 서버가 요구한 최소 타임스탬프 (LocalDateTime.MIN 대신)
         private const val MIN_TIMESTAMP_ISO = "0000-01-01T00:00:00"
     }
 
     private val args: ChatRoomFragmentArgs by navArgs()
     private lateinit var groupInfoTextView: TextView
+    private lateinit var memberListTextView: TextView
     private lateinit var chatContainer: LinearLayout
     private lateinit var messageInput: EditText
     private lateinit var sendButton: ImageButton
     private lateinit var leaveButton: Button
+    private lateinit var inviteMemberButton: Button
+    private lateinit var chatScrollView: ScrollView
 
-    // ★ 증분 조회 기준(항상 유효한 값으로 시작)
+    // 증분 조회 기준(항상 유효한 값으로 시작)
     private var lastSinceIso: String = MIN_TIMESTAMP_ISO
 
     private val handler = Handler(Looper.getMainLooper())
@@ -55,11 +59,14 @@ class ChatRoomFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_chat_room, container, false)
 
-        groupInfoTextView = view.findViewById(R.id.groupInfoTextView)
-        chatContainer     = view.findViewById(R.id.chatContainer)
-        messageInput      = view.findViewById(R.id.messageInput)
-        sendButton        = view.findViewById(R.id.sendButton)
-        leaveButton       = view.findViewById(R.id.leaveRoomButton)
+        groupInfoTextView   = view.findViewById(R.id.groupInfoTextView)
+        memberListTextView  = view.findViewById(R.id.memberListTextView)
+        chatScrollView      = view.findViewById(R.id.chatScrollView)
+        chatContainer       = view.findViewById(R.id.chatContainer)
+        messageInput        = view.findViewById(R.id.messageInput)
+        sendButton          = view.findViewById(R.id.sendButton)
+        leaveButton         = view.findViewById(R.id.leaveRoomButton)
+        inviteMemberButton  = view.findViewById(R.id.inviteMemberButton)
 
         currentUserId = UserRepository.getCurrentUserId()
         if (currentUserId.isNullOrBlank()) {
@@ -76,7 +83,6 @@ class ChatRoomFragment : Fragment() {
                 sendMessage(content)
                 messageInput.text.clear()
             } else {
-                // ★ 빈 메시지 방지 피드백
                 Toast.makeText(requireContext(), "메시지를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
         }
@@ -87,15 +93,18 @@ class ChatRoomFragment : Fragment() {
                 activity?.runOnUiThread {
                     if (success) {
                         Toast.makeText(requireContext(), "채팅방을 나갔습니다.", Toast.LENGTH_SHORT).show()
-                        ChatRoomManager.getJoinedChatRooms(userId) {
-                            requireActivity().runOnUiThread { findNavController().popBackStack() }
-                        }
+                        findNavController().popBackStack()
                     } else {
                         Toast.makeText(requireContext(), "나가기 실패", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         }
+
+        inviteMemberButton.setOnClickListener { showInviteDialog() }
+
+        // 최초 진입 시 멤버 목록 한 번 로드
+        loadMembers()
 
         startAutoUpdate()
         return view
@@ -108,7 +117,6 @@ class ChatRoomFragment : Fragment() {
 
     /** 메시지 전송 */
     private fun sendMessage(content: String) {
-        // ★ writerId 널 안전 처리 + 사용자 피드백
         val writerId = LoginSession.userId ?: UserRepository.getCurrentUserId()
         if (writerId.isNullOrBlank()) {
             Log.e(TAG, "sendMessage: writerId is null")
@@ -116,12 +124,12 @@ class ChatRoomFragment : Fragment() {
             return
         }
 
-        val nowIso = nowIsoString() // 예: "2025-08-05T12:00:00"
+        val nowIso = nowIsoString()
 
         val json = JSONObject().apply {
             put("roomId", args.roomId)
             put("writerId", writerId)
-            put("writeTime", nowIso)         // 서버 스펙: 문자열 ISO-8601
+            put("writeTime", nowIso)         // ISO-8601 문자열
             put("contentType", "text")
             put("content", content)
         }
@@ -142,12 +150,11 @@ class ChatRoomFragment : Fragment() {
     private fun fetchMessages() {
         val req = JSONObject().apply {
             put("roomId", args.roomId)
-            put("latestTimestamp", lastSinceIso)  // 항상 포함(최초 요청 시 MIN 값)
+            put("latestTimestamp", lastSinceIso)
         }
 
         ChatNetworkHelper.postJsonWithResult("/chat/download", req) { res ->
             if (res == null) {
-                // ★ 조용히 return 하지 말고 알림/로그
                 Log.e(TAG, "fetchMessages: response null")
                 activity?.runOnUiThread {
                     Toast.makeText(requireContext(), "채팅 불러오기에 실패했습니다.", Toast.LENGTH_SHORT).show()
@@ -155,7 +162,6 @@ class ChatRoomFragment : Fragment() {
                 return@postJsonWithResult
             }
 
-            // ChatNetworkHelper가 배열 응답을 {"contentList":[...]}로 래핑한다고 가정
             val items = res.optJSONArray("contentList")
             if (items == null) {
                 Log.e(TAG, "fetchMessages: contentList missing")
@@ -165,7 +171,6 @@ class ChatRoomFragment : Fragment() {
                 return@postJsonWithResult
             }
 
-            // 서버 시각 기준 최신값 계산
             var maxIso: String? = null
             var maxMs: Long = Long.MIN_VALUE
 
@@ -173,7 +178,7 @@ class ChatRoomFragment : Fragment() {
                 val obj       = items.getJSONObject(i)
                 val nickname  = obj.optString("writerNickname", "익명")
                 val content   = obj.optString("content", "")
-                val writeTime = obj.optString("writeTime", null) // 예: "2025-08-06T10:00:00"
+                val writeTime = obj.optString("writeTime", null)
 
                 requireActivity().runOnUiThread {
                     addChatMessage(nickname, content)
@@ -183,11 +188,13 @@ class ChatRoomFragment : Fragment() {
                 if (ms > maxMs) { maxMs = ms; maxIso = writeTime }
             }
 
-            // 다음 요청 기준점을 서버 시각으로 갱신 (없으면 기존 값 유지)
             if (maxIso != null) {
                 lastSinceIso = maxIso!!
                 Log.d(TAG, "fetchMessages: lastSinceIso → $lastSinceIso")
             }
+
+            // 받아온 뒤 자동 스크롤
+            requireActivity().runOnUiThread { scrollToBottom() }
         }
     }
 
@@ -223,6 +230,49 @@ class ChatRoomFragment : Fragment() {
         }, updateInterval)
     }
 
+    /** 멤버 초대 다이얼로그 */
+    private fun showInviteDialog() {
+        val input = EditText(requireContext()).apply { hint = "초대할 사용자 ID" }
+        AlertDialog.Builder(requireContext())
+            .setTitle("유저 초대")
+            .setView(input)
+            .setPositiveButton("초대") { _, _ ->
+                val targetId = input.text.toString().trim()
+                if (targetId.isEmpty()) {
+                    Toast.makeText(requireContext(), "사용자 ID를 입력하세요.", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                ChatRoomManager.inviteMember(args.roomId, targetId) { ok ->
+                    activity?.runOnUiThread {
+                        if (ok) {
+                            Toast.makeText(requireContext(), "초대 완료", Toast.LENGTH_SHORT).show()
+                            loadMembers()
+                        } else {
+                            Toast.makeText(requireContext(), "초대 실패", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    /** 멤버 목록 로드 */
+    private fun loadMembers() {
+        ChatRoomManager.getChatMembers(args.roomId) { members ->
+            activity?.runOnUiThread {
+                memberListTextView.text =
+                    if (members.isNullOrEmpty()) "참여자: -"
+                    else "참여자: ${members.joinToString(", ")}"
+            }
+        }
+    }
+
+    /** 스크롤 최하단으로 */
+    private fun scrollToBottom() {
+        chatScrollView.post { chatScrollView.fullScroll(View.FOCUS_DOWN) }
+    }
+
     // --------------------------
     // ISO-8601 유틸
     // --------------------------
@@ -230,7 +280,7 @@ class ChatRoomFragment : Fragment() {
     /** 현재 시각을 서버 포맷으로 반환 */
     private fun nowIsoString(): String {
         val sdf = SimpleDateFormat(SERVER_TS_PATTERN, Locale.US)
-        // 서버가 UTC 요구 시 주석 해제:
+        // 서버가 UTC 요구 시:
         // sdf.timeZone = TimeZone.getTimeZone("UTC")
         return sdf.format(Date())
     }
