@@ -29,8 +29,15 @@ class ChatRoomFragment : Fragment() {
     private lateinit var sendButton: ImageButton
     private lateinit var leaveButton: Button
 
-    // ✅ 서버 스펙: ISO-8601 문자열 타임스탬프 사용
-    private var lastSinceIso: String? = null
+    // 서버 스펙: ISO-8601 문자열 타임스탬프 사용
+    companion object {
+        private const val SERVER_TS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss"
+        // 서버 요청 시 latestTimestamp가 항상 필요하므로 최소값을 기본으로 사용
+        private const val MIN_TIMESTAMP_ISO = "-999999999-01-01T00:00:00"
+    }
+
+    // 증분 조회 기준(항상 유효한 값 보장)
+    private var lastSinceIso: String = MIN_TIMESTAMP_ISO
 
     private val handler = Handler(Looper.getMainLooper())
     private val updateInterval: Long = 3000L
@@ -74,9 +81,7 @@ class ChatRoomFragment : Fragment() {
                     if (success) {
                         Toast.makeText(requireContext(), "채팅방을 나갔습니다.", Toast.LENGTH_SHORT).show()
                         ChatRoomManager.getJoinedChatRooms(userId) {
-                            requireActivity().runOnUiThread {
-                                findNavController().popBackStack()
-                            }
+                            requireActivity().runOnUiThread { findNavController().popBackStack() }
                         }
                     } else {
                         Toast.makeText(requireContext(), "나가기 실패", Toast.LENGTH_SHORT).show()
@@ -102,12 +107,11 @@ class ChatRoomFragment : Fragment() {
         val json = JSONObject().apply {
             put("roomId", args.roomId)
             put("writerId", writerId)
-            put("writeTime", nowIso)         // ✅ 서버 스펙: 문자열 ISO-8601
+            put("writeTime", nowIso)         // 서버 스펙: 문자열 ISO-8601
             put("contentType", "text")
             put("content", content)
         }
 
-        // 서버 스펙: /chat/upload
         ChatNetworkHelper.postJson("/chat/upload", json) { success ->
             requireActivity().runOnUiThread {
                 if (success) {
@@ -123,21 +127,18 @@ class ChatRoomFragment : Fragment() {
     private fun fetchMessages() {
         val req = JSONObject().apply {
             put("roomId", args.roomId)
-            // latestTimestamp는 ISO 문자열. 없으면 생략(서버가 최신 몇 개를 내려주도록)
-            lastSinceIso?.let { put("latestTimestamp", it) }
+            put("latestTimestamp", lastSinceIso)  // 항상 포함(최초 요청 시 MIN 값)
         }
 
-        // 서버 스펙: /chat/download
         ChatNetworkHelper.postJsonWithResult("/chat/download", req) { res ->
             res ?: return@postJsonWithResult
 
-            // 서버가 배열을 직접 반환하는 대신, 헬퍼가 JSONObject로 래핑해
-            // "contentList"에 담아주는 구조를 가정 (기존 앱 호환)
+            // ChatNetworkHelper가 배열 응답을 {"contentList":[...]}로 래핑한다고 가정
             val items = res.optJSONArray("contentList") ?: return@postJsonWithResult
 
-            // 서버 시각 기준으로 가장 큰 writeTime(ISO)을 집계
-            var maxIso: String? = lastSinceIso
-            var maxMs: Long = lastSinceIso?.let { parseIsoToMillis(it) } ?: Long.MIN_VALUE
+            // 서버 시각 기준 최신값 계산
+            var maxIso: String? = null
+            var maxMs: Long = Long.MIN_VALUE
 
             for (i in 0 until items.length()) {
                 val obj       = items.getJSONObject(i)
@@ -149,18 +150,12 @@ class ChatRoomFragment : Fragment() {
                     addChatMessage(nickname, content)
                 }
 
-                // 최신 시각 갱신
                 val ms = writeTime?.let { parseIsoToMillis(it) } ?: Long.MIN_VALUE
-                if (ms > maxMs) {
-                    maxMs = ms
-                    maxIso = writeTime
-                }
+                if (ms > maxMs) { maxMs = ms; maxIso = writeTime }
             }
 
-            // 다음 요청 기준점 업데이트 (서버 시각을 그대로 사용)
-            if (maxIso != null) {
-                lastSinceIso = maxIso
-            }
+            // 다음 요청 기준점을 서버 시각으로 갱신 (없으면 기존 값 유지)
+            if (maxIso != null) lastSinceIso = maxIso!!
         }
     }
 
@@ -197,22 +192,20 @@ class ChatRoomFragment : Fragment() {
     }
 
     // --------------------------
-    // ISO-8601 (서버 스펙) 유틸
+    // ISO-8601 유틸
     // --------------------------
 
-    /**
-     * 서버 예시 "2025-08-05T12:00:00" 형태 출력 (로컬 타임존)
-     * ※ 서버가 타임존을 따로 요구하지 않아 예시와 동일 포맷 사용
-     */
+    /** 현재 시각을 서버 포맷으로 반환 */
     private fun nowIsoString(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
-        // 필요 시 타임존 고정: sdf.timeZone = TimeZone.getTimeZone("UTC")
+        val sdf = SimpleDateFormat(SERVER_TS_PATTERN, Locale.US)
+        // 서버가 UTC를 요구하면 주석 해제
+        // sdf.timeZone = TimeZone.getTimeZone("UTC")
         return sdf.format(Date())
     }
 
     /** "yyyy-MM-dd'T'HH:mm:ss" → epoch millis */
     private fun parseIsoToMillis(iso: String): Long {
-        val sdfLocal = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
+        val sdfLocal = SimpleDateFormat(SERVER_TS_PATTERN, Locale.US).apply {
             timeZone = TimeZone.getDefault()
         }
         return try {
