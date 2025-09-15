@@ -13,13 +13,12 @@ import com.swjeon.pethealthcaremanager.server.dto.ChatDTO;
 import com.swjeon.pethealthcaremanager.server.util.FileManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -135,5 +134,17 @@ public class ChatService {
                 throw new IllegalStateException("채팅맴버 확인 중 오류 발생. 존재하지 않는 유저가 채팅맴버로 등록되어있음.");
         }
         return members;
+    }
+
+    public ResponseEntity<List<Map<String, String>>> getJoinedRooms(String userId) {
+        ArrayList<Map<String, String>> joinedRooms = new ArrayList<>();
+        List<ChatMemberEntity> list = chatMemberRepository.getChatMemberEntitiesByMemberId(userId);
+        for(ChatMemberEntity memberEntity : list){
+            Map<String,String> map = new HashMap<>();
+            map.put("roomId",Integer.toString(memberEntity.getRoomId()));
+            map.put("creatorId","testid");
+            joinedRooms.add(map);
+        }
+        return ResponseEntity.ok(joinedRooms);
     }
 }

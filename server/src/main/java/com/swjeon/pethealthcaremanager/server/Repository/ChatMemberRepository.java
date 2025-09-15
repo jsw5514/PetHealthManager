@@ -12,4 +12,6 @@ public interface ChatMemberRepository extends JpaRepository<ChatMemberEntity, Ch
     @Query(value = "SELECT * FROM CHAT_MEMBER " +
             "WHERE ROOM_ID = :roomId", nativeQuery = true)
     List<ChatMemberEntity> findByRoomId(@Param("roomId") int roomId);
+
+    List<ChatMemberEntity> getChatMemberEntitiesByMemberId(String memberId);
 }

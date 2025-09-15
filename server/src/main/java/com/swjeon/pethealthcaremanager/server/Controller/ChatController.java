@@ -169,4 +169,10 @@ public class ChatController {
         }
         return ResponseEntity.ok(members);
     }
+    
+    @PostMapping("/room/list")
+    public ResponseEntity<List<Map<String,String>>> getRoomList(@RequestBody Map<String, String> request) {
+        String userId = request.get("userId");
+        return chatService.getJoinedRooms(userId);
+    }
 }
